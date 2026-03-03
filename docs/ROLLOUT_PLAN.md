@@ -181,7 +181,7 @@ Xcode project, design system, reusable components, core infrastructure.
 
 ### 6A — Project Setup
 - [x] Create Xcode project in `ios/` (SwiftUI App, iOS 17+, bundle ID placeholder)
-- [ ] Add SPM packages: Supabase (v2.0.0+), RevenueCat (v4.0.0+), PostHog (v3.0.0+), GoogleSignIn (v7.0.0+)
+- [x] Add SPM packages: Supabase (v2.0.0+), RevenueCat (v4.0.0+), PostHog (v3.0.0+), GoogleSignIn (v7.0.0+)
 - [ ] Configure `Info.plist` (URL schemes for Google Sign-In, push notification entitlement)
 - [x] Set up `Assets.xcassets` with named color sets (bg, bgElevated, bgSurface, textPrimary, textSecondary, textTertiary, accent, accentMuted, success, warning, danger, border, borderFocus)
 
@@ -266,34 +266,34 @@ All core screens per the ios/README.md wireframe specs.
 End-to-end flows, analytics audit, deployment configuration.
 
 ### 8A — End-to-End Auth Flow
-- [ ] Wire iOS Apple Sign-In → Supabase Auth → profile auto-creation trigger → API auth middleware
-- [ ] Wire iOS Google Sign-In → Supabase Auth → same flow
+- [x] Wire iOS Apple Sign-In → Supabase Auth → profile auto-creation trigger → API auth middleware
+- [x] Wire iOS Google Sign-In → Supabase Auth → same flow
 - [ ] Test: sign in → onboarding → paywall → home → settings → sign out → back to login
 
 ### 8B — Local-First Sync
-- [ ] Implement SyncManager pull: on app launch, fetch latest from API in background
-- [ ] Implement SyncManager push: on local write, queue API sync with retry
-- [ ] Implement conflict resolution: server-wins with last-write-wins timestamp comparison
+- [x] Implement SyncManager pull: on app launch, fetch latest from API in background
+- [x] Implement SyncManager push: on local write, queue API sync with retry
+- [x] Implement conflict resolution: server-wins with last-write-wins timestamp comparison
 - [ ] Test: write offline → come online → verify sync
 
 ### 8C — Analytics Audit
-- [ ] Wire `Analytics.track(.login(method:))` on successful auth
+- [x] Wire `Analytics.track(.login(method:))` on successful auth
 - [ ] Wire `Analytics.track(.onboardingStarted)` and `.onboardingStepCompleted` in onboarding flow
-- [ ] Wire `Analytics.track(.paywallViewed)`, `.planSelected`, `.trialStarted`, `.subscriptionPurchased` in paywall
-- [ ] Wire `Analytics.track(.featureUsed)` on core home actions
-- [ ] Server-side: wire `posthog.capture()` on subscription webhook events
+- [x] Wire `Analytics.track(.paywallViewed)`, `.planSelected`, `.trialStarted`, `.subscriptionPurchased` in paywall
+- [x] Wire `Analytics.track(.featureUsed)` on core home actions
+- [x] Server-side: wire `posthog.capture()` on subscription webhook events
 - [ ] Verify: PostHog dashboard shows events for full user journey
 
 ### 8D — Push Notifications
 - [ ] Configure APNs key in Apple Developer portal
-- [ ] Register device token on app launch via NotificationManager
-- [ ] Send token to `PUT /api/notifications/token`
+- [x] Register device token on app launch via NotificationManager
+- [x] Send token to `PUT /api/notifications/token`
 - [ ] Test: receive a test push notification
 
 ### 8E — Deployment
 - [ ] Deploy Supabase project to Supabase Cloud (create project, push migrations, set secrets)
 - [ ] Deploy backend to Fly.io (`fly launch`, `fly secrets set`, `fly deploy`)
-- [ ] Point iOS app config (AppEnvironment) to production Supabase URL + anon key + backend URL
+- [x] Point iOS app config (AppEnvironment) to production Supabase URL + anon key + backend URL
 - [ ] Configure RevenueCat webhook URL → production backend
 - [ ] Configure PostHog project key for production
 

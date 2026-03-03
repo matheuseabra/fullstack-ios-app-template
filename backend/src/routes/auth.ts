@@ -3,6 +3,7 @@ import { Hono } from 'hono'
 import type { AppEnv } from '../types/index.js'
 import { validateRevenueCatSignature } from '../services/revenuecat.js'
 import { supabaseService } from '../services/supabase.js'
+import { posthog } from '../services/posthog.js'
 import { revenueCatWebhookSchema } from '../schemas/subscription.schema.js'
 import { AppError } from '../lib/errors.js'
 import { logger } from '../lib/logger.js'
@@ -83,6 +84,17 @@ router.post('/webhook/revenuecat', async (c) => {
     logger.error({ error, appUserId, type: event.type }, 'Failed to upsert subscription')
     throw new AppError(500, 'INTERNAL_ERROR', 'Failed to process webhook')
   }
+
+  // Fire-and-forget analytics
+  void posthog.captureEvent({
+    distinctId: appUserId,
+    event: `subscription_${event.type.toLowerCase()}`,
+    properties: {
+      product_id: event.product_id,
+      status: newStatus,
+      entitlement_ids: event.entitlement_ids,
+    },
+  })
 
   return c.json({ received: true }, 200)
 })

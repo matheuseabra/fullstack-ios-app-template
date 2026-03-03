@@ -50,10 +50,7 @@ struct TrialExplainerView: View {
                             HapticManager.medium()
                         }
                     }
-                    .simultaneousGesture(TapGesture().onEnded {
-                        Analytics.track(.trialStarted)
-                        HapticManager.medium()
-                    })
+
 
                     AppButton("No thanks", style: .ghost) {
                         Analytics.track(.paywallDismissed)

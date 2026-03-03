@@ -76,6 +76,7 @@ final class OnboardingViewModel: ObservableObject {
     // MARK: - Navigation
 
     func advance() {
+        Analytics.track(.onboardingStepCompleted(step: currentStep, key: currentQuestion.key))
         captureCurrentAnswer()
         HapticManager.selection()
 

@@ -1,0 +1,52 @@
+import UIKit
+#if canImport(GoogleSignIn)
+import GoogleSignIn
+#endif
+
+// MARK: - AppDelegate
+// Handles UIKit lifecycle callbacks that SwiftUI's App protocol doesn't expose.
+
+final class AppDelegate: NSObject, UIApplicationDelegate {
+
+    // MARK: - Launch
+
+    func application(
+        _ application: UIApplication,
+        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
+    ) -> Bool {
+        GoogleSignInManager.shared.configure()
+        return true
+    }
+
+    // MARK: - Remote Notifications (APNs)
+
+    func application(
+        _ application: UIApplication,
+        didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
+    ) {
+        Task { @MainActor in
+            NotificationManager.shared.didRegister(deviceToken: deviceToken)
+        }
+    }
+
+    func application(
+        _ application: UIApplication,
+        didFailToRegisterForRemoteNotificationsWithError error: Error
+    ) {
+        print("[AppDelegate] Failed to register for remote notifications: \(error)")
+    }
+
+    // MARK: - Google Sign-In URL Handling
+
+    func application(
+        _ app: UIApplication,
+        open url: URL,
+        options: [UIApplication.OpenURLOptionsKey: Any] = [:]
+    ) -> Bool {
+#if canImport(GoogleSignIn)
+        return GIDSignIn.sharedInstance.handle(url)
+#else
+        return false
+#endif
+    }
+}

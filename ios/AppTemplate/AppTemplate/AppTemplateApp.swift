@@ -3,11 +3,14 @@ import SwiftData
 
 @main
 struct AppTemplateApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+
     @StateObject private var router = AppRouter.shared
     @StateObject private var theme  = AppTheme.shared
 
+    @Environment(\.scenePhase) private var scenePhase
+
     init() {
-        // Configure third-party SDKs
         PaymentManager.configure(apiKey: AppEnvironment.revenueCatKey)
         Analytics.configure(apiKey: AppEnvironment.postHogKey)
     }
@@ -19,6 +22,11 @@ struct AppTemplateApp: App {
                 .environmentObject(router)
                 .environmentObject(theme)
                 .modelContainer(LocalDatabase.shared.container)
+        }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active {
+                SyncManager.shared.pullIfNeeded()
+            }
         }
     }
 

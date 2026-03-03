@@ -4,8 +4,8 @@ import Foundation
 // Replace baseURL with your production/staging backend URL.
 
 enum APIEndpoints {
-    // TODO: Update with your backend URL (e.g. https://api.yourapp.com)
-    static let baseURL = "http://localhost:3000"
+    
+    static let baseURL = AppEnvironment.backendURL
 
     // Users
     static let me               = "\(baseURL)/api/users/me"

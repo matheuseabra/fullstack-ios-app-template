@@ -1,18 +1,16 @@
 import Foundation
 
-// MARK: - AuthManager
-// Wraps Supabase authentication.
-// Add the supabase-swift package via Xcode → File → Add Package Dependencies
-// then remove the #if canImport guard and uncomment the real implementation.
-
 #if canImport(Supabase)
 import Supabase
+
+// MARK: - AuthManager
+// Single source of truth for auth state. Wraps the Supabase client.
 
 @MainActor
 final class AuthManager: ObservableObject {
     static let shared = AuthManager()
 
-    private let client = SupabaseClient(
+    let client = SupabaseClient(
         supabaseURL: URL(string: AppEnvironment.supabaseURL)!,
         supabaseKey: AppEnvironment.supabaseAnonKey
     )
@@ -23,6 +21,8 @@ final class AuthManager: ObservableObject {
     init() {
         Task { await refreshSession() }
     }
+
+    // MARK: - Session
 
     var accessToken: String? {
         get async {
@@ -40,6 +40,26 @@ final class AuthManager: ObservableObject {
             currentUser = nil
         }
     }
+
+    // MARK: - Social Sign-In via ID Token
+
+    /// Called by AppleSignInManager after obtaining the Apple identity token.
+    func signInWithApple(idToken: String, nonce: String) async throws {
+        try await client.auth.signInWithIdToken(
+            credentials: .init(provider: .apple, idToken: idToken, nonce: nonce)
+        )
+        await refreshSession()
+    }
+
+    /// Called by GoogleSignInManager after obtaining the Google ID token.
+    func signInWithGoogle(idToken: String, accessToken: String?) async throws {
+        try await client.auth.signInWithIdToken(
+            credentials: .init(provider: .google, idToken: idToken, accessToken: accessToken)
+        )
+        await refreshSession()
+    }
+
+    // MARK: - Sign Out
 
     func signOut() {
         Task {
@@ -60,16 +80,11 @@ final class AuthManager: ObservableObject {
     @Published private(set) var isAuthenticated = false
     @Published private(set) var currentUser: AppUser? = nil
 
-    var accessToken: String? {
-        get async { nil }
-    }
+    var accessToken: String? { get async { nil } }
 
     func refreshSession() async {}
+    func signInWithApple(idToken: String, nonce: String) async throws {}
+    func signInWithGoogle(idToken: String, accessToken: String?) async throws {}
     func signOut() { isAuthenticated = false }
-
-    /// Called by AppleSignInManager / GoogleSignInManager after exchanging tokens
-    func setAuthenticated(token: String) {
-        isAuthenticated = true
-    }
 }
 #endif
