@@ -121,6 +121,12 @@ final class PaymentManager: ObservableObject {
     func package(for productID: String) -> Package? {
         currentPackages.first { $0.storeProduct.productIdentifier == productID }
     }
+
+    // MARK: - Internal
+
+    fileprivate func updateCustomerInfo(_ info: CustomerInfo) {
+        customerInfo = info
+    }
 }
 
 // MARK: - Errors
@@ -146,7 +152,7 @@ private final class PaymentManagerDelegate: NSObject, PurchasesDelegate {
 
     func purchases(_ purchases: Purchases, receivedUpdated customerInfo: CustomerInfo) {
         Task { @MainActor in
-            PaymentManager.shared.customerInfo = customerInfo
+            PaymentManager.shared.updateCustomerInfo(customerInfo)
         }
     }
 }

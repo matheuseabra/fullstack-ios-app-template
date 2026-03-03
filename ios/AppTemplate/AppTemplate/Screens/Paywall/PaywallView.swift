@@ -19,16 +19,7 @@ struct PaywallView: View {
                 HapticManager.success()
                 router.advanceToHome()
             }
-                .background(
-                    LinearGradient(
-                        colors: [Color.bg.opacity(0), Color.bg],
-                        startPoint: .top, endPoint: .center
-                    )
-                    .ignoresSafeArea()
-                )
-            }
-        }
-        .onAppear { Analytics.track(.paywallViewed(screen: 2)) }
+            .onAppear { Analytics.track(.paywallViewed(screen: 2)) }
     }
 }
 

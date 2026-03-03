@@ -6,7 +6,7 @@ import Foundation
 
 enum AppEnvironment {
     // Supabase (local instance)
-    static let supabaseURL     = "http://127.0.0.1:54321"
+    static let supabaseURL     = "http://agentcraft-dev.duckdns.org:54321"
     static let supabaseAnonKey = "sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH"
 
     // TODO: Replace with your Google OAuth client ID (from GoogleService-Info.plist)
@@ -19,5 +19,5 @@ enum AppEnvironment {
     static let postHogKey      = "phx_UB8omil1ZdDayosdoJ4MKh6txPhhd8Hcx8KrJw97TA2nV19"
 
     // Backend
-    static let backendURL      = "http://localhost:3000"
+    static let backendURL      = "http://agentcraft-dev.duckdns.org:3000"
 }

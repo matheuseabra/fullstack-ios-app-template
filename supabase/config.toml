@@ -6,6 +6,7 @@ enabled = true
 port = 54321
 schemas = ["public", "graphql_public"]
 extra_search_path = ["public", "extensions"]
+listen_address = "0.0.0.0"
 max_rows = 1000
 
 [api.tls]
@@ -79,6 +80,7 @@ secret = ""
 enabled = true
 client_id = "349460612215-fhvp7vlgnteaj6ufr0nbnnvfm8v4usrt.apps.googleusercontent.com"
 secret = "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"
+redirect_uri = "http://agentcraft-dev.duckdns.org:54321/auth/v1/callback"
 skip_nonce_check = false
 
 [edge_runtime]
