@@ -1,0 +1,62 @@
+# ─────────────────────────────────────────
+# macOS
+# ─────────────────────────────────────────
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+.fseventsd
+
+# ─────────────────────────────────────────
+# Xcode / iOS
+# ─────────────────────────────────────────
+xcuserdata/
+*.xcuserstate
+*.xccheckout
+*.moved-aside
+DerivedData/
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+# SPM build artifacts
+.build/
+# Xcode Previews
+PreviewReplays/
+
+# ─────────────────────────────────────────
+# Node.js / Backend
+# ─────────────────────────────────────────
+node_modules/
+dist/
+*.tsbuildinfo
+coverage/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ─────────────────────────────────────────
+# Environment — never commit secrets
+# ─────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+# .env.example is intentionally tracked
+
+# ─────────────────────────────────────────
+# Supabase local dev
+# ─────────────────────────────────────────
+supabase/.branches/
+supabase/.temp/
+supabase/snippets/
+
+# ─────────────────────────────────────────
+# Editors & IDEs
+# ─────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~

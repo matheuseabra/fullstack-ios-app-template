@@ -2,7 +2,7 @@
 
 > Phased implementation of the AppStudio Boilerplate — from documented specs to production-ready code.
 >
-> **Current state:** Phase 1 complete — scaffolding and infrastructure in place.
+> **Current state:** Phase 2 complete — database layer live, TypeScript types generated.
 > **Target state:** Fully functional iOS app + Hono backend + Supabase database, deployed and shippable.
 
 ---
@@ -31,49 +31,49 @@ Foundation: project configs, tooling, Docker, environment templates.
 Core tables, RLS policies, triggers, indexes, and seed data.
 
 ### 2A — Shared Functions & Triggers
-- [ ] Create migration `supabase/migrations/0001_shared_functions.sql`
+- [x] Create migration `supabase/migrations/0001_shared_functions.sql`
   - `set_updated_at()` trigger function
   - `handle_new_user()` trigger function (auto-create profile on auth.users insert)
 
 ### 2B — Core Tables
-- [ ] Create migration `supabase/migrations/0002_profiles.sql`
+- [x] Create migration `supabase/migrations/0002_profiles.sql`
   - Table: `profiles` (id, email, full_name, avatar_url, timezone, locale, created_at, updated_at)
   - RLS: select own, update own
   - Trigger: `on_auth_user_created` → `handle_new_user()`
   - Trigger: `set_updated_at`
-- [ ] Create migration `supabase/migrations/0003_onboarding_responses.sql`
+- [x] Create migration `supabase/migrations/0003_onboarding_responses.sql`
   - Table: `onboarding_responses` (id, user_id, question_key, answer jsonb, created_at)
   - Index: `user_id`
   - RLS: all operations on own rows
-- [ ] Create migration `supabase/migrations/0004_subscriptions.sql`
+- [x] Create migration `supabase/migrations/0004_subscriptions.sql`
   - Table: `subscriptions` (id, user_id, revenuecat_user_id, product_id, status, trial_ends_at, current_period_end, cancel_at_period_end, entitlements jsonb, created_at, updated_at)
   - Indexes: `user_id`, `revenuecat_user_id` (unique)
   - RLS: select own only (no insert/update/delete for users — service_role only)
   - Trigger: `set_updated_at`
-- [ ] Create migration `supabase/migrations/0005_notification_preferences.sql`
+- [x] Create migration `supabase/migrations/0005_notification_preferences.sql`
   - Table: `notification_preferences` (id, user_id, enabled, reminder_time, days_of_week, push_token, updated_at)
   - Unique index: `user_id`
   - RLS: all operations on own rows
   - Trigger: `set_updated_at`
-- [ ] Create migration `supabase/migrations/0006_user_settings.sql`
+- [x] Create migration `supabase/migrations/0006_user_settings.sql`
   - Table: `user_settings` (user_id, key, value jsonb, updated_at) — composite PK
   - RLS: all operations on own rows
-- [ ] Create migration `supabase/migrations/0007_usage_logs.sql`
+- [x] Create migration `supabase/migrations/0007_usage_logs.sql`
   - Table: `usage_logs` (id, user_id, feature, count, metadata jsonb, created_at)
   - Index: `(user_id, feature, created_at)`
   - RLS: select own only (service_role inserts)
-- [ ] Create migration `supabase/migrations/0008_api_rate_limits.sql`
+- [x] Create migration `supabase/migrations/0008_api_rate_limits.sql`
   - Table: `api_rate_limits` (user_id, endpoint, count, window_start) — composite PK
   - No RLS (service_role only)
-- [ ] Create migration `supabase/migrations/0009_audit_log.sql`
+- [x] Create migration `supabase/migrations/0009_audit_log.sql`
   - Table: `audit_log` (id bigint identity, user_id, action, metadata jsonb, ip_address inet, user_agent, created_at)
   - Indexes: `user_id`, `created_at`
   - No user RLS (service_role only)
 
 ### 2C — Seed & Types
-- [ ] Create `supabase/seed.sql` with test user profile + sample data
-- [ ] Verify: `supabase start` + `supabase db push` applies all migrations cleanly
-- [ ] Run `supabase gen types typescript --local > backend/src/types/database.ts`
+- [x] Create `supabase/seed.sql` with test user profile + sample data
+- [x] Verify: run all migrations in Supabase Studio SQL editor
+- [x] Run `supabase gen types typescript --local > backend/src/types/database.ts`
 
 ---
 
