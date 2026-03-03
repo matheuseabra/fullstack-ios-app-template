@@ -5,11 +5,13 @@ on:
     branches: [main]
     paths:
       - 'backend/**'
+      - 'ios/**'
       - '.github/workflows/ci.yml'
   pull_request:
     branches: [main]
     paths:
       - 'backend/**'
+      - 'ios/**'
       - '.github/workflows/ci.yml'
 
 defaults:
@@ -48,3 +50,39 @@ jobs:
           SUPABASE_URL: 'http://localhost:54321'
           SUPABASE_ANON_KEY: 'test-anon-key'
           SUPABASE_SERVICE_ROLE_KEY: 'test-service-role-key'
+
+  ios:
+    name: iOS Build
+    runs-on: macos-15
+    defaults:
+      run:
+        working-directory: ios/AppTemplate
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_16.2.app/Contents/Developer
+
+      - name: Resolve Swift packages
+        run: xcodebuild -resolvePackageDependencies -project AppTemplate.xcodeproj -scheme AppTemplate
+
+      - name: Build (Debug, Simulator)
+        run: |
+          xcodebuild build \
+            -project AppTemplate.xcodeproj \
+            -scheme AppTemplate \
+            -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' \
+            -configuration Debug \
+            CODE_SIGNING_ALLOWED=NO \
+            | xcpretty && exit ${PIPESTATUS[0]}
+
+      - name: Run tests
+        run: |
+          xcodebuild test \
+            -project AppTemplate.xcodeproj \
+            -scheme AppTemplate \
+            -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' \
+            -configuration Debug \
+            CODE_SIGNING_ALLOWED=NO \
+            | xcpretty && exit ${PIPESTATUS[0]}
