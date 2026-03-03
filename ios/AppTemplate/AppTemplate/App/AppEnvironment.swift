@@ -5,8 +5,8 @@ import Foundation
 // For production: inject via Xcode build settings / xcconfig to avoid hardcoding secrets.
 
 enum AppEnvironment {
-    // Supabase (local instance)
-    static let supabaseURL     = "http://agentcraft-dev.duckdns.org:54321"
+    // Supabase (tunnelled via ngrok)
+    static let supabaseURL     = "https://341f-179-180-34-209.ngrok-free.app"
     static let supabaseAnonKey = "sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH"
 
     // Google OAuth
@@ -21,6 +21,6 @@ enum AppEnvironment {
     // PostHog
     static let postHogKey      = "phx_UB8omil1ZdDayosdoJ4MKh6txPhhd8Hcx8KrJw97TA2nV19"
 
-    // Backend
-    static let backendURL      = "http://agentcraft-dev.duckdns.org:3000"
+    // Backend (tunnelled via ngrok)
+    static let backendURL      = "https://2d20-179-180-34-209.ngrok-free.app"
 }
