@@ -58,6 +58,11 @@ struct LoginView: View {
                         Task { await vm.signInWithGoogle() }
                     }
                     .disabled(vm.isLoading)
+
+                    // Skip (dev shortcut — bypasses auth)
+                    Button("Skip") { router.root = .onboarding }
+                        .font(.body(14))
+                        .foregroundStyle(Color.textTertiary)
                 }
                 .padding(.horizontal, Spacing.lg)
 

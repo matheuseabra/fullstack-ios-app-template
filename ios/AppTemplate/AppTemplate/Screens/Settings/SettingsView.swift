@@ -1,4 +1,5 @@
 import SwiftUI
+import RevenueCatUI
 
 struct SettingsView: View {
     @EnvironmentObject private var router: AppRouter
@@ -110,16 +111,13 @@ private struct LinkRow: View {
     }
 }
 
-// MARK: - Stub sub-screens (Phase 8 fills these in)
+// MARK: - Subscription Management (RevenueCat Customer Center)
 
 private struct SubscriptionManagementView: View {
     var body: some View {
-        ZStack {
-            Color.bg.ignoresSafeArea()
-            EmptyStateView(icon: "creditcard", title: "Subscription", subtitle: "Manage via the App Store.", action: nil)
-        }
-        .navigationTitle("Subscription")
-        .navigationBarTitleDisplayMode(.inline)
+        CustomerCenterView()
+            .navigationTitle("Manage Subscription")
+            .navigationBarTitleDisplayMode(.inline)
     }
 }
 

@@ -49,6 +49,9 @@ final class AuthManager: ObservableObject {
             credentials: .init(provider: .apple, idToken: idToken, nonce: nonce)
         )
         await refreshSession()
+        if let uid = currentUser?.id.uuidString {
+            try? await PaymentManager.shared.logIn(userId: uid)
+        }
     }
 
     /// Called by GoogleSignInManager after obtaining the Google ID token.
@@ -57,6 +60,9 @@ final class AuthManager: ObservableObject {
             credentials: .init(provider: .google, idToken: idToken, accessToken: accessToken)
         )
         await refreshSession()
+        if let uid = currentUser?.id.uuidString {
+            try? await PaymentManager.shared.logIn(userId: uid)
+        }
     }
 
     // MARK: - Sign Out
@@ -64,6 +70,7 @@ final class AuthManager: ObservableObject {
     func signOut() {
         Task {
             try? await client.auth.signOut()
+            try? await PaymentManager.shared.logOut()
             isAuthenticated = false
             currentUser = nil
         }

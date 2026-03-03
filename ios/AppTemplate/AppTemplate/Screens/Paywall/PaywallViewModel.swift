@@ -1,51 +1,34 @@
 import Foundation
+import RevenueCat
+
+// MARK: - PaywallViewModel
+// RevenueCat's native PaywallView manages its own state (offerings, loading,
+// purchase flow). This view model is retained only for any auxiliary logic
+// that lives outside the RC-rendered paywall (e.g. trial explainer screen).
 
 @MainActor
 final class PaywallViewModel: ObservableObject {
-    @Published var selectedPlan: Plan = .yearly
+
+    // MARK: - Restore (used by manual "Restore" buttons outside RC's PaywallView)
+
     @Published var isLoading = false
     @Published var errorMessage: String?
 
-    enum Plan: String, CaseIterable, Identifiable {
-        case yearly  = "annual"
-        case monthly = "monthly"
-        var id: String { rawValue }
-    }
-
-    func purchase() async {
+    func restorePurchases() async {
         isLoading = true
         errorMessage = nil
-        HapticManager.medium()
-
-        // With RevenueCat installed, use PaymentManager.
-        // For now, simulate success after a short delay.
+        defer { isLoading = false }
         do {
-            try await Task.sleep(for: .seconds(1))
-            // TODO: try await PaymentManager.shared.purchase(package: matchedPackage)
-            Analytics.track(.subscriptionPurchased(plan: selectedPlan.rawValue, price: 0))
-            HapticManager.success()
-            AppRouter.shared.advanceToHome()
+            try await PaymentManager.shared.restorePurchases()
+            if PaymentManager.shared.hasProAccess {
+                HapticManager.success()
+                AppRouter.shared.advanceToHome()
+            } else {
+                errorMessage = "No prior purchases found."
+            }
         } catch {
             errorMessage = error.localizedDescription
             HapticManager.error()
         }
-        isLoading = false
-    }
-
-    func restorePurchases() async {
-        isLoading = true
-        do {
-            try await PaymentManager.shared.restorePurchases()
-            AppRouter.shared.advanceToHome()
-        } catch {
-            errorMessage = error.localizedDescription
-        }
-        isLoading = false
-    }
-
-    func selectPlan(_ plan: Plan) {
-        HapticManager.selection()
-        Analytics.track(.planSelected(plan: plan.rawValue))
-        selectedPlan = plan
     }
 }

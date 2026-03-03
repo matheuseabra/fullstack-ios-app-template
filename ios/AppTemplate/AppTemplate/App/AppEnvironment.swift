@@ -5,19 +5,19 @@ import Foundation
 // For production: inject via Xcode build settings / xcconfig to avoid hardcoding secrets.
 
 enum AppEnvironment {
-    // TODO: Replace with your Supabase project URL + anon key
-    static let supabaseURL     = "https://YOUR_PROJECT_ID.supabase.co"
-    static let supabaseAnonKey = "YOUR_SUPABASE_ANON_KEY"
+    // Supabase (local instance)
+    static let supabaseURL     = "http://127.0.0.1:54321"
+    static let supabaseAnonKey = "sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH"
 
     // TODO: Replace with your Google OAuth client ID (from GoogleService-Info.plist)
     static let googleClientID  = "YOUR_GOOGLE_CLIENT_ID"
 
-    // TODO: Replace with your RevenueCat API key
-    static let revenueCatKey   = "YOUR_REVENUECAT_API_KEY"
+    // RevenueCat iOS public API key
+    static let revenueCatKey   = "test_byvGVMQjPyrvbuSdqAbadXJQrXU"
 
-    // TODO: Replace with your PostHog API key
-    static let postHogKey      = "YOUR_POSTHOG_API_KEY"
+    // PostHog
+    static let postHogKey      = "phx_UB8omil1ZdDayosdoJ4MKh6txPhhd8Hcx8KrJw97TA2nV19"
 
-    // TODO: Replace with your backend URL (local: http://localhost:3000)
+    // Backend
     static let backendURL      = "http://localhost:3000"
 }

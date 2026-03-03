@@ -1,103 +1,24 @@
 import SwiftUI
+import RevenueCatUI
+import RevenueCat
+
+// MARK: - PaywallView
+// Wraps RevenueCat's native PaywallView (configured in RC dashboard).
+// Advances to Home on successful purchase or restore.
 
 struct PaywallView: View {
     @EnvironmentObject private var router: AppRouter
-    @StateObject private var vm = PaywallViewModel()
-
-    private let features = [
-        "Feature one — describe key benefit",
-        "Feature two — describe key benefit",
-        "Feature three — describe key benefit",
-        "Feature four — describe key benefit",
-    ]
 
     var body: some View {
-        ZStack {
-            Color.bg.ignoresSafeArea()
-            VStack(spacing: 0) {
-                ScrollView {
-                    VStack(spacing: Spacing.xl) {
-                        // Header
-                        VStack(spacing: Spacing.sm) {
-                            Text("Everything you need to")
-                                .font(.display(22))
-                                .foregroundStyle(Color.textPrimary)
-                            Text("achieve your goal")
-                                .font(.display(22))
-                                .foregroundStyle(Color.accent)
-                        }
-                        .multilineTextAlignment(.center)
-                        .padding(.top, Spacing.xxl)
-
-                        // Feature list
-                        VStack(alignment: .leading, spacing: Spacing.md) {
-                            ForEach(features, id: \.self) { feature in
-                                HStack(alignment: .top, spacing: Spacing.md) {
-                                    Image(systemName: "checkmark")
-                                        .font(.system(size: 14, weight: .semibold))
-                                        .foregroundStyle(Color.accent)
-                                        .frame(width: 20)
-                                    Text(feature)
-                                        .font(.body(15))
-                                        .foregroundStyle(Color.textPrimary)
-                                }
-                            }
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal, Spacing.lg)
-
-                        // Plan cards
-                        VStack(spacing: Spacing.sm) {
-                            PlanCard(
-                                title: "Yearly",
-                                badge: "BEST VALUE",
-                                price: "$29.99 / year",
-                                subtitle: "= $2.49 / month",
-                                isSelected: vm.selectedPlan == .yearly
-                            ) { vm.selectPlan(.yearly) }
-
-                            PlanCard(
-                                title: "Monthly",
-                                badge: nil,
-                                price: "$7.99 / month",
-                                subtitle: nil,
-                                isSelected: vm.selectedPlan == .monthly
-                            ) { vm.selectPlan(.monthly) }
-                        }
-                        .padding(.horizontal, Spacing.lg)
-                    }
-                    .padding(.bottom, 200)
-                }
-
-                // Bottom CTAs
-                VStack(spacing: Spacing.sm) {
-                    if let error = vm.errorMessage {
-                        Text(error)
-                            .font(.body(13))
-                            .foregroundStyle(Color.danger)
-                            .multilineTextAlignment(.center)
-                    }
-
-                    AppButton("Start Free Trial", style: .primary, isLoading: vm.isLoading) {
-                        Task { await vm.purchase() }
-                    }
-                    Button("Restore Purchases") {
-                        Task { await vm.restorePurchases() }
-                    }
-                    .font(.body(13))
-                    .foregroundStyle(Color.textSecondary)
-
-                    // Legal
-                    HStack(spacing: 4) {
-                        Link("Terms", destination: URL(string: "https://yourapp.com/terms")!)
-                        Text("·")
-                        Link("Privacy", destination: URL(string: "https://yourapp.com/privacy")!)
-                    }
-                    .font(.body(11))
-                    .foregroundStyle(Color.textTertiary)
-                }
-                .padding(.horizontal, Spacing.lg)
-                .padding(.bottom, Spacing.xxl)
+        RevenueCatUI.PaywallView()
+            .onPurchaseCompleted { _ in
+                HapticManager.success()
+                router.advanceToHome()
+            }
+            .onRestoreCompleted { _ in
+                HapticManager.success()
+                router.advanceToHome()
+            }
                 .background(
                     LinearGradient(
                         colors: [Color.bg.opacity(0), Color.bg],
@@ -111,7 +32,7 @@ struct PaywallView: View {
     }
 }
 
-// MARK: - PlanCard
+// MARK: - Legacy PlanCard (kept for reference)
 
 private struct PlanCard: View {
     let title: String

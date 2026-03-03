@@ -59,11 +59,8 @@ final class AppRouter: ObservableObject {
     // MARK: - Private
 
     private func checkSubscription() async -> Bool {
-        do {
-            let response: SubscriptionResponse = try await APIClient.shared.get(APIEndpoints.subscription)
-            return response.data?.isActive ?? false
-        } catch {
-            return false
-        }
+        // Refresh CustomerInfo from RevenueCat cache (fast, no network unless stale).
+        await PaymentManager.shared.refreshCustomerInfo()
+        return PaymentManager.shared.hasProAccess
     }
 }
