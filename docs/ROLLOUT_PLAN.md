@@ -2,7 +2,7 @@
 
 > Phased implementation of the AppStudio Boilerplate — from documented specs to production-ready code.
 >
-> **Current state:** Phase 4 complete — all API routes implemented, build and lint clean.
+> **Current state:** Phase 5 complete — 35 tests passing, CI/CD pipelines configured.
 > **Target state:** Fully functional iOS app + Hono backend + Supabase database, deployed and shippable.
 
 ---
@@ -155,23 +155,23 @@ All endpoints with Zod validation, per the backend/README.md spec.
 Jest test suite + GitHub Actions pipelines.
 
 ### 5A — Test Setup
-- [ ] Create `backend/jest.config.ts` (ts-jest preset, test match, coverage settings)
-- [ ] Create `backend/tests/setup.ts` (env mocks, Supabase mock, test helpers)
+- [x] Create `backend/jest.config.ts` (ts-jest preset, test match, coverage settings)
+- [x] Create `backend/tests/setup.ts` (env mocks, Supabase mock, test helpers)
 
 ### 5B — Route Tests
-- [ ] Create `backend/tests/users.test.ts` (happy path: get/update profile + error: unauthorized)
-- [ ] Create `backend/tests/onboarding.test.ts` (happy path: save responses + error: invalid payload)
-- [ ] Create `backend/tests/subscriptions.test.ts` (happy path: webhook processing + error: bad signature)
-- [ ] Create `backend/tests/usage.test.ts` (happy path: check/log + error: limit reached)
+- [x] Create `backend/tests/users.test.ts` (happy path: get/update profile + error: unauthorized)
+- [x] Create `backend/tests/onboarding.test.ts` (happy path: save responses + error: invalid payload)
+- [x] Create `backend/tests/subscriptions.test.ts` (happy path: webhook processing + error: bad signature)
+- [x] Create `backend/tests/usage.test.ts` (happy path: check/log + error: limit reached)
 
 ### 5C — Middleware Tests
-- [ ] Create `backend/tests/auth.test.ts` (valid token, missing token, expired token)
-- [ ] Create `backend/tests/rateLimiter.test.ts` (under limit, at limit, over limit)
+- [x] Create `backend/tests/auth.test.ts` (valid token, missing token, expired token)
+- [x] Create `backend/tests/rateLimiter.test.ts` (under limit, at limit, over limit)
 
 ### 5D — CI/CD Pipelines
-- [ ] Create `.github/workflows/ci.yml` (on PR: checkout, setup node 20, npm ci, lint, build, test)
-- [ ] Create `.github/workflows/deploy.yml` (on main push: build Docker, deploy to Fly.io)
-- [ ] Verify: `npm test` — all tests pass, `npm run lint` — zero errors
+- [x] Create `.github/workflows/ci.yml` (on PR: checkout, setup node 20, npm ci, lint, build, test)
+- [x] Create `.github/workflows/deploy.yml` (on main push: build Docker, deploy to Fly.io)
+- [x] Verify: `npm test` — all tests pass, `npm run lint` — zero errors
 
 ---
 
