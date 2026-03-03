@@ -1,0 +1,69 @@
+import SwiftUI
+
+// MARK: - AppRouter
+// Central navigation state machine. Owns the root destination
+// and all modal navigation paths.
+
+@MainActor
+final class AppRouter: ObservableObject {
+    static let shared = AppRouter()
+
+    @Published var root: RootDestination = .splash
+    @Published var path = NavigationPath()
+
+    enum RootDestination {
+        case splash
+        case login
+        case onboarding
+        case paywall
+        case home
+    }
+
+    // MARK: - Advance Logic
+    // Called by SplashView after 2s delay, or after any auth state change.
+
+    func advance() {
+        Task {
+            if AuthManager.shared.isAuthenticated {
+                // TODO: Check if onboarding is complete (persist flag with @AppStorage)
+                let didCompleteOnboarding = UserDefaults.standard.bool(forKey: "didCompleteOnboarding")
+                let hasActiveSubscription = await checkSubscription()
+
+                if !didCompleteOnboarding {
+                    root = .onboarding
+                } else if !hasActiveSubscription {
+                    root = .paywall
+                } else {
+                    root = .home
+                }
+            } else {
+                root = .login
+            }
+        }
+    }
+
+    func advanceToHome() {
+        root = .home
+    }
+
+    func advanceToPaywall() {
+        root = .paywall
+    }
+
+    func signOut() {
+        AuthManager.shared.signOut()
+        path = NavigationPath()
+        root = .login
+    }
+
+    // MARK: - Private
+
+    private func checkSubscription() async -> Bool {
+        do {
+            let response: SubscriptionResponse = try await APIClient.shared.get(APIEndpoints.subscription)
+            return response.data?.isActive ?? false
+        } catch {
+            return false
+        }
+    }
+}

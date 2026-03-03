@@ -180,48 +180,48 @@ Jest test suite + GitHub Actions pipelines.
 Xcode project, design system, reusable components, core infrastructure.
 
 ### 6A — Project Setup
-- [ ] Create Xcode project in `ios/` (SwiftUI App, iOS 17+, bundle ID placeholder)
+- [x] Create Xcode project in `ios/` (SwiftUI App, iOS 17+, bundle ID placeholder)
 - [ ] Add SPM packages: Supabase (v2.0.0+), RevenueCat (v4.0.0+), PostHog (v3.0.0+), GoogleSignIn (v7.0.0+)
 - [ ] Configure `Info.plist` (URL schemes for Google Sign-In, push notification entitlement)
-- [ ] Set up `Assets.xcassets` with named color sets (bg, bgElevated, bgSurface, textPrimary, textSecondary, textTertiary, accent, accentMuted, success, warning, danger, border, borderFocus)
+- [x] Set up `Assets.xcassets` with named color sets (bg, bgElevated, bgSurface, textPrimary, textSecondary, textTertiary, accent, accentMuted, success, warning, danger, border, borderFocus)
 
 ### 6B — Design System Tokens
-- [ ] Create `ios/Design/AppColors.swift` — Color extensions matching design system spec
-- [ ] Create `ios/Design/AppFonts.swift` — display(), body(), mono() font helpers
-- [ ] Create `ios/Design/AppSpacing.swift` — Spacing enum (xs=4 through xxxl=64) + Radius enum
-- [ ] Create `ios/Design/AppTheme.swift` — AppTheme ObservableObject with @AppStorage color scheme
-- [ ] Create `ios/Design/AppTransitions.swift` — slideUp, slidePush, fadeScale transitions
+- [x] Create `ios/Design/AppColors.swift` — Color extensions matching design system spec
+- [x] Create `ios/Design/AppFonts.swift` — display(), body(), mono() font helpers
+- [x] Create `ios/Design/AppSpacing.swift` — Spacing enum (xs=4 through xxxl=64) + Radius enum
+- [x] Create `ios/Design/AppTheme.swift` — AppTheme ObservableObject with @AppStorage color scheme
+- [x] Create `ios/Design/AppTransitions.swift` — slideUp, slidePush, fadeScale transitions
 
 ### 6C — Reusable Components
-- [ ] Create `ios/Components/AppButton.swift` — primary, ghost, destructive variants + loading state + icon support
-- [ ] Create `ios/Components/AppTextField.swift` — styled input with optional security/keyboard type
-- [ ] Create `ios/Components/SkeletonView.swift` — shimmer loading placeholder (row + card variants)
-- [ ] Create `ios/Components/EmptyStateView.swift` — illustration + title + subtitle + CTA action
-- [ ] Create `ios/Components/AppDrawer.swift` — bottom sheet wrapper
+- [x] Create `ios/Components/AppButton.swift` — primary, ghost, destructive variants + loading state + icon support
+- [x] Create `ios/Components/AppTextField.swift` — styled input with optional security/keyboard type
+- [x] Create `ios/Components/SkeletonView.swift` — shimmer loading placeholder (row + card variants)
+- [x] Create `ios/Components/EmptyStateView.swift` — illustration + title + subtitle + CTA action
+- [x] Create `ios/Components/AppDrawer.swift` — bottom sheet wrapper
 
 ### 6D — Core Layer
-- [ ] Create `ios/Core/Network/APIClient.swift` — async/await HTTP client with auth token injection
-- [ ] Create `ios/Core/Network/APIEndpoints.swift` — all endpoint URL definitions
-- [ ] Create `ios/Core/Network/APIError.swift` — typed API error enum
-- [ ] Create `ios/Core/Auth/AuthManager.swift` — Supabase auth session management
-- [ ] Create `ios/Core/Auth/AppleSignInManager.swift` — Sign in with Apple flow
-- [ ] Create `ios/Core/Auth/GoogleSignInManager.swift` — Google Sign-In flow
-- [ ] Create `ios/Core/Storage/LocalDatabase.swift` — SwiftData model container setup
-- [ ] Create `ios/Core/Storage/SyncManager.swift` — background sync coordinator (server-wins)
-- [ ] Create `ios/Core/Analytics/Analytics.swift` — PostHog wrapper with typed AnalyticsEvent enum
-- [ ] Create `ios/Core/Payments/PaymentManager.swift` — RevenueCat wrapper (configure, purchase, restore)
-- [ ] Create `ios/Core/Notifications/NotificationManager.swift` — APNs registration + permission
-- [ ] Create `ios/Core/Haptics/HapticManager.swift` — light, medium, heavy, success, error, selection
+- [x] Create `ios/Core/Network/APIClient.swift` — async/await HTTP client with auth token injection
+- [x] Create `ios/Core/Network/APIEndpoints.swift` — all endpoint URL definitions
+- [x] Create `ios/Core/Network/APIError.swift` — typed API error enum
+- [x] Create `ios/Core/Auth/AuthManager.swift` — Supabase auth session management
+- [x] Create `ios/Core/Auth/AppleSignInManager.swift` — Sign in with Apple flow
+- [x] Create `ios/Core/Auth/GoogleSignInManager.swift` — Google Sign-In flow
+- [x] Create `ios/Core/Storage/LocalDatabase.swift` — SwiftData model container setup
+- [x] Create `ios/Core/Storage/SyncManager.swift` — background sync coordinator (server-wins)
+- [x] Create `ios/Core/Analytics/Analytics.swift` — PostHog wrapper with typed AnalyticsEvent enum
+- [x] Create `ios/Core/Payments/PaymentManager.swift` — RevenueCat wrapper (configure, purchase, restore)
+- [x] Create `ios/Core/Notifications/NotificationManager.swift` — APNs registration + permission
+- [x] Create `ios/Core/Haptics/HapticManager.swift` — light, medium, heavy, success, error, selection
 
 ### 6E — Models
-- [ ] Create `ios/Models/User.swift` — maps to profiles table
-- [ ] Create `ios/Models/Subscription.swift` — maps to subscriptions table
-- [ ] Create `ios/Models/OnboardingResponse.swift` — maps to onboarding_responses table
+- [x] Create `ios/Models/User.swift` — maps to profiles table
+- [x] Create `ios/Models/Subscription.swift` — maps to subscriptions table
+- [x] Create `ios/Models/OnboardingResponse.swift` — maps to onboarding_responses table
 
 ### 6F — App Entry & Environment
-- [ ] Create `ios/App/AppEnvironment.swift` — shared environment objects (AuthManager, AppTheme, AppRouter)
-- [ ] Create `ios/App/MyApp.swift` — @main entry point with environment injection + preferredColorScheme
-- [ ] Verify: project builds (Cmd+B) with zero errors
+- [x] Create `ios/App/AppEnvironment.swift` — shared environment objects (AuthManager, AppTheme, AppRouter)
+- [x] Create `ios/App/MyApp.swift` (AppTemplateApp.swift) — @main entry point with environment injection + preferredColorScheme
+- [x] Verify: project builds (Cmd+B) with zero errors
 
 ---
 
@@ -230,34 +230,34 @@ Xcode project, design system, reusable components, core infrastructure.
 All core screens per the ios/README.md wireframe specs.
 
 ### 7A — Splash
-- [ ] Create `ios/Screens/Splash/SplashView.swift` — logo + app name centered, 2s delay, auto-advance based on auth state
+- [x] Create `ios/Screens/Splash/SplashView.swift` (stub) — logo + app name centered, 2s delay, auto-advance based on auth state
 
 ### 7B — Auth
-- [ ] Create `ios/Screens/Auth/LoginView.swift` — logo, tagline, Sign in with Apple button (HIG), Google Sign-In button, legal footer
-- [ ] Create `ios/Screens/Auth/LoginViewModel.swift` — handles Apple + Google auth flows, error state
+- [x] Create `ios/Screens/Auth/LoginView.swift` (stub) — logo, tagline, Sign in with Apple button (HIG), Google Sign-In button, legal footer
+- [x] Create `ios/Screens/Auth/LoginViewModel.swift` — handles Apple + Google auth flows, error state
 
 ### 7C — Onboarding
-- [ ] Create `ios/Screens/Onboarding/OnboardingView.swift` — step container with progress indicator + circular FAB next button
-- [ ] Create `ios/Screens/Onboarding/OnboardingQuizStep.swift` — text input + multiple choice + info screen + notification setup step types
-- [ ] Create `ios/Screens/Onboarding/OnboardingViewModel.swift` — step state, responses dict, advance logic, save to API
+- [x] Create `ios/Screens/Onboarding/OnboardingView.swift` (stub) — step container with progress indicator + circular FAB next button
+- [x] Create `ios/Screens/Onboarding/OnboardingQuizStep.swift` — text input + multiple choice + info screen + notification setup step types
+- [x] Create `ios/Screens/Onboarding/OnboardingViewModel.swift` — step state, responses dict, advance logic, save to API
 
 ### 7D — Paywall
-- [ ] Create `ios/Screens/Paywall/TrialExplainerView.swift` — timeline visualization, trust bullets, Start Free Trial CTA + ghost dismiss
-- [ ] Create `ios/Screens/Paywall/PaywallView.swift` — feature list, yearly (highlighted) + monthly plan cards, purchase CTA, restore link, legal
-- [ ] Create `ios/Screens/Paywall/PaywallViewModel.swift` — plan selection, RevenueCat purchase, loading/error state
+- [x] Create `ios/Screens/Paywall/TrialExplainerView.swift` (stub) — timeline visualization, trust bullets, Start Free Trial CTA + ghost dismiss
+- [x] Create `ios/Screens/Paywall/PaywallView.swift` — feature list, yearly (highlighted) + monthly plan cards, purchase CTA, restore link, legal
+- [x] Create `ios/Screens/Paywall/PaywallViewModel.swift` — plan selection, RevenueCat purchase, loading/error state
 
 ### 7E — Home
-- [ ] Create `ios/Screens/Home/HomeView.swift` — placeholder core feature screen (tab bar ready)
-- [ ] Create `ios/Screens/Home/HomeViewModel.swift` — local-first data loading pattern
+- [x] Create `ios/Screens/Home/HomeView.swift` (stub) — placeholder core feature screen (tab bar ready)
+- [x] Create `ios/Screens/Home/HomeViewModel.swift` — local-first data loading pattern
 
 ### 7F — Settings
-- [ ] Create `ios/Screens/Settings/SettingsView.swift` — List with sections: Account, Preferences, Support, Legal + sign out
-- [ ] Create `ios/Screens/Settings/SettingsViewModel.swift` — profile data, sign out, manage subscription
+- [x] Create `ios/Screens/Settings/SettingsView.swift` (stub) — List with sections: Account, Preferences, Support, Legal + sign out
+- [x] Create `ios/Screens/Settings/SettingsViewModel.swift` — profile data, sign out, manage subscription
 
 ### 7G — Navigation
-- [ ] Create `ios/App/AppRouter.swift` — @MainActor ObservableObject, RootDestination enum (splash/login/onboarding/paywall/home), advance logic
-- [ ] Wire root view switch in `MyApp.swift` based on `AppRouter.root`
-- [ ] Verify: full navigation flow compiles — splash → login → onboarding → paywall → home → settings
+- [x] Create `ios/App/AppRouter.swift` — @MainActor ObservableObject, RootDestination enum (splash/login/onboarding/paywall/home), advance logic
+- [x] Wire root view switch in `MyApp.swift` based on `AppRouter.root`
+- [x] Verify: full navigation flow compiles — splash → login → onboarding → paywall → home → settings
 
 ---
 
