@@ -2,7 +2,7 @@
 
 > Phased implementation of the AppStudio Boilerplate — from documented specs to production-ready code.
 >
-> **Current state:** Phase 2 complete — database layer live, TypeScript types generated.
+> **Current state:** Phase 4 complete — all API routes implemented, build and lint clean.
 > **Target state:** Fully functional iOS app + Hono backend + Supabase database, deployed and shippable.
 
 ---
@@ -82,32 +82,32 @@ Core tables, RLS policies, triggers, indexes, and seed data.
 App entry point, middleware stack, service clients, shared libraries.
 
 ### 3A — Shared Libs
-- [ ] Create `backend/src/lib/errors.ts` — AppError class with code, status, message
-- [ ] Create `backend/src/lib/response.ts` — success/error JSON response helpers
-- [ ] Create `backend/src/lib/logger.ts` — Pino logger setup
+- [x] Create `backend/src/lib/errors.ts` — AppError class with code, status, message
+- [x] Create `backend/src/lib/response.ts` — success/error JSON response helpers
+- [x] Create `backend/src/lib/logger.ts` — Pino logger setup
 
 ### 3B — Type Definitions
-- [ ] Create `backend/src/types/index.ts` — shared TypeScript types (User, Subscription, etc.)
-- [ ] Create `backend/src/types/env.ts` — Zod schema for env vars with typed parse
+- [x] Create `backend/src/types/index.ts` — shared TypeScript types (User, Subscription, etc.)
+- [x] Create `backend/src/types/env.ts` — Zod schema for env vars with typed parse
 
 ### 3C — Service Clients
-- [ ] Create `backend/src/services/supabase.ts` — anon client + service_role client
-- [ ] Create `backend/src/services/redis.ts` — Redis client (optional, graceful fallback)
-- [ ] Create `backend/src/services/revenuecat.ts` — webhook signature validator + API client
-- [ ] Create `backend/src/services/posthog.ts` — server-side event tracking client
-- [ ] Create `backend/src/services/r2.ts` — Cloudflare R2 storage client (opt-in)
+- [x] Create `backend/src/services/supabase.ts` — anon client + service_role client
+- [x] Create `backend/src/services/redis.ts` — Redis client (optional, graceful fallback)
+- [x] Create `backend/src/services/revenuecat.ts` — webhook signature validator + API client
+- [x] Create `backend/src/services/posthog.ts` — server-side event tracking client
+- [x] Create `backend/src/services/r2.ts` — Cloudflare R2 storage client (opt-in)
 
 ### 3D — Middleware
-- [ ] Create `backend/src/middleware/auth.ts` — JWT verification via Supabase `getUser()`
-- [ ] Create `backend/src/middleware/rateLimiter.ts` — sliding window (Redis primary, in-memory fallback)
-- [ ] Create `backend/src/middleware/usageCap.ts` — per-user feature limits based on subscription tier
-- [ ] Create `backend/src/middleware/requestLogger.ts` — structured request/response logging
-- [ ] Create `backend/src/middleware/errorHandler.ts` — centralized error → JSON response mapping
+- [x] Create `backend/src/middleware/auth.ts` — JWT verification via Supabase `getUser()`
+- [x] Create `backend/src/middleware/rateLimiter.ts` — sliding window (Redis primary, in-memory fallback)
+- [x] Create `backend/src/middleware/usageCap.ts` — per-user feature limits based on subscription tier
+- [x] Create `backend/src/middleware/requestLogger.ts` — structured request/response logging
+- [x] Create `backend/src/middleware/errorHandler.ts` — centralized error → JSON response mapping
 
 ### 3E — App Bootstrap
-- [ ] Create `backend/src/app.ts` — Hono app with global middleware (CORS, logger, secureHeaders), OpenAPI/Swagger (dev), health check, route mounting, error handler
-- [ ] Create `backend/src/index.ts` — entry point (env parse, app import, `serve()` on PORT)
-- [ ] Verify: `npm run dev` starts server, `GET /health` returns `{ status: "ok" }`
+- [x] Create `backend/src/app.ts` — Hono app with global middleware (CORS, logger, secureHeaders), OpenAPI/Swagger (dev), health check, route mounting, error handler
+- [x] Create `backend/src/index.ts` — entry point (env parse, app import, `serve()` on PORT)
+- [x] Verify: `npm run dev` starts server, `GET /health` returns `{ status: "ok" }`
 
 ---
 
@@ -116,37 +116,37 @@ App entry point, middleware stack, service clients, shared libraries.
 All endpoints with Zod validation, per the backend/README.md spec.
 
 ### 4A — Schemas
-- [ ] Create `backend/src/schemas/user.schema.ts` — profile update, settings CRUD
-- [ ] Create `backend/src/schemas/onboarding.schema.ts` — quiz response submission
-- [ ] Create `backend/src/schemas/subscription.schema.ts` — RevenueCat webhook payload
-- [ ] Create `backend/src/schemas/usage.schema.ts` — usage check/log
-- [ ] Create `backend/src/schemas/notification.schema.ts` — push token + preferences
+- [x] Create `backend/src/schemas/user.schema.ts` — profile update, settings CRUD
+- [x] Create `backend/src/schemas/onboarding.schema.ts` — quiz response submission
+- [x] Create `backend/src/schemas/subscription.schema.ts` — RevenueCat webhook payload
+- [x] Create `backend/src/schemas/usage.schema.ts` — usage check/log
+- [x] Create `backend/src/schemas/notification.schema.ts` — push token + preferences
 
 ### 4B — Route Handlers
-- [ ] Create `backend/src/routes/auth.ts` — public webhook/callback handlers
-- [ ] Create `backend/src/routes/users.ts`
+- [x] Create `backend/src/routes/auth.ts` — public webhook/callback handlers
+- [x] Create `backend/src/routes/users.ts`
   - `GET /api/users/me` — get own profile
   - `PUT /api/users/me` — update profile
   - `GET /api/users/me/settings` — get settings
   - `PUT /api/users/me/settings` — upsert setting by key
-- [ ] Create `backend/src/routes/onboarding.ts`
+- [x] Create `backend/src/routes/onboarding.ts`
   - `POST /api/onboarding/responses` — save quiz answers (batch)
-- [ ] Create `backend/src/routes/subscriptions.ts`
+- [x] Create `backend/src/routes/subscriptions.ts`
   - `POST /auth/webhook/revenuecat` — RevenueCat webhook (signature-verified, service_role write)
   - `GET /api/subscriptions/me` — get own subscription status
-- [ ] Create `backend/src/routes/usage.ts`
+- [x] Create `backend/src/routes/usage.ts`
   - `GET /api/usage/:feature` — check remaining usage for feature
   - `POST /api/usage/:feature` — log usage event
-- [ ] Create `backend/src/routes/notifications.ts`
+- [x] Create `backend/src/routes/notifications.ts`
   - `PUT /api/notifications/token` — register/update APNs push token
   - `GET /api/notifications/preferences` — get notification prefs
   - `PUT /api/notifications/preferences` — update notification prefs
 
 ### 4C — Route Mounting & Verification
-- [ ] Mount all routes in `app.ts` (public: `/auth/*`, protected: `/api/*`)
-- [ ] Apply `authMiddleware` + `rateLimiter` to `/api/*`
-- [ ] Verify: all routes respond correctly with mock/manual testing
-- [ ] Run `npm run lint` — zero errors
+- [x] Mount all routes in `app.ts` (public: `/auth/*`, protected: `/api/*`)
+- [x] Apply `authMiddleware` + `rateLimiter` to `/api/*`
+- [x] Verify: all routes respond correctly with mock/manual testing
+- [x] Run `npm run lint` — zero errors
 
 ---
 
