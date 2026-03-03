@@ -76,9 +76,9 @@ client_id = ""
 secret = ""
 
 [auth.external.google]
-enabled = false
-client_id = ""
-secret = ""
+enabled = true
+client_id = "349460612215-fhvp7vlgnteaj6ufr0nbnnvfm8v4usrt.apps.googleusercontent.com"
+secret = "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"
 skip_nonce_check = false
 
 [edge_runtime]

@@ -10,7 +10,7 @@ enum AppEnvironment {
     static let supabaseAnonKey = "sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH"
 
     // TODO: Replace with your Google OAuth client ID (from GoogleService-Info.plist)
-    static let googleClientID  = "YOUR_GOOGLE_CLIENT_ID"
+    static let googleClientID  = "349460612215-f93pi78toa8oetkj2a994j2uhnn877m2.apps.googleusercontent.com"
 
     // RevenueCat iOS public API key
     static let revenueCatKey   = "test_byvGVMQjPyrvbuSdqAbadXJQrXU"
