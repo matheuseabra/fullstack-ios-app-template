@@ -9,8 +9,11 @@ enum AppEnvironment {
     static let supabaseURL     = "http://agentcraft-dev.duckdns.org:54321"
     static let supabaseAnonKey = "sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH"
 
-    // TODO: Replace with your Google OAuth client ID (from GoogleService-Info.plist)
-    static let googleClientID  = "349460612215-f93pi78toa8oetkj2a994j2uhnn877m2.apps.googleusercontent.com"
+    // Google OAuth
+    // iOS client ID — from Google Cloud Console → Credentials → iOS type
+    static let googleClientID    = "349460612215-f93pi78toa8oetkj2a994j2uhnn877m2.apps.googleusercontent.com"
+    // Web client ID — from Google Cloud Console → Credentials → Web type (needed by Supabase to verify the ID token)
+    static let googleWebClientID = "349460612215-fhvp7vlgnteaj6ufr0nbnnvfm8v4usrt.apps.googleusercontent.com"
 
     // RevenueCat iOS public API key
     static let revenueCatKey   = "test_byvGVMQjPyrvbuSdqAbadXJQrXU"
