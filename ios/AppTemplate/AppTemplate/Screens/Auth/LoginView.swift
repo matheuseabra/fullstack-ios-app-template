@@ -39,25 +39,29 @@ struct LoginView: View {
                     }
 
                     // Sign in with Apple (HIG style)
-                    SignInWithAppleButton(.signIn) { request in
-                        request.requestedScopes = [.fullName, .email]
-                    } onCompletion: { _ in
-                        Task { await vm.signInWithApple() }
+                    if AppEnvironment.enableAppleSignIn {
+                        SignInWithAppleButton(.signIn) { request in
+                            request.requestedScopes = [.fullName, .email]
+                        } onCompletion: { _ in
+                            Task { await vm.signInWithApple() }
+                        }
+                        .signInWithAppleButtonStyle(.black)
+                        .frame(height: 54)
+                        .cornerRadius(Radius.lg)
+                        .disabled(vm.isLoading)
                     }
-                    .signInWithAppleButtonStyle(.black)
-                    .frame(height: 54)
-                    .cornerRadius(Radius.lg)
-                    .disabled(vm.isLoading)
 
                     // Google Sign-In
-                    AppButton(
-                        "Sign in with Google",
-                        style: .ghost,
-                        isLoading: vm.isLoadingGoogle
-                    ) {
-                        Task { await vm.signInWithGoogle() }
+                    if AppEnvironment.enableGoogleSignIn {
+                        AppButton(
+                            "Sign in with Google",
+                            style: .ghost,
+                            isLoading: vm.isLoadingGoogle
+                        ) {
+                            Task { await vm.signInWithGoogle() }
+                        }
+                        .disabled(vm.isLoading)
                     }
-                    .disabled(vm.isLoading)
 
                     // Skip (dev shortcut — bypasses auth)
                     Button("Skip") { router.root = .onboarding }

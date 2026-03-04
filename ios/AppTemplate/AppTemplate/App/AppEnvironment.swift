@@ -23,4 +23,10 @@ enum AppEnvironment {
 
     // Backend (tunnelled via ngrok)
     static let backendURL      = "https://2d20-179-180-34-209.ngrok-free.app"
+
+    // MARK: - Feature Flags
+    // Toggle social sign-in providers without touching UI code.
+    // Set to false to hide a provider from the login screen.
+    static let enableAppleSignIn:  Bool = true
+    static let enableGoogleSignIn: Bool = true
 }

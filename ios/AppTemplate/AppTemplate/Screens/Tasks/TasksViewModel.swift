@@ -149,15 +149,21 @@ final class TasksViewModel: ObservableObject {
 
     var tasksForSelectedDate: [TaskItem] {
         tasks.filter { task in
-            guard let dueDate = task.dueDate else { return false }
-            return Calendar.current.isDate(dueDate, inSameDayAs: selectedDate)
+            if let dueDate = task.dueDate {
+                return Calendar.current.isDate(dueDate, inSameDayAs: selectedDate)
+            }
+            // Tasks with no due date appear on today's view
+            return Calendar.current.isDateInToday(selectedDate)
         }
     }
 
     var todayTasks: [TaskItem] {
         tasks.filter { task in
-            guard let dueDate = task.dueDate else { return false }
-            return Calendar.current.isDateInToday(dueDate)
+            if let dueDate = task.dueDate {
+                return Calendar.current.isDateInToday(dueDate)
+            }
+            // Undated tasks count toward today's progress
+            return true
         }
     }
 
