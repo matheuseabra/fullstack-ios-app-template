@@ -17,6 +17,7 @@ import onboardingRoutes from './routes/onboarding.js'
 import subscriptionRoutes from './routes/subscriptions.js'
 import usageRoutes from './routes/usage.js'
 import notificationRoutes from './routes/notifications.js'
+import taskRoutes from './routes/tasks.js'
 
 const app = new Hono<AppEnv>()
 
@@ -261,6 +262,7 @@ app.route('/api/onboarding', onboardingRoutes)
 app.route('/api/subscriptions', subscriptionRoutes)
 app.route('/api/usage', usageRoutes)
 app.route('/api/notifications', notificationRoutes)
+app.route('/api/tasks', taskRoutes)
 
 // ─────────────────────────────────────────
 // Error handler — must be registered last

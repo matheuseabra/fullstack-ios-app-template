@@ -36,6 +36,11 @@ final class APIClient {
         return try await perform(request)
     }
 
+    func delete<T: Decodable>(_ urlString: String) async throws -> T {
+        let request = try await buildRequest(urlString, method: "DELETE")
+        return try await perform(request)
+    }
+
     // MARK: - Private
 
     private func buildRequest(_ urlString: String, method: String) async throws -> URLRequest {

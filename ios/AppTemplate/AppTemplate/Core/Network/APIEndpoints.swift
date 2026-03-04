@@ -25,4 +25,10 @@ enum APIEndpoints {
     // Notifications
     static let notificationToken        = "\(baseURL)/api/notifications/token"
     static let notificationPreferences  = "\(baseURL)/api/notifications/preferences"
+
+    // Tasks
+    static let tasks = "\(baseURL)/api/tasks"
+    static func task(_ id: String) -> String {
+        "\(baseURL)/api/tasks/\(id)"
+    }
 }

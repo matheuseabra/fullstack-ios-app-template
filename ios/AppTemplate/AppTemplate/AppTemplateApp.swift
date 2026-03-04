@@ -37,7 +37,7 @@ struct AppTemplateApp: App {
         case .login:       LoginView()
         case .onboarding:  OnboardingView()
         case .paywall:     PaywallFlowView()
-        case .home:        HomeView()
+        case .home:        TasksTabView()
         }
     }
 }

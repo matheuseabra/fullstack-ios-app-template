@@ -12,8 +12,7 @@ final class LocalDatabase {
 
     private init() {
         let schema = Schema([
-            // TODO: Add your @Model types here as the app grows.
-            // Example: CachedUser.self, CachedSubscription.self
+            TaskItem.self,
         ])
         let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
         do {

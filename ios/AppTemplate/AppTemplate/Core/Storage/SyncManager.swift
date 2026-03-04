@@ -23,13 +23,46 @@ final class SyncManager: ObservableObject {
         guard !isSyncing else { return }
         isSyncing = true
 
-        // TODO: For each entity type:
-        //   1. Fetch from APIClient
-        //   2. Compare updatedAt timestamps with local cache
-        //   3. Overwrite local when server is newer (server-wins)
-        //   e.g.:
-        //   let remoteUser: UserResponse = try await APIClient.shared.get(APIEndpoints.me)
-        //   LocalDatabase.shared.upsert(remoteUser)
+        #if !DEBUG
+        // Pull tasks from server and merge into local SwiftData store
+        do {
+            let response: TaskListResponse = try await APIClient.shared.get(APIEndpoints.tasks)
+            let context = LocalDatabase.shared.context
+            for dto in response.data {
+                guard let id = dto.id else { continue }
+                let descriptor = FetchDescriptor<TaskItem>(
+                    predicate: #Predicate { $0.supabaseId == id }
+                )
+                let existing = try? context.fetch(descriptor).first
+                if let existing, existing.syncStatus == .synced {
+                    existing.title = dto.title
+                    existing.note = dto.note ?? ""
+                    existing.isCompleted = dto.isCompleted
+                    existing.priority = TaskItem.Priority(rawValue: dto.priority) ?? .medium
+                    existing.dueDate = dto.dueDate
+                    existing.completedAt = dto.completedAt
+                    existing.updatedAt = dto.updatedAt ?? Date()
+                } else if existing == nil {
+                    let task = TaskItem(
+                        title: dto.title,
+                        note: dto.note ?? "",
+                        isCompleted: dto.isCompleted,
+                        priority: TaskItem.Priority(rawValue: dto.priority) ?? .medium,
+                        dueDate: dto.dueDate,
+                        completedAt: dto.completedAt,
+                        createdAt: dto.createdAt ?? Date(),
+                        updatedAt: dto.updatedAt ?? Date(),
+                        supabaseId: id,
+                        syncStatus: .synced
+                    )
+                    context.insert(task)
+                }
+            }
+            try? context.save()
+        } catch {
+            print("[SyncManager] Pull tasks failed: \(error)")
+        }
+        #endif
 
         isSyncing = false
     }

@@ -214,6 +214,45 @@ export type Database = {
         }
         Relationships: []
       }
+      tasks: {
+        Row: {
+          id: string
+          user_id: string
+          title: string
+          note: string | null
+          is_completed: boolean
+          priority: string
+          due_date: string | null
+          completed_at: string | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          title: string
+          note?: string | null
+          is_completed?: boolean
+          priority?: string
+          due_date?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          title?: string
+          note?: string | null
+          is_completed?: boolean
+          priority?: string
+          due_date?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       usage_logs: {
         Row: {
           count: number | null
