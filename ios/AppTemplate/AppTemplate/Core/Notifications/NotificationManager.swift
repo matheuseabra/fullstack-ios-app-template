@@ -17,15 +17,14 @@ final class NotificationManager: ObservableObject {
         do {
             let granted = try await center.requestAuthorization(options: [.alert, .badge, .sound])
             if granted {
-#if targetEnvironment(simulator)
-                // APNs registration requires a paid Apple Developer account with
-                // Push Notifications capability — skip it on Simulator to avoid
-                // provisioning errors. Inject a deterministic fake token so all
-                // downstream code (UI state, server upload guard) flows normally.
-                // TODO: Remove this block when upgrading to a paid dev account.
+#if DEBUG
+                // Debug local/dev builds: bypass APNs registration (which requires
+                // push capability + paid Apple Developer account) and inject a
+                // deterministic fake token so downstream UI/logic still works.
+                // Production behavior is preserved in #else.
                 let fakeToken = Data(repeating: 0xAB, count: 32)
                 didRegister(deviceToken: fakeToken)
-                print("[NotificationManager] Simulator — mocked APNs token injected")
+                print("[NotificationManager] Debug build — mocked APNs token injected")
 #else
                 await MainActor.run { UIApplication.shared.registerForRemoteNotifications() }
 #endif
@@ -81,10 +80,9 @@ final class NotificationManager: ObservableObject {
     // MARK: - Private
 
     private func sendTokenToServer(_ token: String) async {
-#if targetEnvironment(simulator)
-        // Skip token registration for simulator fake tokens — the server
-        // can't send APNs to a simulator anyway.
-        print("[NotificationManager] Simulator — skipping token upload (\(token.prefix(8))…)")
+    #if DEBUG
+        // Skip token registration for debug fake tokens.
+        print("[NotificationManager] Debug build — skipping token upload (\(token.prefix(8))…)")
         return
 #else
         do {

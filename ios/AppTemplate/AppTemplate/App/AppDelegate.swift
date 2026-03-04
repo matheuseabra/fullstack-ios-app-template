@@ -33,9 +33,9 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         _ application: UIApplication,
         didFailToRegisterForRemoteNotificationsWithError error: Error
     ) {
-#if targetEnvironment(simulator)
-        // Should not reach here — NotificationManager skips registerForRemoteNotifications()
-        // on Simulator. Belt-and-suspenders: inject fake token silently if it ever does.
+#if DEBUG
+        // Should rarely reach here in debug because NotificationManager bypasses
+        // registerForRemoteNotifications(). Belt-and-suspenders fallback.
         let fakeToken = Data(repeating: 0xAB, count: 32)
         Task { @MainActor in
             NotificationManager.shared.didRegister(deviceToken: fakeToken)

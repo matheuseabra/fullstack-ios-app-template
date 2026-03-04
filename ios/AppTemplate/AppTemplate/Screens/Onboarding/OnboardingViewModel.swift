@@ -122,12 +122,11 @@ final class OnboardingViewModel: ObservableObject {
         isSaving = true
         defer { isSaving = false }
 
-#if targetEnvironment(simulator)
-        // MOCK: Skip the API call on Simulator so the onboarding flow is never
-        // blocked by network/DB issues during local development. All real-device
-        // code is preserved in the #else branch below.
-        // TODO: Remove this block (or the whole #if) when backend is stable and
-        //       you are running on a real device with a paid Apple Developer account.
+#if DEBUG
+    // MOCK (Debug only): Skip the API call on local/dev builds so onboarding
+    // is never blocked by network/DB issues on either simulator or device.
+    // Production behavior is preserved in the #else branch below.
+    // TODO: Remove this block once end-to-end backend integration is stable.
         try? await Task.sleep(for: .milliseconds(400)) // simulate brief network feel
         UserDefaults.standard.set(true, forKey: "didCompleteOnboarding")
         Analytics.track(.onboardingCompleted)
