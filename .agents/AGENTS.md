@@ -68,6 +68,7 @@ Check `.agents/workflows/` first. There may already be a playbook:
 3. Register in `ios/App/AppRouter.swift`
 4. Follow design system in `docs/DESIGN_SYSTEM.md`
 5. Add PostHog analytics event for screen view
+6. **Add entry to `docs/FEATURES.md`**
 
 **New API Route:**
 1. Create `backend/src/routes/[feature].ts`
@@ -75,12 +76,15 @@ Check `.agents/workflows/` first. There may already be a playbook:
 3. Mount in `backend/src/app.ts`
 4. Write tests in `backend/tests/[feature].test.ts`
 5. Document with OpenAPI JSDoc comment
+6. **Add entry to `docs/FEATURES.md`**
 
 **New DB Table:**
 1. Write migration in `supabase/migrations/XXXX_[table].sql`
 2. Include RLS policies (see `docs/DATABASE.md` for patterns)
-3. Run `supabase db push`
+3. Run `supabase db push` (never `db reset` on staging/production)
 4. Run `npm run db:types` to regenerate types
+5. **Add table to `docs/DATABASE.md` → Implemented Feature Tables**
+6. **Add entry to `docs/FEATURES.md`**
 
 ---
 
@@ -175,3 +179,43 @@ A task is done when:
 - [ ] Analytics event fires for any new user action
 - [ ] RLS policies exist for any new DB table
 - [ ] `.env.example` updated if new env vars added
+- [ ] **Docs updated** — see Documentation Rule below
+
+---
+
+## Documentation Rule
+
+> **Every feature implementation must update the docs. This is not optional.**
+
+After implementing any feature:
+
+| What changed | What to update |
+|---|---|
+| New DB table | Add to **`docs/DATABASE.md`** under "Implemented Feature Tables" |
+| New feature (any size) | Add to **`docs/FEATURES.md`** feature registry |
+| New phase / set of tasks | Add a Phase to **`docs/ROLLOUT_PLAN.md`** with all steps checked |
+| New architectural decision | Add an ADR to **`docs/ARCHITECTURE.md`** |
+| New agent workflow | Add a file to **`.agents/workflows/`** |
+
+### Template — New Feature Entry in `docs/FEATURES.md`
+
+```markdown
+## [Feature Name]
+
+**Status:** ✅ Implemented / 🚧 In Progress / 📋 Planned
+**Migration:** `supabase/migrations/XXXX_[name].sql` (or N/A)
+**iOS screens:** `Screens/[Feature]/`
+**Backend routes:** `backend/src/routes/[feature].ts` (or N/A)
+
+### What it does
+One paragraph describing the user-facing functionality.
+
+### Key files
+- `ios/Models/[Model].swift` — SwiftData model
+- `ios/Screens/[Feature]/[Feature]View.swift` — main view
+- `backend/src/routes/[feature].ts` — REST endpoints
+- `supabase/migrations/XXXX_[name].sql` — DB schema
+
+### Analytics events
+- `featureUsed("[action]")` — fired on [X]
+```

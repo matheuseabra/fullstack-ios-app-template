@@ -306,6 +306,61 @@ End-to-end flows, analytics audit, deployment configuration.
 
 ---
 
+## Phase 9 — Task Manager Feature
+
+Replaces the placeholder `HomeView` with a full task manager — local-first with Supabase sync.
+
+### 9A — Data Model
+- [x] Create `ios/Models/TaskItem.swift` — SwiftData `@Model` with `id`, `title`, `note`, `isCompleted`, `priority`, `dueDate`, `completedAt`, `syncStatus`, `supabaseId`
+- [x] Add `Priority` enum (`low` / `medium` / `high`) + `SyncStatus` enum (`synced` / `pendingUpload` / `pendingUpdate` / `pendingDelete`)
+- [x] Add `TaskDTO`, `TaskResponse`, `TaskListResponse` Codable structs for API transport
+- [x] Register `TaskItem.self` in `LocalDatabase.swift` Schema array
+- [x] Delete unused Xcode boilerplate `Item.swift` and `ContentView.swift`
+
+### 9B — Backend
+- [x] Create `supabase/migrations/0010_tasks.sql` — `tasks` table with RLS (select/insert/update/delete own rows) + indexes on `(user_id, due_date)` and `(user_id, is_completed)` + `set_updated_at` trigger
+- [x] Add `tasks` table type to `backend/src/types/database.ts`
+- [x] Create `backend/src/schemas/task.schema.ts` — `createTaskSchema` + `updateTaskSchema` (Zod)
+- [x] Create `backend/src/routes/tasks.ts` — `GET /api/tasks`, `GET /api/tasks/:id`, `POST /api/tasks`, `PUT /api/tasks/:id`, `DELETE /api/tasks/:id`
+- [x] Mount `/api/tasks` in `backend/src/app.ts`
+- [x] Add `delete<T>()` method to `APIClient.swift`
+- [x] Add task endpoints to `APIEndpoints.swift` (`tasks`, `task(_ id:)`)
+- [x] Apply migration via `supabase db reset` (local dev) — use `supabase db push` in staging/production
+
+### 9C — iOS Views
+- [x] Create `Screens/Tasks/TasksTabView.swift` — root container with custom 3-zone tab bar (Dashboard | FAB center | Tasks)
+- [x] Create `Screens/Tasks/DashboardView.swift` — greeting, week calendar strip, summary card, daily tasks list
+- [x] Create `Screens/Tasks/WeekCalendarStrip.swift` — horizontal scrollable day pills with today indicator dot
+- [x] Create `Screens/Tasks/TaskSummaryCard.swift` — circular progress ring + completion stats
+- [x] Create `Screens/Tasks/TaskDetailCard.swift` — task row with checkbox, priority badge, due time, overdue highlight
+- [x] Create `Screens/Tasks/TaskListView.swift` — searchable list with segmented filter (All/Pending/Completed) + swipe-to-delete + swipe-to-complete
+- [x] Create `Screens/Tasks/AddTaskView.swift` — bottom sheet drawer with title, note, priority chips, optional date picker
+- [x] Create `Screens/Tasks/TasksViewModel.swift` — SwiftData CRUD, server sync, derived data (greeting, completionRate, todayTasks)
+
+### 9D — Sync Layer
+- [x] Implement `SyncManager.pull()` — fetches all tasks from `GET /api/tasks`, merges into local SwiftData (server-wins when `syncStatus == .synced`)
+- [x] ViewModel push methods: `pushTask()`, `updateTaskOnServer()`, `deleteTaskOnServer()` (guarded behind `#if !DEBUG`)
+- [x] Offline safety: local mutations persist immediately; sync failures are logged, not thrown
+
+### 9E — Routing
+- [x] `AppTemplateApp.swift`: `case .home: TasksTabView()` (was `HomeView()`)
+- [x] Settings gear in `DashboardView` opens `SettingsView` sheet (consistent with old `HomeView`)
+
+### 9F — Analytics & Haptics
+- [x] `Analytics.track(.featureUsed("task_created"))` on add
+- [x] `Analytics.track(.featureUsed("task_completed"))` on toggle
+- [x] `Analytics.track(.featureUsed("task_deleted"))` on delete
+- [x] `HapticManager.success()` on task creation
+- [x] `HapticManager.light()` on toggle, `HapticManager.medium()` on delete
+- [x] `HapticManager.selection()` on tab switch, calendar day selection, priority chip selection
+
+### 9G — Verification
+- [x] iOS build succeeds: `xcodebuild -scheme AppTemplate` for simulator
+- [x] Backend types check clean: `npx tsc --noEmit` (zero errors)
+- [x] Migration applied: `supabase db reset` confirms `0010_tasks.sql` applied
+
+---
+
 ## Definition of Done (per task)
 
 Every task above should satisfy:
