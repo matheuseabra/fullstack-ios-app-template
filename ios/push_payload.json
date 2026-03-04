@@ -1,0 +1,11 @@
+{
+  "Simulator Target Bundle": "com.appstudio.AppTemplate",
+  "aps": {
+    "alert": {
+      "title": "Daily Reminder",
+      "body": "Time to keep up your streak! Open the app to continue."
+    },
+    "sound": "default",
+    "badge": 1
+  }
+}

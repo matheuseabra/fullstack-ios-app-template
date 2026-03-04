@@ -10,7 +10,7 @@ create table public.onboarding_responses (
   created_at   timestamptz default now()
 );
 
-create index on public.onboarding_responses(user_id);
+create unique index on public.onboarding_responses(user_id, question_key);
 
 -- RLS
 alter table public.onboarding_responses enable row level security;

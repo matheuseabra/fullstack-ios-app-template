@@ -33,7 +33,20 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         _ application: UIApplication,
         didFailToRegisterForRemoteNotificationsWithError error: Error
     ) {
+#if targetEnvironment(simulator)
+        // Should not reach here — NotificationManager skips registerForRemoteNotifications()
+        // on Simulator. Belt-and-suspenders: inject fake token silently if it ever does.
+        let fakeToken = Data(repeating: 0xAB, count: 32)
+        Task { @MainActor in
+            NotificationManager.shared.didRegister(deviceToken: fakeToken)
+        }
+#else
+        // On a real device this means the Push Notifications capability is missing
+        // from the provisioning profile. Requires a paid Apple Developer account.
+        // TODO: Enable Push Notifications in the Apple Developer Portal and add
+        //       aps-environment = development to AppTemplate.entitlements.
         print("[AppDelegate] Failed to register for remote notifications: \(error)")
+#endif
     }
 
     // MARK: - Google Sign-In URL Handling

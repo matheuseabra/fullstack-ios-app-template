@@ -76,6 +76,7 @@ final class OnboardingViewModel: ObservableObject {
     // MARK: - Navigation
 
     func advance() {
+        guard !isSaving else { return }
         Analytics.track(.onboardingStepCompleted(step: currentStep, key: currentQuestion.key))
         captureCurrentAnswer()
         HapticManager.selection()
@@ -121,6 +122,17 @@ final class OnboardingViewModel: ObservableObject {
         isSaving = true
         defer { isSaving = false }
 
+#if targetEnvironment(simulator)
+        // MOCK: Skip the API call on Simulator so the onboarding flow is never
+        // blocked by network/DB issues during local development. All real-device
+        // code is preserved in the #else branch below.
+        // TODO: Remove this block (or the whole #if) when backend is stable and
+        //       you are running on a real device with a paid Apple Developer account.
+        try? await Task.sleep(for: .milliseconds(400)) // simulate brief network feel
+        UserDefaults.standard.set(true, forKey: "didCompleteOnboarding")
+        Analytics.track(.onboardingCompleted)
+        AppRouter.shared.advanceToPaywall()
+#else
         let apiResponses = responses.map {
             OnboardingResponse(questionKey: $0.key, answer: $0.value)
         }
@@ -137,5 +149,6 @@ final class OnboardingViewModel: ObservableObject {
             errorMessage = error.localizedDescription
             HapticManager.error()
         }
+#endif
     }
 }

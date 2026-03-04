@@ -33,6 +33,7 @@
   "settings" : {
     "_failTransactionsEnabled" : false,
     "_locale" : "en_US",
+    "_renewalBillingIssuesEnabled" : false,
     "_storefront" : "USA",
     "_storeKitErrors" : [
       {
@@ -105,7 +106,13 @@
           "familyShareable" : false,
           "groupNumber" : 1,
           "internalID" : "3A9EAE70",
-          "introductoryOffer" : null,
+          "introductoryOffer" : {
+            "displayPrice" : "0.99",
+            "internalID" : "16622E0A",
+            "numberOfPeriods" : 1,
+            "paymentMode" : "payAsYouGo",
+            "subscriptionPeriod" : "P1M"
+          },
           "localizations" : [
             {
               "description" : "",
