@@ -10,14 +10,16 @@ struct OnboardingQuizStep: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.xl) {
-            // Header
+            // Header — subheadline shown here only for non-textInput steps
             VStack(alignment: .leading, spacing: Spacing.sm) {
                 Text(question.headline)
-                    .font(.display(26))
+                    .font(.display(question.type.headlineSize))
                     .foregroundStyle(Color.textPrimary)
                     .fixedSize(horizontal: false, vertical: true)
 
-                if let sub = question.subheadline {
+                if case .textInput = question.type {
+                    // helper text rendered inside the textInput case below
+                } else if let sub = question.subheadline {
                     Text(sub)
                         .font(.body(15))
                         .foregroundStyle(Color.textSecondary)
@@ -27,17 +29,40 @@ struct OnboardingQuizStep: View {
             // Step content
             switch question.type {
             case .textInput(let placeholder):
-                AppTextField(placeholder, text: $textInput)
+                // Underline-style input matching Stitch "Onboarding Name Quiz" design
+                VStack(alignment: .leading, spacing: Spacing.lg) {
+                    TextField(placeholder, text: $textInput)
+                        .font(.display(24, weight: .medium))
+                        .foregroundStyle(Color.textPrimary)
+                        .padding(.vertical, Spacing.md)
+                        .overlay(alignment: .bottom) {
+                            Rectangle()
+                                .frame(height: 2)
+                                .foregroundStyle(
+                                    textInput.isEmpty ? Color.border : Color.accent
+                                )
+                                .animation(.snappy, value: textInput.isEmpty)
+                        }
+                        .autocorrectionDisabled()
+                        .textInputAutocapitalization(.words)
+
+                    if let helper = question.subheadline {
+                        Text(helper)
+                            .font(.body(14))
+                            .foregroundStyle(Color.textSecondary)
+                    }
+                }
 
             case .multipleChoice(let options):
+                // Icon + title + subtitle cards matching Stitch "Onboarding Goal Quiz" design
                 VStack(spacing: Spacing.sm) {
-                    ForEach(options, id: \.self) { option in
-                        ChoiceRow(
-                            label: option,
-                            isSelected: selectedChoice == option
+                    ForEach(options) { option in
+                        OptionCard(
+                            option: option,
+                            isSelected: selectedChoice == option.id
                         ) {
                             HapticManager.selection()
-                            selectedChoice = option
+                            selectedChoice = option.id
                         }
                     }
                 }
@@ -67,37 +92,51 @@ struct OnboardingQuizStep: View {
     }
 }
 
-// MARK: - ChoiceRow
+// MARK: - OptionCard
+// Matches the Stitch "Onboarding Goal Quiz" card design:
+// icon in a tinted rounded square + title + optional subtitle,
+// full-card border highlight when selected, subtle shadow at rest.
 
-private struct ChoiceRow: View {
-    let label: String
+private struct OptionCard: View {
+    let option: ChoiceOption
     let isSelected: Bool
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            HStack {
-                Text(label)
-                    .font(.body(16, weight: isSelected ? .semibold : .regular))
-                    .foregroundStyle(isSelected ? Color.accent : Color.textPrimary)
-                Spacer()
-                if isSelected {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundStyle(Color.accent)
-                        .font(.system(size: 20))
-                } else {
-                    Circle()
-                        .strokeBorder(Color.border, lineWidth: 1.5)
-                        .frame(width: 20, height: 20)
+            HStack(spacing: Spacing.lg) {
+                if let icon = option.icon {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: Radius.md)
+                            .fill(option.iconColor.opacity(0.12))
+                            .frame(width: 48, height: 48)
+                        Image(systemName: icon)
+                            .font(.system(size: 20, weight: .medium))
+                            .foregroundStyle(option.iconColor)
+                    }
                 }
+
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(option.label)
+                        .font(.body(16, weight: .semibold))
+                        .foregroundStyle(isSelected ? Color.accent : Color.textPrimary)
+                    if let subtitle = option.subtitle {
+                        Text(subtitle)
+                            .font(.body(13))
+                            .foregroundStyle(Color.textSecondary)
+                    }
+                }
+
+                Spacer()
             }
             .padding(Spacing.lg)
             .background(isSelected ? Color.accentMuted : Color.bgSurface)
-            .cornerRadius(Radius.md)
+            .clipShape(RoundedRectangle(cornerRadius: Radius.xl))
             .overlay(
-                RoundedRectangle(cornerRadius: Radius.md)
+                RoundedRectangle(cornerRadius: Radius.xl)
                     .stroke(isSelected ? Color.accent : Color.border, lineWidth: 1.5)
             )
+            .shadow(color: Color.black.opacity(isSelected ? 0 : 0.04), radius: 6, y: 2)
         }
         .buttonStyle(.plain)
         .animation(.snappy, value: isSelected)

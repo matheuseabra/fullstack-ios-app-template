@@ -2,17 +2,77 @@ import Foundation
 import RevenueCat
 
 // MARK: - PaywallViewModel
-// RevenueCat's native PaywallView manages its own state (offerings, loading,
-// purchase flow). This view model is retained only for any auxiliary logic
-// that lives outside the RC-rendered paywall (e.g. trial explainer screen).
+// Drives the custom pricing plans screen (Screen 2). Loads offerings
+// from RevenueCat, manages plan selection, and handles purchase / restore.
 
 @MainActor
 final class PaywallViewModel: ObservableObject {
 
-    // MARK: - Restore (used by manual "Restore" buttons outside RC's PaywallView)
+    // MARK: - Plan Selection
 
+    enum Plan: String {
+        case yearly, monthly
+    }
+
+    @Published var selectedPlan: Plan = .yearly
     @Published var isLoading = false
     @Published var errorMessage: String?
+    @Published var showError = false
+
+    // MARK: - Packages (populated from RevenueCat offerings)
+
+    @Published private(set) var packages: [Package] = []
+
+    var yearlyPackage: Package? {
+        packages.first { $0.storeProduct.productIdentifier == PaymentManager.ProductID.yearly }
+    }
+
+    var monthlyPackage: Package? {
+        packages.first { $0.storeProduct.productIdentifier == PaymentManager.ProductID.monthly }
+    }
+
+    private var selectedPackage: Package? {
+        switch selectedPlan {
+        case .yearly:  return yearlyPackage
+        case .monthly: return monthlyPackage
+        }
+    }
+
+    // MARK: - Load Offerings
+
+    func loadOfferings() async {
+        await PaymentManager.shared.loadOfferings()
+        packages = PaymentManager.shared.currentPackages
+    }
+
+    // MARK: - Purchase
+
+    func purchase() async {
+        guard let package = selectedPackage else {
+            errorMessage = "Please select a plan."
+            showError = true
+            return
+        }
+
+        isLoading = true
+        defer { isLoading = false }
+
+        do {
+            try await PaymentManager.shared.purchase(package: package)
+            if PaymentManager.shared.hasProAccess {
+                HapticManager.success()
+                AppRouter.shared.advanceToHome()
+            }
+        } catch PaymentError.userCancelled {
+            // User tapped cancel — do nothing
+        } catch {
+            errorMessage = error.localizedDescription
+            showError = true
+            HapticManager.error()
+        }
+    }
+
+    // MARK: - Restore
 
     func restorePurchases() async {
         isLoading = true
@@ -25,9 +85,11 @@ final class PaywallViewModel: ObservableObject {
                 AppRouter.shared.advanceToHome()
             } else {
                 errorMessage = "No prior purchases found."
+                showError = true
             }
         } catch {
             errorMessage = error.localizedDescription
+            showError = true
             HapticManager.error()
         }
     }

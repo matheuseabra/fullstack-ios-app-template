@@ -1,68 +1,194 @@
 import SwiftUI
 
+// MARK: - TrialExplainerView
+// Screen 1 of the paywall flow — matches "Paywall Trial Screen" Stitch design.
+// Hero icon + title → benefits list → vertical timeline → CTA + legal footer.
+
 struct TrialExplainerView: View {
     @EnvironmentObject private var router: AppRouter
 
     var body: some View {
         ZStack {
             Color.bg.ignoresSafeArea()
+
             VStack(spacing: 0) {
-                ScrollView {
-                    VStack(spacing: Spacing.xxl) {
-                        // Headline
-                        VStack(spacing: Spacing.sm) {
-                            Text("🎉")
-                                .font(.system(size: 56))
-                            Text("Start Free Today")
-                                .font(.display(28))
+                // Close button
+                HStack {
+                    Spacer()
+                    Button {
+                        Analytics.track(.paywallDismissed)
+                        router.advanceToHome()
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundStyle(Color.textSecondary)
+                            .frame(width: 32, height: 32)
+                            .background(Color.bgSurface)
+                            .clipShape(Circle())
+                    }
+                }
+                .padding(.horizontal, Spacing.xl)
+                .padding(.top, Spacing.sm)
+
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 0) {
+                        // MARK: Hero Section
+                        VStack(spacing: Spacing.lg) {
+                            // App icon with glow
+                            ZStack {
+                                Circle()
+                                    .fill(Color.accent.opacity(0.25))
+                                    .frame(width: 140, height: 140)
+                                    .blur(radius: 30)
+
+                                RoundedRectangle(cornerRadius: 26)
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [
+                                                Color.accent.opacity(0.85),
+                                                Color.accent
+                                            ],
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        )
+                                    )
+                                    .frame(width: 90, height: 90)
+                                    .shadow(color: Color.accent.opacity(0.4), radius: 20, y: 10)
+                                    .overlay(
+                                        Image(systemName: "sparkles")
+                                            .font(.system(size: 36, weight: .medium))
+                                            .foregroundStyle(.white)
+                                    )
+                            }
+                            .padding(.bottom, Spacing.md)
+
+                            Text("Start your 7-day\nfree trial")
+                                .font(.display(28, weight: .heavy))
                                 .foregroundStyle(Color.textPrimary)
                                 .multilineTextAlignment(.center)
-                            Text("Full access for 7 days — no charge until Day 8.")
-                                .font(.body(16))
-                                .foregroundStyle(Color.textSecondary)
-                                .multilineTextAlignment(.center)
+                                .fixedSize(horizontal: false, vertical: true)
                         }
-                        .padding(.top, Spacing.xxl)
+                        .padding(.top, Spacing.lg)
+                        .padding(.bottom, Spacing.xxl)
 
-                        // Timeline
-                        TrialTimeline()
-
-                        // Trust bullets
-                        VStack(alignment: .leading, spacing: Spacing.md) {
-                            TrustBullet(icon: "checkmark.circle.fill", text: "Full access starts immediately")
-                            TrustBullet(icon: "bell.fill", text: "Reminder sent before you're charged")
-                            TrustBullet(icon: "xmark.circle.fill", text: "Cancel anytime — no questions asked")
+                        // MARK: Benefits List
+                        VStack(spacing: Spacing.xl) {
+                            BenefitRow(text: "Unlock all premium features")
+                            BenefitRow(text: "Ad-free creative experience")
+                            BenefitRow(text: "Unlimited cloud sync")
                         }
+                        .padding(.horizontal, Spacing.xl)
+                        .padding(.bottom, Spacing.xxl)
+
+                        // MARK: Timeline Card
+                        VStack(alignment: .leading, spacing: 0) {
+                            // Step 1
+                            HStack(alignment: .top, spacing: Spacing.lg) {
+                                // Node + connector
+                                VStack(spacing: 0) {
+                                    TimelineNodeCircle(icon: "star.fill")
+                                    Rectangle()
+                                        .fill(Color.accent)
+                                        .frame(width: 3, height: 40)
+                                }
+                                .frame(width: 26)
+
+                                VStack(alignment: .leading, spacing: 3) {
+                                    Text("Today: Trial Starts")
+                                        .font(.body(15, weight: .bold))
+                                        .foregroundStyle(Color.textPrimary)
+                                    Text("Unlock full access instantly")
+                                        .font(.body(13))
+                                        .foregroundStyle(Color.textSecondary)
+                                }
+                                .padding(.top, 2)
+                            }
+
+                            // Step 2
+                            HStack(alignment: .top, spacing: Spacing.lg) {
+                                TimelineNodeCircle(icon: "bell.fill")
+                                    .frame(width: 26)
+
+                                VStack(alignment: .leading, spacing: 3) {
+                                    Text("Day 5: Reminder")
+                                        .font(.body(15, weight: .bold))
+                                        .foregroundStyle(Color.textPrimary)
+                                    Text("We'll notify you trial is ending")
+                                        .font(.body(13))
+                                        .foregroundStyle(Color.textSecondary)
+                                }
+                                .padding(.top, 2)
+                            }
+                        }
+                        .padding(Spacing.xl)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal, Spacing.lg)
+                        .background(Color.bgSurface)
+                        .clipShape(RoundedRectangle(cornerRadius: Radius.lg))
+                        .padding(.horizontal, Spacing.xl)
+                        .padding(.bottom, Spacing.xxl)
                     }
-                    .padding(.bottom, 160)
+                    .padding(.bottom, 200) // space for pinned CTA
                 }
 
-                // CTAs pinned at bottom
-                VStack(spacing: Spacing.sm) {
+                // MARK: Pinned CTA Area
+                VStack(spacing: Spacing.lg) {
+                    // Primary CTA
                     NavigationLink {
                         PaywallView()
                             .navigationBarBackButtonHidden()
                     } label: {
-                        AppButton("Start My Free Trial") {
-                            Analytics.track(.trialStarted)
-                            HapticManager.medium()
-                        }
+                        Text("Try Free & Subscribe")
+                            .font(.body(17, weight: .bold))
+                            .foregroundStyle(.white)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 56)
+                            .background(
+                                LinearGradient(
+                                    colors: [
+                                        Color.accent.opacity(0.85),
+                                        Color.accent
+                                    ],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .clipShape(Capsule())
+                            .shadow(color: Color.accent.opacity(0.35), radius: 16, y: 8)
                     }
+                    .simultaneousGesture(TapGesture().onEnded {
+                        HapticManager.medium()
+                    })
 
+                    // Disclaimer
+                    Text("Then $39.99/year. Cancel anytime in Settings\nat least 24 hours before the trial ends.")
+                        .font(.body(12))
+                        .foregroundStyle(Color.textSecondary)
+                        .multilineTextAlignment(.center)
 
-                    AppButton("No thanks", style: .ghost) {
-                        Analytics.track(.paywallDismissed)
-                        router.advanceToHome()
+                    // Footer links
+                    HStack {
+                        FooterLink("Restore Purchase") {
+                            Task {
+                                try? await PaymentManager.shared.restorePurchases()
+                                if PaymentManager.shared.hasProAccess {
+                                    HapticManager.success()
+                                    router.advanceToHome()
+                                }
+                            }
+                        }
+                        Spacer()
+                        FooterLink("Terms of Use") {}
+                        Spacer()
+                        FooterLink("Privacy Policy") {}
                     }
                 }
-                .padding(.horizontal, Spacing.lg)
-                .padding(.bottom, Spacing.xxl)
+                .padding(.horizontal, Spacing.xl)
+                .padding(.bottom, Spacing.xl)
                 .background(
                     LinearGradient(
-                        colors: [Color.bg.opacity(0), Color.bg],
-                        startPoint: .top, endPoint: .center
+                        colors: [Color.bg.opacity(0), Color.bg, Color.bg],
+                        startPoint: .top,
+                        endPoint: .center
                     )
                     .ignoresSafeArea()
                 )
@@ -73,66 +199,70 @@ struct TrialExplainerView: View {
     }
 }
 
-// MARK: - Trial Timeline
+// MARK: - Benefit Row
+// Purple circle with checkmark + label — matches Stitch benefits list.
 
-private struct TrialTimeline: View {
-    var body: some View {
-        HStack(spacing: 0) {
-            TimelineNode(label: "Today", sublabel: "Free", color: .accent)
-            TimelineLine()
-            TimelineNode(label: "Day 7", sublabel: "Still Free", color: .accent)
-            TimelineLine()
-            TimelineNode(label: "Day 8+", sublabel: "Only if you stay", color: .textTertiary)
-        }
-        .padding(.horizontal, Spacing.lg)
-    }
-}
-
-private struct TimelineNode: View {
-    let label: String
-    let sublabel: String
-    let color: Color
-
-    var body: some View {
-        VStack(spacing: Spacing.xs) {
-            Circle()
-                .fill(color)
-                .frame(width: 12, height: 12)
-            Text(label)
-                .font(.body(13, weight: .semibold))
-                .foregroundStyle(Color.textPrimary)
-            Text(sublabel)
-                .font(.body(11))
-                .foregroundStyle(Color.textSecondary)
-        }
-    }
-}
-
-private struct TimelineLine: View {
-    var body: some View {
-        Rectangle()
-            .fill(Color.border)
-            .frame(height: 1.5)
-            .frame(maxWidth: .infinity)
-            .padding(.bottom, 36)
-    }
-}
-
-// MARK: - Trust Bullet
-
-private struct TrustBullet: View {
-    let icon: String
+private struct BenefitRow: View {
     let text: String
 
     var body: some View {
-        HStack(alignment: .top, spacing: Spacing.md) {
-            Image(systemName: icon)
-                .font(.system(size: 18))
-                .foregroundStyle(Color.success)
-                .frame(width: 24)
+        HStack(spacing: Spacing.lg) {
+            ZStack {
+                Circle()
+                    .fill(Color.accentMuted)
+                    .frame(width: 26, height: 26)
+                Image(systemName: "checkmark")
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundStyle(Color.accent)
+            }
             Text(text)
-                .font(.body(15))
+                .font(.body(17, weight: .medium))
                 .foregroundStyle(Color.textPrimary)
+            Spacer()
+        }
+    }
+}
+
+// MARK: - Timeline Node Circle
+
+private struct TimelineNodeCircle: View {
+    let icon: String
+
+    var body: some View {
+        ZStack {
+            Circle()
+                .fill(Color.accent)
+                .frame(width: 26, height: 26)
+                .shadow(color: Color.accent.opacity(0.3), radius: 4, y: 2)
+                .overlay(
+                    Circle()
+                        .stroke(Color.bg.opacity(0.5), lineWidth: 3)
+                )
+            Image(systemName: icon)
+                .font(.system(size: 10, weight: .bold))
+                .foregroundStyle(.white)
+        }
+    }
+}
+
+// MARK: - Footer Link
+
+private struct FooterLink: View {
+    let title: String
+    let action: () -> Void
+
+    init(_ title: String, action: @escaping () -> Void) {
+        self.title = title
+        self.action = action
+    }
+
+    var body: some View {
+        Button(action: action) {
+            Text(title)
+                .font(.body(10, weight: .bold))
+                .foregroundStyle(Color.textSecondary.opacity(0.6))
+                .textCase(.uppercase)
+                .tracking(0.5)
         }
     }
 }

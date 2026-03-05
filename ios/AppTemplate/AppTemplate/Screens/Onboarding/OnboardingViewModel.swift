@@ -1,5 +1,28 @@
 import SwiftUI
 
+// MARK: - ChoiceOption
+
+struct ChoiceOption: Identifiable {
+    let id: String
+    let label: String
+    let subtitle: String?
+    let icon: String?
+    let iconColor: Color
+
+    init(
+        label: String,
+        subtitle: String? = nil,
+        icon: String? = nil,
+        iconColor: Color = .accent
+    ) {
+        self.id = label
+        self.label = label
+        self.subtitle = subtitle
+        self.icon = icon
+        self.iconColor = iconColor
+    }
+}
+
 // MARK: - Question Model
 
 struct OnboardingQuestion {
@@ -17,9 +40,17 @@ struct OnboardingQuestion {
 
     enum QuestionType {
         case textInput(placeholder: String = "Type here…")
-        case multipleChoice(options: [String])
+        case multipleChoice(options: [ChoiceOption])
         case infoScreen(bullets: [String])
         case notificationSetup
+
+        /// Headline size matched to Stitch design: name quiz = 34pt, others = 28pt.
+        var headlineSize: CGFloat {
+            switch self {
+            case .textInput: return 34
+            default: return 28
+            }
+        }
     }
 }
 
@@ -38,19 +69,30 @@ final class OnboardingViewModel: ObservableObject {
     let questions: [OnboardingQuestion] = [
         OnboardingQuestion(
             key: "name",
-            headline: "What should we call you?",
-            subheadline: "You can always change this later.",
-            type: .textInput(placeholder: "Your first name")
+            headline: "What is your name?",
+            subheadline: "This helps us personalize your experience and results.",
+            type: .textInput(placeholder: "Enter your name")
         ),
         OnboardingQuestion(
             key: "primary_goal",
-            headline: "What's your main goal?",
-            type: .multipleChoice(options: ["Option A", "Option B", "Option C", "Option D"])
+            headline: "What is your main goal?",
+            subheadline: "Select the option that best describes what you want to achieve.",
+            type: .multipleChoice(options: [
+                ChoiceOption(label: "Build Muscle",    subtitle: "Increase strength and mass",  icon: "figure.strengthtraining.traditional", iconColor: .accent),
+                ChoiceOption(label: "Lose Weight",     subtitle: "Burn fat and stay lean",       icon: "flame.fill",   iconColor: .orange),
+                ChoiceOption(label: "Improve Health",  subtitle: "Feel better every day",        icon: "leaf.fill",    iconColor: .green),
+                ChoiceOption(label: "Stay Active",     subtitle: "Build a daily habit",          icon: "figure.run",   iconColor: .blue),
+            ])
         ),
         OnboardingQuestion(
             key: "commitment",
             headline: "How much time can you commit daily?",
-            type: .multipleChoice(options: ["5 min", "10 min", "20 min", "30+ min"])
+            type: .multipleChoice(options: [
+                ChoiceOption(label: "5 min",  subtitle: "A quick daily habit",         icon: "bolt.fill",          iconColor: .yellow),
+                ChoiceOption(label: "10 min", subtitle: "Steady and consistent",       icon: "clock.fill",         iconColor: .accent),
+                ChoiceOption(label: "20 min", subtitle: "Solid progress, fast results",icon: "chart.line.uptrend.xyaxis", iconColor: .green),
+                ChoiceOption(label: "30+ min",subtitle: "Maximum gains",               icon: "trophy.fill",        iconColor: .orange),
+            ])
         ),
         OnboardingQuestion(
             key: "solution",
