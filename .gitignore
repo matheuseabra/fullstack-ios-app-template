@@ -25,6 +25,8 @@ DerivedData/
 .build/
 # Xcode Previews
 PreviewReplays/
+# iOS secrets file (Env.example is intentionally tracked)
+ios/AppTemplate/AppTemplate/Env
 
 # ─────────────────────────────────────────
 # Node.js / Backend

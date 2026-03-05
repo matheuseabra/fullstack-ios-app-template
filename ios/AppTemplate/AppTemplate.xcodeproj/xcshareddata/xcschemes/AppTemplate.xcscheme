@@ -74,6 +74,13 @@
             ReferencedContainer = "container:AppTemplate.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
+      <EnvironmentVariables>
+         <EnvironmentVariable
+            key = ""
+            value = ""
+            isEnabled = "YES">
+         </EnvironmentVariable>
+      </EnvironmentVariables>
       <StoreKitConfigurationFileReference
          identifier = "../../Agentcraft.storekit">
       </StoreKitConfigurationFileReference>

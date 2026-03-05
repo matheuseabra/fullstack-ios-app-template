@@ -1,32 +1,71 @@
 import Foundation
+import SwiftDotenv
 
 // MARK: - App Environment Configuration
-// Replace placeholder values with your own before running.
-// For production: inject via Xcode build settings / xcconfig to avoid hardcoding secrets.
+// Reads from ios/.env at build time via #filePath.
+// Copy ios/.env.example → ios/.env and fill in your secrets.
 
 enum AppEnvironment {
-    // Supabase (tunnelled via ngrok)
-    static let supabaseURL     = "https://341f-179-180-34-209.ngrok-free.app"
-    static let supabaseAnonKey = "sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH"
 
-    // Google OAuth
-    // iOS client ID — from Google Cloud Console → Credentials → iOS type
-    static let googleClientID    = "349460612215-f93pi78toa8oetkj2a994j2uhnn877m2.apps.googleusercontent.com"
-    // Web client ID — from Google Cloud Console → Credentials → Web type (needed by Supabase to verify the ID token)
-    static let googleWebClientID = "349460612215-fhvp7vlgnteaj6ufr0nbnnvfm8v4usrt.apps.googleusercontent.com"
+    // MARK: - Bootstrap (call once before accessing any property)
 
-    // RevenueCat iOS public API key
-    static let revenueCatKey   = "test_byvGVMQjPyrvbuSdqAbadXJQrXU"
+    static func load() {
+        guard let path = Bundle.main.path(forResource: "Env", ofType: nil),
+              let data = FileManager.default.contents(atPath: path),
+              let contents = String(data: data, encoding: .utf8) else {
+            fatalError(
+                "Missing Env file in bundle. "
+                + "Copy AppTemplate/Env.example → AppTemplate/Env and fill in your secrets."
+            )
+        }
 
-    // PostHog
-    static let postHogKey      = "phx_UB8omil1ZdDayosdoJ4MKh6txPhhd8Hcx8KrJw97TA2nV19"
+        for line in contents.components(separatedBy: .newlines) {
+            let trimmed = line.trimmingCharacters(in: .whitespaces)
+            guard !trimmed.isEmpty, !trimmed.hasPrefix("#") else { continue }
+            guard let eqIndex = trimmed.firstIndex(of: "=") else { continue }
+            let key = String(trimmed[..<eqIndex])
+                .trimmingCharacters(in: .whitespaces)
+            let value = String(trimmed[trimmed.index(after: eqIndex)...])
+                .trimmingCharacters(in: .whitespaces)
+                .trimmingCharacters(in: CharacterSet(charactersIn: "\"'"))
+            guard !key.isEmpty else { continue }
+            Dotenv.set(value: value, forKey: key)
+        }
+    }
 
-    // Backend (tunnelled via ngrok)
-    static let backendURL      = "https://2d20-179-180-34-209.ngrok-free.app"
+    // MARK: - Helpers
+
+    private static func required(_ key: String) -> String {
+        guard let value = Dotenv[key]?.stringValue else {
+            fatalError("Missing required env var: \(key) — check your ios/.env file")
+        }
+        return value
+    }
+
+    // MARK: - Supabase
+
+    static var supabaseURL: String     { required("SUPABASE_URL") }
+    static var supabaseAnonKey: String { required("SUPABASE_ANON_KEY") }
+
+    // MARK: - Google OAuth
+
+    static var googleClientID: String    { required("GOOGLE_CLIENT_ID") }
+    static var googleWebClientID: String { required("GOOGLE_WEB_CLIENT_ID") }
+
+    // MARK: - RevenueCat
+
+    static var revenueCatKey: String { required("REVENUECAT_KEY") }
+
+    // MARK: - PostHog
+
+    static var postHogKey: String { required("POSTHOG_KEY") }
+
+    // MARK: - Backend
+
+    static var backendURL: String { required("BACKEND_URL") }
 
     // MARK: - Feature Flags
-    // Toggle social sign-in providers without touching UI code.
-    // Set to false to hide a provider from the login screen.
-    static let enableAppleSignIn:  Bool = true
-    static let enableGoogleSignIn: Bool = true
+
+    static var enableAppleSignIn: Bool  { Dotenv["ENABLE_APPLE_SIGN_IN"]?.stringValue == "true" }
+    static var enableGoogleSignIn: Bool { Dotenv["ENABLE_GOOGLE_SIGN_IN"]?.stringValue != "false" }
 }

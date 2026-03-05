@@ -11,6 +11,7 @@ struct AppTemplateApp: App {
     @Environment(\.scenePhase) private var scenePhase
 
     init() {
+        AppEnvironment.load()
         PaymentManager.configure(apiKey: AppEnvironment.revenueCatKey)
         Analytics.configure(apiKey: AppEnvironment.postHogKey)
     }
