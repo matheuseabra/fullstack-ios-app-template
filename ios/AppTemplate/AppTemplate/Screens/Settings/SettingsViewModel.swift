@@ -7,12 +7,25 @@ final class SettingsViewModel: ObservableObject {
     @Published var errorMessage: String?
 
     func load() async {
+#if DEBUG
+        user = AppUser(
+            id: "debug",
+            email: "debug@test.com",
+            fullName: "Debug User",
+            avatarURL: nil,
+            timezone: "UTC",
+            locale: "en",
+            createdAt: Date(),
+            updatedAt: Date()
+        )
+#else
         do {
             let resp: UserResponse = try await APIClient.shared.get(APIEndpoints.me)
             user = resp.data
         } catch {
             errorMessage = error.localizedDescription
         }
+#endif
     }
 
     func signOut() {

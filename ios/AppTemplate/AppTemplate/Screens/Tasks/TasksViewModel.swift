@@ -148,19 +148,23 @@ final class TasksViewModel: ObservableObject {
     // MARK: - Derived Data
 
     var tasksForSelectedDate: [TaskItem] {
-        tasks.filter { task in
+        let calendar = Calendar.current
+        let startOfSelected = calendar.startOfDay(for: selectedDate)
+        return tasks.filter { task in
             if let dueDate = task.dueDate {
-                return Calendar.current.isDate(dueDate, inSameDayAs: selectedDate)
+                return calendar.startOfDay(for: dueDate) == startOfSelected
             }
             // Tasks with no due date appear on today's view
-            return Calendar.current.isDateInToday(selectedDate)
+            return calendar.isDateInToday(selectedDate)
         }
     }
 
     var todayTasks: [TaskItem] {
-        tasks.filter { task in
+        let calendar = Calendar.current
+        let startOfToday = calendar.startOfDay(for: Date())
+        return tasks.filter { task in
             if let dueDate = task.dueDate {
-                return Calendar.current.isDateInToday(dueDate)
+                return calendar.startOfDay(for: dueDate) == startOfToday
             }
             // Undated tasks count toward today's progress
             return true

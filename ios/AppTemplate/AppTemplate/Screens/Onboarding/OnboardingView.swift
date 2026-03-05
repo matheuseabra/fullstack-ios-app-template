@@ -9,36 +9,20 @@ struct OnboardingView: View {
             Color.bg.ignoresSafeArea()
 
             VStack(spacing: 0) {
-                // Top bar: back button + logo + spacer
-                HStack {
-                    // Back chevron — visible from second screen onwards
-                    if vm.currentStep > 0 {
+                // Top bar: back button (from second screen onwards)
+                if vm.currentStep > 0 {
+                    HStack {
                         Button { vm.goBack() } label: {
                             Image(systemName: "chevron.left")
                                 .font(.system(size: 18, weight: .medium))
                                 .foregroundStyle(Color.textSecondary)
                                 .frame(width: 44, height: 44)
                         }
-                    } else {
-                        Color.clear.frame(width: 44, height: 44)
+                        Spacer()
                     }
-
-                    Spacer()
-
-                    // App logo — always centered
-                    Image("AppLogo")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 48, height: 48)
-                        .clipShape(RoundedRectangle(cornerRadius: Radius.md))
-
-                    Spacer()
-
-                    // Balancing spacer for symmetry
-                    Color.clear.frame(width: 44, height: 44)
+                    .padding(.horizontal, Spacing.lg)
+                    .padding(.top, Spacing.sm)
                 }
-                .padding(.horizontal, Spacing.lg)
-                .padding(.top, Spacing.sm)
 
                 // Progress bar
                 ProgressView(value: vm.progress)

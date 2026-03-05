@@ -10,8 +10,14 @@ struct AddTaskView: View {
     @State private var title = ""
     @State private var note = ""
     @State private var priority: TaskItem.Priority = .medium
-    @State private var hasDueDate = false
-    @State private var dueDate = Date()
+    @State private var hasDueDate = true
+    @State private var dueDate: Date
+
+    init(vm: TasksViewModel, isPresented: Binding<Bool>) {
+        self._vm = ObservedObject(wrappedValue: vm)
+        self._isPresented = isPresented
+        self._dueDate = State(initialValue: vm.selectedDate)
+    }
 
     @FocusState private var titleFocused: Bool
 

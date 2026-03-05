@@ -24,18 +24,27 @@ struct OnboardingQuizStep: View {
         VStack(spacing: 0) {
             Spacer()
 
-            VStack(spacing: Spacing.lg) {
-                Text(question.headline)
-                    .font(.display(question.type.headlineSize))
-                    .foregroundStyle(Color.textPrimary)
-                    .multilineTextAlignment(.center)
-                    .fixedSize(horizontal: false, vertical: true)
+            VStack(spacing: Spacing.xl) {
+                // App logo — only on welcome screen
+                Image("AppLogo")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 56, height: 56)
+                    .clipShape(RoundedRectangle(cornerRadius: Radius.md))
 
-                if let sub = question.subheadline {
-                    Text(sub)
-                        .font(.body(17))
-                        .foregroundStyle(Color.textSecondary)
+                VStack(spacing: Spacing.lg) {
+                    Text(question.headline)
+                        .font(.display(question.type.headlineSize))
+                        .foregroundStyle(Color.textPrimary)
                         .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    if let sub = question.subheadline {
+                        Text(sub)
+                            .font(.body(17))
+                            .foregroundStyle(Color.textSecondary)
+                            .multilineTextAlignment(.center)
+                    }
                 }
             }
             .padding(.horizontal, Spacing.xl)
