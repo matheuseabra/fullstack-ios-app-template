@@ -72,12 +72,16 @@ jobs:
 
       - name: Create and boot simulator
         run: |
-          # Wait for the simulator runtime to fully install
-          sleep 10
+          # Allow up to 60 s for the runtime registration to complete after download
+          sleep 60
           # Create a new simulator device
           DEV_NAME="GitHubSim"
           RUNTIME_ID=$(xcrun simctl list runtimes | grep -E 'iOS.*18' | awk -F '[()]' '{print $2}' | head -n1)
-          SIM_ID=$(xcrun simctl create "$DEV_NAME" "iPhone 15" "$RUNTIME_ID")
+          if [ -z "$RUNTIME_ID" ]; then
+            echo "Error: iOS 18 runtime not found"; exit 1
+          fi
+          SIM_ID=$(xcrun simctl create "$DEV_NAME" "iPhone 15" "$RUNTIME_ID") \
+            || { echo "Error: Failed to create simulator"; exit 1; }
           xcrun simctl boot "$SIM_ID"
           echo "SIM_ID=$SIM_ID" >> "$GITHUB_ENV"
 
