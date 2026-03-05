@@ -1,0 +1,45 @@
+name: iOS CI
+
+on:
+  push:
+    branches: [main]
+    paths: ['ios/**', '.github/workflows/ios-ci.yml']
+  pull_request:
+    branches: [main]
+    paths: ['ios/**', '.github/workflows/ios-ci.yml']
+
+jobs:
+  ios-test:
+    name: iOS Build & Test
+    runs-on: macos-15
+    defaults:
+      run:
+        working-directory: ios/AppTemplate
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_16.2.app/Contents/Developer
+
+      - name: Install iOS Runtime
+        # This fixes the "Unable to find destination" error on macOS-15
+        run: xcodebuild -downloadPlatform iOS
+
+      - name: Cache Swift Packages
+        uses: actions/cache@v4
+        with:
+          path: ios/AppTemplate/.build
+          key: ${{ runner.os }}-spm-${{ hashFiles('ios/AppTemplate/**/Package.resolved') }}
+
+      - name: Build & Test
+        run: |
+          set -o pipefail
+          xcodebuild test \
+            -project AppTemplate.xcodeproj \
+            -scheme AppTemplate \
+            -destination "platform=iOS Simulator,name=iPhone 16,OS=latest" \
+            -clonedSourcePackagesDirPath .build \
+            -configuration Debug \
+            CODE_SIGNING_ALLOWED=NO \
+            | xcpretty
