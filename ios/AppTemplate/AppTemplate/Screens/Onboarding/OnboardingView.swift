@@ -12,7 +12,7 @@ struct OnboardingView: View {
                 // Progress bar
                 ProgressView(value: vm.progress)
                     .tint(Color.accent)
-                    .padding(.horizontal, Spacing.lg)
+                    .padding(.horizontal, Spacing.xl)
                     .padding(.top, Spacing.lg)
                     .animation(.spring, value: vm.currentStep)
 
@@ -37,7 +37,7 @@ struct OnboardingView: View {
                     .font(.body(13))
                     .foregroundStyle(Color.danger)
                     .multilineTextAlignment(.center)
-                    .padding(.horizontal, Spacing.lg)
+                    .padding(.horizontal, Spacing.xl)
                     .padding(.bottom, 96)
             }
 
@@ -66,7 +66,7 @@ struct OnboardingView: View {
             .opacity(!vm.canAdvance() ? 0.5 : 1)
             .animation(.snappy, value: vm.canAdvance())
             .frame(maxWidth: .infinity, alignment: .trailing)
-            .padding(.trailing, Spacing.lg)
+            .padding(.trailing, Spacing.xl)
             .padding(.bottom, Spacing.xxl)
         }
         .onAppear { Analytics.track(.onboardingStarted) }

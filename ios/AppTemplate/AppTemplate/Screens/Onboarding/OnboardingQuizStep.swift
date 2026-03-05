@@ -87,7 +87,7 @@ struct OnboardingQuizStep: View {
 
             Spacer()
         }
-        .padding(.horizontal, Spacing.lg)
+        .padding(.horizontal, Spacing.xl)
         .padding(.top, Spacing.xxl)
     }
 }
