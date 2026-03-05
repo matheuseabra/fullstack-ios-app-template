@@ -12,7 +12,8 @@ final class AuthManager: ObservableObject {
 
     let client = SupabaseClient(
         supabaseURL: URL(string: AppEnvironment.supabaseURL)!,
-        supabaseKey: AppEnvironment.supabaseAnonKey
+        supabaseKey: AppEnvironment.supabaseAnonKey,
+        options: .init(auth: .init(emitLocalSessionAsInitialSession: true))
     )
 
     @Published private(set) var isAuthenticated = false
