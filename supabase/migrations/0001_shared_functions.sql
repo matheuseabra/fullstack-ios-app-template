@@ -1,4 +1,5 @@
 -- Migration 0001: Shared functions and triggers
+-- Feature: CORE (always required)
 -- Run this first — all other migrations depend on these.
 
 -- ─────────────────────────────────────────

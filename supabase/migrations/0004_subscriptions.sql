@@ -1,4 +1,5 @@
 -- Migration 0004: subscriptions
+-- Feature: SUBSCRIPTIONS / PAYWALL (ENABLE_SUBSCRIPTIONS)
 -- Mirrors RevenueCat webhook data. Users can read their own row.
 -- Only the backend service_role can write (via RevenueCat webhook handler).
 

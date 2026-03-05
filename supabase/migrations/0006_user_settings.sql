@@ -1,4 +1,5 @@
 -- Migration 0006: user_settings
+-- Feature: CORE (always required)
 -- Key-value store for arbitrary per-user app settings.
 -- Composite primary key (user_id, key) — use upsert to write.
 

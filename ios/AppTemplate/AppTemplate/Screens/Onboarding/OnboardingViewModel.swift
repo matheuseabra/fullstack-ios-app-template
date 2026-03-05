@@ -111,9 +111,22 @@ final class OnboardingViewModel: ObservableObject {
         ),
     ]
 
-    var isLastStep: Bool { currentStep >= questions.count - 1 }
-    var progress: Double { Double(currentStep) / Double(questions.count) }
-    var currentQuestion: OnboardingQuestion { questions[currentStep] }
+    /// Questions filtered by active feature flags (e.g. removes notification
+    /// setup step when notifications are disabled).
+    lazy var activeQuestions: [OnboardingQuestion] = {
+        questions.filter { q in
+            switch q.type {
+            case .notificationSetup:
+                return AppEnvironment.enableNotifications
+            default:
+                return true
+            }
+        }
+    }()
+
+    var isLastStep: Bool { currentStep >= activeQuestions.count - 1 }
+    var progress: Double { Double(currentStep) / Double(activeQuestions.count) }
+    var currentQuestion: OnboardingQuestion { activeQuestions[currentStep] }
 
     // MARK: - Navigation
 

@@ -65,6 +65,34 @@ enum AppEnvironment {
     static var backendURL: String { required("BACKEND_URL") }
 
     // MARK: - Feature Flags
+    //
+    // Toggle entire features on/off. The app adapts its navigation flow,
+    // service initialization, and UI sections based on these flags.
+    //
+    // Presets:
+    //   Full app     → all true (default)
+    //   MVP/prototype → enableAuth=false, enableOnboarding=false, enablePaywall=false
+    //   Freemium     → enablePaywall=false, everything else true
+
+    // ── Top-level features ──────────────────────────────────────────
+
+    /// Master auth toggle. When false the app skips login entirely and
+    /// runs in local-only mode (no backend sync, no JWT).
+    static var enableAuth: Bool           { Dotenv["ENABLE_AUTH"]?.stringValue != "false" }
+
+    /// Show the onboarding quiz after first sign-in.
+    static var enableOnboarding: Bool     { Dotenv["ENABLE_ONBOARDING"]?.stringValue != "false" }
+
+    /// Gate access behind a paywall / subscription screen.
+    static var enablePaywall: Bool        { Dotenv["ENABLE_PAYWALL"]?.stringValue != "false" }
+
+    /// Push notifications registration and reminder setup.
+    static var enableNotifications: Bool  { Dotenv["ENABLE_NOTIFICATIONS"]?.stringValue != "false" }
+
+    /// PostHog product analytics.
+    static var enableAnalytics: Bool      { Dotenv["ENABLE_ANALYTICS"]?.stringValue != "false" }
+
+    // ── Auth sub-flags (only relevant when enableAuth is true) ──────
 
     static var enableAppleSignIn: Bool  { Dotenv["ENABLE_APPLE_SIGN_IN"]?.stringValue == "true" }
     static var enableGoogleSignIn: Bool { Dotenv["ENABLE_GOOGLE_SIGN_IN"]?.stringValue != "false" }

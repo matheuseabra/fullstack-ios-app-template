@@ -5,6 +5,8 @@
 > **Current state:** Phase 5 complete — 35 tests passing, CI/CD pipelines configured.
 > **Target state:** Fully functional iOS app + Hono backend + Supabase database, deployed and shippable.
 
+Related guide: [Environments (Dev + Prod)](./ENVIRONMENTS.md)
+
 ---
 
 ## Phase 1 — Project Scaffolding & Infrastructure

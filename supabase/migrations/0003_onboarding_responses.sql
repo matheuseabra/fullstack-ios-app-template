@@ -1,4 +1,5 @@
 -- Migration 0003: onboarding_responses
+-- Feature: ONBOARDING (ENABLE_ONBOARDING)
 -- Stores quiz answers from the onboarding flow. One row per question per user.
 -- answer is jsonb to support strings, arrays, numbers, and booleans.
 

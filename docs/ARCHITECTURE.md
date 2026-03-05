@@ -2,6 +2,8 @@
 
 > Why we made the choices we made. Read before proposing alternatives.
 
+Related guide: [Environments (Dev + Prod)](./ENVIRONMENTS.md)
+
 ---
 
 ## ADR-001: Hono over Express/Fastify
@@ -134,3 +136,71 @@ usageCap({ feature: 'ai_chat', freeTierLimit: 5, paidTierLimit: 'unlimited' })
 ```
 
 Counts stored in `usage_logs` table, indexed by `(user_id, feature, created_at)` for fast daily aggregation.
+
+---
+
+## ADR-009: Plug-and-Play Feature Flags
+
+**Decision:** Boolean feature flags at both the iOS and backend layers to enable/disable entire features without touching UI code or rewriting navigation.
+
+**Why:**
+- Template apps don't always need every feature (auth, onboarding, paywall, notifications)
+- Developers should flip a flag and rebuild — no code surgery
+- Disabled features are cleanly skipped at every layer: navigation, service init, UI, API routes
+
+### iOS Feature Flags (`Env` file / `AppEnvironment.swift`)
+
+| Flag | Default | Controls |
+|------|---------|----------|
+| `ENABLE_AUTH` | `true` | Login screen, backend sync, JWT. When `false` the app runs local-only. |
+| `ENABLE_ONBOARDING` | `true` | Onboarding quiz flow after first sign-in. |
+| `ENABLE_PAYWALL` | `true` | Subscription gate before Home. RevenueCat initialization. |
+| `ENABLE_NOTIFICATIONS` | `true` | APNs registration, notification setup in onboarding, Settings section. |
+| `ENABLE_ANALYTICS` | `true` | PostHog SDK initialization and event tracking. |
+| `ENABLE_APPLE_SIGN_IN` | `false` | Apple Sign In button (sub-flag of auth). |
+| `ENABLE_GOOGLE_SIGN_IN` | `true` | Google Sign In button (sub-flag of auth). |
+
+**Navigation flow adapts automatically:**
+```
+Splash → [Auth?] → [Onboarding?] → [Paywall?] → Home
+```
+Each gate is skipped when its flag is `false`. Setting auth + onboarding + paywall to `false` sends users straight from splash to Home (MVP/prototype mode).
+
+**Service initialization is conditional:**
+- `PaymentManager.configure()` only runs when `ENABLE_PAYWALL=true`
+- `Analytics.configure()` only runs when `ENABLE_ANALYTICS=true`
+- `SyncManager.pullIfNeeded()` only runs when `ENABLE_AUTH=true`
+- `GoogleSignInManager.configure()` only runs when both auth and Google sign-in are enabled
+
+### Backend Feature Flags (environment variables / `.env`)
+
+| Flag | Default | Controls |
+|------|---------|----------|
+| `ENABLE_ONBOARDING` | `true` | `/api/onboarding` routes |
+| `ENABLE_SUBSCRIPTIONS` | `true` | `/api/subscriptions` routes |
+| `ENABLE_NOTIFICATIONS` | `true` | `/api/notifications` routes |
+| `ENABLE_USAGE_TRACKING` | `true` | `/api/usage` routes |
+
+Always-on routes: `/auth` (webhooks), `/api/users`, `/api/tasks`, `/health`.
+
+Disabled routes are simply not mounted — requests return 404.
+
+### Database Migrations
+
+All migrations always run (Supabase requires sequential execution). Each migration file is tagged with its feature:
+- **CORE:** 0001 (shared functions), 0002 (profiles), 0006 (user_settings), 0008 (api_rate_limits), 0009 (audit_log)
+- **ONBOARDING:** 0003 (onboarding_responses)
+- **SUBSCRIPTIONS:** 0004 (subscriptions)
+- **NOTIFICATIONS:** 0005 (notification_preferences)
+- **USAGE TRACKING:** 0007 (usage_logs)
+- **TASKS:** 0010 (tasks)
+
+Unused tables remain empty — zero performance overhead.
+
+### Presets
+
+| Preset | Auth | Onboarding | Paywall | Notifications | Analytics |
+|--------|------|-----------|---------|---------------|-----------|
+| **Full app** | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Freemium** | ✅ | ✅ | ❌ | ✅ | ✅ |
+| **MVP / prototype** | ❌ | ❌ | ❌ | ❌ | ❌ |

@@ -24,21 +24,37 @@ final class AppRouter: ObservableObject {
 
     func advance() {
         Task {
-            if AuthManager.shared.isAuthenticated {
-                // TODO: Check if onboarding is complete (persist flag with @AppStorage)
-                let didCompleteOnboarding = UserDefaults.standard.bool(forKey: "didCompleteOnboarding")
-                let hasActiveSubscription = await checkSubscription()
+            // Gate 1: Auth
+            let isAuthenticated = AppEnvironment.enableAuth
+                ? AuthManager.shared.isAuthenticated
+                : true  // skip auth → treat as authenticated
 
-                if !didCompleteOnboarding {
-                    root = .onboarding
-                } else if !hasActiveSubscription {
-                    root = .paywall
-                } else {
-                    root = .home
-                }
-            } else {
+            guard isAuthenticated else {
                 root = .login
+                return
             }
+
+            // Gate 2: Onboarding
+            let didCompleteOnboarding = AppEnvironment.enableOnboarding
+                ? UserDefaults.standard.bool(forKey: "didCompleteOnboarding")
+                : true  // skip onboarding → treat as completed
+
+            guard didCompleteOnboarding else {
+                root = .onboarding
+                return
+            }
+
+            // Gate 3: Paywall
+            let hasActiveSubscription = AppEnvironment.enablePaywall
+                ? await checkSubscription()
+                : true  // skip paywall → treat as subscribed
+
+            guard hasActiveSubscription else {
+                root = .paywall
+                return
+            }
+
+            root = .home
         }
     }
 
@@ -51,9 +67,11 @@ final class AppRouter: ObservableObject {
     }
 
     func signOut() {
-        AuthManager.shared.signOut()
+        if AppEnvironment.enableAuth {
+            AuthManager.shared.signOut()
+        }
         path = NavigationPath()
-        root = .login
+        root = AppEnvironment.enableAuth ? .login : .home
     }
 
     // MARK: - Private

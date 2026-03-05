@@ -1,4 +1,5 @@
 -- Migration 0007: usage_logs
+-- Feature: USAGE TRACKING (ENABLE_USAGE_TRACKING)
 -- Tracks per-user feature usage for cap enforcement and analytics.
 -- Only the backend (service_role) inserts rows. Users can read for UI display.
 

@@ -3,6 +3,10 @@ import { z } from 'zod'
 
 dotenv.config()
 
+const boolFlag = (defaultValue: boolean) =>
+  z.string().optional()
+    .transform((v) => v === undefined ? defaultValue : v.toLowerCase() !== 'false')
+
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   PORT: z.coerce.number().default(3000),
@@ -25,6 +29,12 @@ const envSchema = z.object({
   R2_SECRET_ACCESS_KEY: z.string().optional(),
   R2_BUCKET_NAME: z.string().optional(),
   R2_PUBLIC_URL: z.string().optional(),
+
+  // Feature flags — all default to true; set "false" to disable a module
+  ENABLE_ONBOARDING: boolFlag(true),
+  ENABLE_SUBSCRIPTIONS: boolFlag(true),
+  ENABLE_NOTIFICATIONS: boolFlag(true),
+  ENABLE_USAGE_TRACKING: boolFlag(true),
 })
 
 export type Env = z.infer<typeof envSchema>

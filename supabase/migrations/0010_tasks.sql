@@ -1,4 +1,5 @@
 -- Migration 0010: tasks
+-- Feature: TASKS (domain feature — always required for this template)
 -- User tasks for the task manager feature. Supports local-first + server sync.
 
 create table public.tasks (

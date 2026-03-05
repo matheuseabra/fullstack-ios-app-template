@@ -12,8 +12,13 @@ struct AppTemplateApp: App {
 
     init() {
         AppEnvironment.load()
-        PaymentManager.configure(apiKey: AppEnvironment.revenueCatKey)
-        Analytics.configure(apiKey: AppEnvironment.postHogKey)
+
+        if AppEnvironment.enablePaywall {
+            PaymentManager.configure(apiKey: AppEnvironment.revenueCatKey)
+        }
+        if AppEnvironment.enableAnalytics {
+            Analytics.configure(apiKey: AppEnvironment.postHogKey)
+        }
     }
 
     var body: some Scene {
@@ -25,7 +30,7 @@ struct AppTemplateApp: App {
                 .modelContainer(LocalDatabase.shared.container)
         }
         .onChange(of: scenePhase) { _, phase in
-            if phase == .active {
+            if phase == .active, AppEnvironment.enableAuth {
                 SyncManager.shared.pullIfNeeded()
             }
         }

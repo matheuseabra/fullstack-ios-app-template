@@ -1,4 +1,5 @@
 -- Migration 0005: notification_preferences
+-- Feature: NOTIFICATIONS (ENABLE_NOTIFICATIONS)
 -- Per-user notification config. One row per user, upserted during onboarding.
 
 create table public.notification_preferences (

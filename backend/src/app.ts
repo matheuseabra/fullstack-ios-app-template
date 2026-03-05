@@ -296,10 +296,10 @@ app.use('/api/*', authMiddleware)
 app.use('/api/*', rateLimiter({ requests: 100, window: '1m' }))
 
 app.route('/api/users', userRoutes)
-app.route('/api/onboarding', onboardingRoutes)
-app.route('/api/subscriptions', subscriptionRoutes)
-app.route('/api/usage', usageRoutes)
-app.route('/api/notifications', notificationRoutes)
+if (env.ENABLE_ONBOARDING) app.route('/api/onboarding', onboardingRoutes)
+if (env.ENABLE_SUBSCRIPTIONS) app.route('/api/subscriptions', subscriptionRoutes)
+if (env.ENABLE_USAGE_TRACKING) app.route('/api/usage', usageRoutes)
+if (env.ENABLE_NOTIFICATIONS) app.route('/api/notifications', notificationRoutes)
 app.route('/api/tasks', taskRoutes)
 
 // ─────────────────────────────────────────

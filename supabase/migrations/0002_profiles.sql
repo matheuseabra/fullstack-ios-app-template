@@ -1,4 +1,5 @@
 -- Migration 0002: profiles
+-- Feature: CORE (always required)
 -- Extended user data. One row per auth.users row, created automatically on signup.
 
 create table public.profiles (

@@ -1,4 +1,5 @@
 -- Migration 0009: audit_log
+-- Feature: CORE (always required)
 -- Immutable log of sensitive user actions. Service role only.
 -- Used for: subscription changes, account deletion, data exports, admin actions.
 -- No RLS — never exposed to users. Backend writes via service_role.

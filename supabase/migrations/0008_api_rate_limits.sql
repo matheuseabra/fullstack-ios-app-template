@@ -1,4 +1,5 @@
 -- Migration 0008: api_rate_limits
+-- Feature: CORE (always required)
 -- Stores sliding-window rate limit state per (user, endpoint).
 -- Redis is the primary store; this table is the fallback and persistence layer.
 -- No RLS — fully internal, only accessible via service_role.

@@ -119,6 +119,7 @@ Both iOS app and backend live in the same repo for:
 
 - [Frontend Setup →](ios/README.md)
 - [Backend Setup →](backend/README.md)
+- [Environments (Dev + Prod) →](docs/ENVIRONMENTS.md)
 - [Database Schema →](docs/DATABASE.md)
 - [UI Design System →](docs/DESIGN_SYSTEM.md)
 - [Agent Guide →](.agents/AGENTS.md)

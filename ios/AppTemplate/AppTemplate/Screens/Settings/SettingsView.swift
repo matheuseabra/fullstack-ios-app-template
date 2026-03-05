@@ -31,8 +31,10 @@ struct SettingsView: View {
                         .listRowInsets(.init())
                 }
 
-                NavigationLink("Manage Subscription") {
-                    SubscriptionManagementView()
+                if AppEnvironment.enablePaywall {
+                    NavigationLink("Manage Subscription") {
+                        SubscriptionManagementView()
+                    }
                 }
             }
 
@@ -53,8 +55,10 @@ struct SettingsView: View {
                     Text("Dark").tag("dark")
                 }
 
-                NavigationLink("Notification Preferences") {
-                    NotificationPreferencesView()
+                if AppEnvironment.enableNotifications {
+                    NavigationLink("Notification Preferences") {
+                        NotificationPreferencesView()
+                    }
                 }
             }
 

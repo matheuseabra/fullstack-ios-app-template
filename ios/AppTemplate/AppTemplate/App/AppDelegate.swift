@@ -14,7 +14,9 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
-        GoogleSignInManager.shared.configure()
+        if AppEnvironment.enableAuth && AppEnvironment.enableGoogleSignIn {
+            GoogleSignInManager.shared.configure()
+        }
         return true
     }
 
@@ -24,6 +26,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         _ application: UIApplication,
         didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
     ) {
+        guard AppEnvironment.enableNotifications else { return }
         Task { @MainActor in
             NotificationManager.shared.didRegister(deviceToken: deviceToken)
         }
