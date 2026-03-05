@@ -64,12 +64,15 @@ jobs:
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode_16.2.app/Contents/Developer
 
-      - name: List available simulators
-        run: xcrun simctl list devices available
+      - name: Install iOS Simulator runtime
+        run: |
+          # Xcode 16.2 on macos-15 runners doesn't bundle the iOS runtime —
+          # download it so simulators become usable for build & test.
+          xcodebuild -downloadPlatform iOS
 
       - name: Boot simulator
         run: |
-          # Pick the first available iPhone simulator
+          # Pick the first available iPhone simulator now that the runtime is installed
           SIM_ID=$(xcrun simctl list devices available -j \
             | python3 -c 'import sys,json; devs=json.load(sys.stdin)["devices"];
           [print(d["udid"]) or sys.exit(0) for r,ds in devs.items() if "iOS" in r for d in ds if "iPhone" in d["name"]]
