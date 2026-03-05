@@ -7,10 +7,49 @@ struct OnboardingQuizStep: View {
     let question: OnboardingQuestion
     @Binding var textInput: String
     @Binding var selectedChoice: String?
+    var onChoiceSelected: (() -> Void)? = nil
 
     var body: some View {
+        switch question.type {
+        case .welcomeHero:
+            welcomeHeroContent
+        default:
+            defaultStepContent
+        }
+    }
+
+    // MARK: - Welcome Hero (Screen 0)
+
+    private var welcomeHeroContent: some View {
+        VStack(spacing: 0) {
+            Spacer()
+
+            VStack(spacing: Spacing.lg) {
+                Text(question.headline)
+                    .font(.display(question.type.headlineSize))
+                    .foregroundStyle(Color.textPrimary)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                if let sub = question.subheadline {
+                    Text(sub)
+                        .font(.body(17))
+                        .foregroundStyle(Color.textSecondary)
+                        .multilineTextAlignment(.center)
+                }
+            }
+            .padding(.horizontal, Spacing.xl)
+
+            Spacer()
+            Spacer()
+        }
+    }
+
+    // MARK: - Default Step Content
+
+    private var defaultStepContent: some View {
         VStack(alignment: .leading, spacing: Spacing.xl) {
-            // Header — subheadline shown here only for non-textInput steps
+            // Header
             VStack(alignment: .leading, spacing: Spacing.sm) {
                 Text(question.headline)
                     .font(.display(question.type.headlineSize))
@@ -29,7 +68,6 @@ struct OnboardingQuizStep: View {
             // Step content
             switch question.type {
             case .textInput(let placeholder):
-                // Underline-style input matching Stitch "Onboarding Name Quiz" design
                 VStack(alignment: .leading, spacing: Spacing.lg) {
                     TextField(placeholder, text: $textInput)
                         .font(.display(24, weight: .medium))
@@ -54,7 +92,6 @@ struct OnboardingQuizStep: View {
                 }
 
             case .multipleChoice(let options):
-                // Icon + title + subtitle cards matching Stitch "Onboarding Goal Quiz" design
                 VStack(spacing: Spacing.sm) {
                     ForEach(options) { option in
                         OptionCard(
@@ -63,6 +100,7 @@ struct OnboardingQuizStep: View {
                         ) {
                             HapticManager.selection()
                             selectedChoice = option.id
+                            onChoiceSelected?()
                         }
                     }
                 }
@@ -83,6 +121,9 @@ struct OnboardingQuizStep: View {
 
             case .notificationSetup:
                 NotificationSetupStep()
+
+            case .welcomeHero:
+                EmptyView()
             }
 
             Spacer()
@@ -158,7 +199,7 @@ private struct NotificationSetupStep: View {
                 Text("Stay on track")
                     .font(.display(20))
                     .foregroundStyle(Color.textPrimary)
-                Text("Enable reminders so you never miss a session.")
+                Text("Enable reminders so you never miss a task.")
                     .font(.body(15))
                     .foregroundStyle(Color.textSecondary)
                     .multilineTextAlignment(.center)

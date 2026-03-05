@@ -39,14 +39,15 @@ struct OnboardingQuestion {
     }
 
     enum QuestionType {
+        case welcomeHero
         case textInput(placeholder: String = "Type here…")
         case multipleChoice(options: [ChoiceOption])
         case infoScreen(bullets: [String])
         case notificationSetup
 
-        /// Headline size matched to Stitch design: name quiz = 34pt, others = 28pt.
         var headlineSize: CGFloat {
             switch self {
+            case .welcomeHero: return 32
             case .textInput: return 34
             default: return 28
             }
@@ -65,48 +66,63 @@ final class OnboardingViewModel: ObservableObject {
     @Published var isSaving = false
     @Published var errorMessage: String?
 
-    // Configure questions per app
     let questions: [OnboardingQuestion] = [
         OnboardingQuestion(
+            key: "welcome",
+            headline: "Get more done\nwith less stress",
+            subheadline: "Your personal task manager that helps you stay focused and organized.",
+            type: .welcomeHero
+        ),
+        OnboardingQuestion(
             key: "name",
-            headline: "What is your name?",
-            subheadline: "This helps us personalize your experience and results.",
+            headline: "What should we call you?",
+            subheadline: "We'll use this to personalize your experience.",
             type: .textInput(placeholder: "Enter your name")
         ),
         OnboardingQuestion(
-            key: "primary_goal",
-            headline: "What is your main goal?",
-            subheadline: "Select the option that best describes what you want to achieve.",
+            key: "usage_context",
+            headline: "How will you use this app?",
             type: .multipleChoice(options: [
-                ChoiceOption(label: "Build Muscle",    subtitle: "Increase strength and mass",  icon: "figure.strengthtraining.traditional", iconColor: .accent),
-                ChoiceOption(label: "Lose Weight",     subtitle: "Burn fat and stay lean",       icon: "flame.fill",   iconColor: .orange),
-                ChoiceOption(label: "Improve Health",  subtitle: "Feel better every day",        icon: "leaf.fill",    iconColor: .green),
-                ChoiceOption(label: "Stay Active",     subtitle: "Build a daily habit",          icon: "figure.run",   iconColor: .blue),
+                ChoiceOption(label: "Personal",           subtitle: "Errands, habits, and daily life",       icon: "house.fill",            iconColor: .accent),
+                ChoiceOption(label: "Work",               subtitle: "Projects, meetings, and deadlines",     icon: "briefcase.fill",        iconColor: .orange),
+                ChoiceOption(label: "School",             subtitle: "Assignments, exams, and study plans",   icon: "book.fill",             iconColor: .green),
+                ChoiceOption(label: "A bit of everything", subtitle: "All of the above",                     icon: "square.grid.2x2.fill",  iconColor: .blue),
             ])
         ),
         OnboardingQuestion(
-            key: "commitment",
-            headline: "How much time can you commit daily?",
+            key: "biggest_challenge",
+            headline: "What's your biggest challenge?",
+            subheadline: "We'll tailor your experience to help with this.",
             type: .multipleChoice(options: [
-                ChoiceOption(label: "5 min",  subtitle: "A quick daily habit",         icon: "bolt.fill",          iconColor: .yellow),
-                ChoiceOption(label: "10 min", subtitle: "Steady and consistent",       icon: "clock.fill",         iconColor: .accent),
-                ChoiceOption(label: "20 min", subtitle: "Solid progress, fast results",icon: "chart.line.uptrend.xyaxis", iconColor: .green),
-                ChoiceOption(label: "30+ min",subtitle: "Maximum gains",               icon: "trophy.fill",        iconColor: .orange),
+                ChoiceOption(label: "Staying organized",    subtitle: "Too many things to track",              icon: "tray.full.fill",                     iconColor: .accent),
+                ChoiceOption(label: "Prioritizing tasks",   subtitle: "Not sure what to do first",             icon: "arrow.up.arrow.down",                iconColor: .orange),
+                ChoiceOption(label: "Meeting deadlines",    subtitle: "Things slip through the cracks",        icon: "clock.badge.exclamationmark.fill",   iconColor: .red),
+                ChoiceOption(label: "Building consistency", subtitle: "I start strong but lose momentum",      icon: "chart.line.downtrend.xyaxis",        iconColor: .green),
+            ])
+        ),
+        OnboardingQuestion(
+            key: "task_volume",
+            headline: "How many tasks do you juggle daily?",
+            type: .multipleChoice(options: [
+                ChoiceOption(label: "1–3 tasks",  subtitle: "I keep it simple",        icon: "leaf.fill",                    iconColor: .green),
+                ChoiceOption(label: "4–7 tasks",  subtitle: "A manageable amount",     icon: "checklist",                    iconColor: .accent),
+                ChoiceOption(label: "8–15 tasks", subtitle: "I stay busy",             icon: "list.bullet.rectangle.fill",   iconColor: .orange),
+                ChoiceOption(label: "15+ tasks",  subtitle: "I'm always on the go",    icon: "bolt.fill",                    iconColor: .red),
             ])
         ),
         OnboardingQuestion(
             key: "solution",
-            headline: "Here's how we get you there",
+            headline: "Here's how we'll help",
             type: .infoScreen(bullets: [
-                "Personalized to your goals",
-                "Takes less than 10 minutes daily",
-                "See results in 7 days"
+                "Personalized to how you work",
+                "Smart reminders so nothing slips",
+                "Track your progress and build momentum"
             ])
         ),
         OnboardingQuestion(
             key: "notifications",
-            headline: "Set your daily reminder",
-            subheadline: "We'll only send reminders you've set.",
+            headline: "Never miss a task",
+            subheadline: "We'll only remind you about what matters.",
             type: .notificationSetup
         ),
     ]
@@ -114,6 +130,16 @@ final class OnboardingViewModel: ObservableObject {
     var isLastStep: Bool { currentStep >= questions.count - 1 }
     var progress: Double { Double(currentStep) / Double(questions.count) }
     var currentQuestion: OnboardingQuestion { questions[currentStep] }
+
+    /// Whether the circular FAB should be visible on the current step.
+    var showsFAB: Bool {
+        switch currentQuestion.type {
+        case .welcomeHero, .multipleChoice:
+            return false
+        case .textInput, .infoScreen, .notificationSetup:
+            return true
+        }
+    }
 
     // MARK: - Navigation
 
@@ -134,13 +160,33 @@ final class OnboardingViewModel: ObservableObject {
         }
     }
 
+    func goBack() {
+        guard currentStep > 0 else { return }
+        withAnimation(.spring) {
+            currentStep -= 1
+            // Restore previous answer if any
+            let prevQuestion = questions[currentStep]
+            switch prevQuestion.type {
+            case .textInput:
+                textInput = (responses[prevQuestion.key]?.value as? String) ?? ""
+                selectedChoice = nil
+            case .multipleChoice:
+                selectedChoice = responses[prevQuestion.key]?.value as? String
+                textInput = ""
+            default:
+                textInput = ""
+                selectedChoice = nil
+            }
+        }
+    }
+
     func canAdvance() -> Bool {
         switch currentQuestion.type {
         case .textInput:
             return !textInput.trimmingCharacters(in: .whitespaces).isEmpty
         case .multipleChoice:
             return selectedChoice != nil
-        case .infoScreen, .notificationSetup:
+        case .welcomeHero, .infoScreen, .notificationSetup:
             return true
         }
     }
@@ -155,7 +201,7 @@ final class OnboardingViewModel: ObservableObject {
             if !val.isEmpty { responses[key] = AnyCodable(val) }
         case .multipleChoice:
             if let choice = selectedChoice { responses[key] = AnyCodable(choice) }
-        case .infoScreen, .notificationSetup:
+        case .welcomeHero, .infoScreen, .notificationSetup:
             break
         }
     }
