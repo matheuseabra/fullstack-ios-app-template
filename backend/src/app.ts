@@ -249,6 +249,42 @@ app.get('/health', (c) => c.json({ status: 'ok', ts: Date.now() }))
 // ─────────────────────────────────────────
 // Public routes
 // ─────────────────────────────────────────
+// Dev proxy for Supabase Auth when iOS runs on physical devices.
+// It allows using the backend ngrok host as SUPABASE_URL in the app.
+app.all('/auth/v1/*', async (c) => {
+  try {
+    const reqURL = new URL(c.req.url)
+    const upstreamBase = new URL(env.SUPABASE_URL)
+    const upstreamURL = new URL(reqURL.pathname + reqURL.search, upstreamBase)
+
+    const headers = new Headers(c.req.raw.headers)
+    headers.delete('host')
+    headers.delete('content-length')
+
+    const body =
+      c.req.method === 'GET' || c.req.method === 'HEAD' ? undefined : await c.req.arrayBuffer()
+
+    const upstream = await fetch(upstreamURL, {
+      method: c.req.method,
+      headers,
+      body,
+    })
+
+    return new Response(upstream.body, {
+      status: upstream.status,
+      headers: upstream.headers,
+    })
+  } catch {
+    return c.json(
+      {
+        code: 'UPSTREAM_UNREACHABLE',
+        message: 'Failed to reach Supabase auth upstream',
+      },
+      502,
+    )
+  }
+})
+
 app.route('/auth', authRoutes)
 
 // ─────────────────────────────────────────

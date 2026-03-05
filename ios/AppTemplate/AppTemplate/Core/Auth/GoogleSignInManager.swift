@@ -48,8 +48,13 @@ final class GoogleSignInManager: ObservableObject {
 
         print("[GoogleSignIn] ✅ idToken obtained, passing to Supabase...")
         let accessToken = result.user.accessToken.tokenString
-        try await AuthManager.shared.signInWithGoogle(idToken: idToken, accessToken: accessToken)
-        print("[GoogleSignIn] ✅ Supabase sign-in complete")
+        do {
+            try await AuthManager.shared.signInWithGoogle(idToken: idToken, accessToken: accessToken)
+            print("[GoogleSignIn] ✅ Supabase sign-in complete")
+        } catch {
+            print("[GoogleSignIn] ❌ Supabase sign-in failed: \(error)")
+            throw error
+        }
     }
 }
 
