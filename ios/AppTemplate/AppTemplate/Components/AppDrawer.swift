@@ -8,13 +8,14 @@ import SwiftUI
 
 struct AppDrawer<Content: View>: View {
     @Binding var isPresented: Bool
+    let detents: Set<PresentationDetent>
     let content: () -> Content
 
     var body: some View {
         Color.clear
             .sheet(isPresented: $isPresented) {
                 content()
-                    .presentationDetents([.medium, .large])
+                    .presentationDetents(detents)
                     .presentationDragIndicator(.visible)
                     .presentationCornerRadius(Radius.xl)
                     .background(Color.bgElevated)
@@ -28,10 +29,11 @@ extension View {
     /// Attaches a bottom-sheet drawer
     func drawer<Content: View>(
         isPresented: Binding<Bool>,
+        detents: Set<PresentationDetent> = [.medium, .large],
         @ViewBuilder content: @escaping () -> Content
     ) -> some View {
         self.overlay(
-            AppDrawer(isPresented: isPresented, content: content)
+            AppDrawer(isPresented: isPresented, detents: detents, content: content)
         )
     }
 }

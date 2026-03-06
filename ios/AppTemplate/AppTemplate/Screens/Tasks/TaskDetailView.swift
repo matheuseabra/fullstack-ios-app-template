@@ -19,7 +19,7 @@ struct TaskDetailView: View {
                 VStack(alignment: .leading, spacing: Spacing.lg) {
                     VStack(alignment: .leading, spacing: Spacing.sm) {
                         Text(task.title)
-                            .font(.display(28))
+                            .font(.display(28, weight: .semibold))
                             .foregroundStyle(Color.textPrimary)
                             .strikethrough(task.isCompleted, color: Color.textTertiary)
 

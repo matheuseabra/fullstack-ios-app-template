@@ -47,7 +47,7 @@ struct TasksTabView: View {
         .sheet(isPresented: $showSettings) {
             NavigationStack { SettingsView() }
         }
-        .drawer(isPresented: $showAddTask) {
+        .drawer(isPresented: $showAddTask, detents: [.large]) {
             TaskFormView(vm: vm, isPresented: $showAddTask)
         }
         .task { await vm.load() }
@@ -57,13 +57,24 @@ struct TasksTabView: View {
     // MARK: - Custom Tab Bar
 
     private var customTabBar: some View {
-        HStack {
-            // Dashboard tab
-            tabButton(.dashboard)
+        let fabSize: CGFloat = 56
 
-            Spacer()
+        return ZStack(alignment: .top) {
+            HStack {
+                tabButton(.dashboard)
+                Spacer(minLength: fabSize + Spacing.xl)
+                tabButton(.taskList)
+            }
+            .padding(.horizontal, Spacing.xxl)
+            .padding(.top, Spacing.md)
+            .padding(.bottom, Spacing.sm)
+            .background(
+                Color.bgElevated
+                    .shadow(color: .black.opacity(0.08), radius: 12, y: -4)
+                    .ignoresSafeArea(edges: .bottom)
+            )
 
-            // Center FAB
+            // Center the FAB on the top border of the tab bar.
             Button {
                 showAddTask = true
                 HapticManager.medium()
@@ -71,27 +82,14 @@ struct TasksTabView: View {
                 Image(systemName: "plus")
                     .font(.system(size: 24, weight: .bold))
                     .foregroundStyle(.white)
-                    .frame(width: 56, height: 56)
+                    .frame(width: fabSize, height: fabSize)
                     .background(Color.accent)
                     .clipShape(Circle())
                     .shadow(color: Color.accent.opacity(0.3), radius: 8, y: 4)
             }
-                    .accessibilityIdentifier("tasksTab.addButton")
-            .offset(y: -16)
-
-            Spacer()
-
-            // Task List tab
-            tabButton(.taskList)
+            .accessibilityIdentifier("tasksTab.addButton")
+            .offset(y: -(fabSize / 2))
         }
-        .padding(.horizontal, Spacing.xxl)
-        .padding(.top, Spacing.md)
-        .padding(.bottom, Spacing.sm)
-        .background(
-            Color.bgElevated
-                .shadow(color: .black.opacity(0.08), radius: 12, y: -4)
-                .ignoresSafeArea(edges: .bottom)
-        )
     }
 
     private func tabButton(_ tab: Tab) -> some View {

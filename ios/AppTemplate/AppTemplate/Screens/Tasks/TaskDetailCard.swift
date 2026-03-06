@@ -21,7 +21,7 @@ struct TaskDetailCard: View {
             // Content
             VStack(alignment: .leading, spacing: 4) {
                 Text(task.title)
-                    .font(.body(15, weight: .medium))
+                    .font(.body(15, weight: .semibold))
                     .foregroundStyle(task.isCompleted ? Color.textTertiary : Color.textPrimary)
                     .strikethrough(task.isCompleted, color: Color.textTertiary)
                     .lineLimit(2)
