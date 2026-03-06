@@ -140,6 +140,9 @@ final class TasksViewModel: ObservableObject {
         saveContext()
         fetchLocal()
 
+        HapticManager.selection()
+        Analytics.track(.featureUsed(name: "task_updated"))
+
         #if !DEBUG
         Task { await updateTaskOnServer(task) }
         #endif

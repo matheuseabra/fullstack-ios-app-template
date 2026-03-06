@@ -48,7 +48,7 @@ struct TasksTabView: View {
             NavigationStack { SettingsView() }
         }
         .drawer(isPresented: $showAddTask) {
-            AddTaskView(vm: vm, isPresented: $showAddTask)
+            TaskFormView(vm: vm, isPresented: $showAddTask)
         }
         .task { await vm.load() }
         .onAppear { Analytics.track(.featureUsed(name: "home")) }
@@ -76,6 +76,7 @@ struct TasksTabView: View {
                     .clipShape(Circle())
                     .shadow(color: Color.accent.opacity(0.3), radius: 8, y: 4)
             }
+                    .accessibilityIdentifier("tasksTab.addButton")
             .offset(y: -16)
 
             Spacer()
@@ -111,6 +112,7 @@ struct TasksTabView: View {
             .frame(maxWidth: .infinity)
         }
         .buttonStyle(.plain)
+        .accessibilityIdentifier(tab == .dashboard ? "tasksTab.dashboardButton" : "tasksTab.listButton")
     }
 }
 

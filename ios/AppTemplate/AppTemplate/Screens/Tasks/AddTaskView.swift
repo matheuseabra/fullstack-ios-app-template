@@ -1,33 +1,47 @@
 import SwiftUI
 
-// MARK: - AddTaskView
-// Bottom sheet form for creating a new task. Shown via the center FAB.
+// MARK: - TaskFormView
+// Bottom sheet form for creating and editing tasks.
 
-struct AddTaskView: View {
+struct TaskFormView: View {
     @ObservedObject var vm: TasksViewModel
     @Binding var isPresented: Bool
+    let task: TaskItem?
 
-    @State private var title = ""
-    @State private var note = ""
-    @State private var priority: TaskItem.Priority = .medium
-    @State private var hasDueDate = true
+    @State private var title: String
+    @State private var note: String
+    @State private var priority: TaskItem.Priority
+    @State private var hasDueDate: Bool
     @State private var dueDate: Date
 
-    init(vm: TasksViewModel, isPresented: Binding<Bool>) {
+    init(vm: TasksViewModel, isPresented: Binding<Bool>, task: TaskItem? = nil) {
         self._vm = ObservedObject(wrappedValue: vm)
         self._isPresented = isPresented
-        self._dueDate = State(initialValue: vm.selectedDate)
+        self.task = task
+
+        self._title = State(initialValue: task?.title ?? "")
+        self._note = State(initialValue: task?.note ?? "")
+        self._priority = State(initialValue: task?.priority ?? .medium)
+
+        let initialDueDate = task?.dueDate ?? vm.selectedDate
+        let createModeHasDueDate = task == nil
+        self._hasDueDate = State(initialValue: task?.dueDate != nil || createModeHasDueDate)
+        self._dueDate = State(initialValue: initialDueDate)
     }
 
     @FocusState private var titleFocused: Bool
 
+    private var isEditing: Bool { task != nil }
     private var isValid: Bool { !title.trimmingCharacters(in: .whitespaces).isEmpty }
+    private var headerTitle: String { isEditing ? "Edit Task" : "New Task" }
+    private var submitTitle: String { isEditing ? "Save Changes" : "Add Task" }
+    private var submitIcon: String { isEditing ? "checkmark" : "plus" }
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.xl) {
             // Header
             HStack {
-                Text("New Task")
+                Text(headerTitle)
                     .font(.display(22))
                     .foregroundStyle(Color.textPrimary)
 
@@ -41,6 +55,7 @@ struct AddTaskView: View {
                         .foregroundStyle(Color.textTertiary)
                 }
                 .buttonStyle(.plain)
+                .accessibilityIdentifier("taskForm.closeButton")
             }
 
             // Title
@@ -55,6 +70,7 @@ struct AddTaskView: View {
                     .background(Color.bgSurface)
                     .cornerRadius(Radius.md)
                     .focused($titleFocused)
+                    .accessibilityIdentifier("taskForm.titleField")
             }
 
             // Note
@@ -69,6 +85,7 @@ struct AddTaskView: View {
                     .padding(Spacing.md)
                     .background(Color.bgSurface)
                     .cornerRadius(Radius.md)
+                    .accessibilityIdentifier("taskForm.noteField")
             }
 
             // Priority
@@ -92,6 +109,7 @@ struct AddTaskView: View {
                         .foregroundStyle(Color.textSecondary)
                 }
                 .tint(Color.accent)
+                .accessibilityIdentifier("taskForm.dueDateToggle")
 
                 if hasDueDate {
                     DatePicker(
@@ -101,6 +119,7 @@ struct AddTaskView: View {
                     )
                     .datePickerStyle(.compact)
                     .labelsHidden()
+                    .accessibilityIdentifier("taskForm.dueDatePicker")
                     .transition(.move(edge: .top).combined(with: .opacity))
                 }
             }
@@ -108,17 +127,9 @@ struct AddTaskView: View {
             Spacer()
 
             // Submit
-            AppButton("Add Task", style: .primary, icon: "plus") {
-                guard isValid else { return }
-                vm.addTask(
-                    title: title.trimmingCharacters(in: .whitespaces),
-                    note: note.trimmingCharacters(in: .whitespaces),
-                    priority: priority,
-                    dueDate: hasDueDate ? dueDate : nil
-                )
-                isPresented = false
-            }
+            AppButton(submitTitle, style: .primary, icon: submitIcon, action: submit)
             .opacity(isValid ? 1 : 0.5)
+            .accessibilityIdentifier("taskForm.submitButton")
         }
         .padding(Spacing.xl)
         .onAppear {
@@ -153,5 +164,32 @@ struct AddTaskView: View {
         case .medium: return Color.accent
         case .high:   return Color.danger
         }
+    }
+
+    private func submit() {
+        guard isValid else { return }
+
+        let sanitizedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        let sanitizedNote = note.trimmingCharacters(in: .whitespacesAndNewlines)
+        let sanitizedDueDate = hasDueDate ? dueDate : nil
+
+        if let task {
+            vm.updateTask(
+                task,
+                title: sanitizedTitle,
+                note: sanitizedNote,
+                priority: priority,
+                dueDate: sanitizedDueDate
+            )
+        } else {
+            vm.addTask(
+                title: sanitizedTitle,
+                note: sanitizedNote,
+                priority: priority,
+                dueDate: sanitizedDueDate
+            )
+        }
+
+        isPresented = false
     }
 }

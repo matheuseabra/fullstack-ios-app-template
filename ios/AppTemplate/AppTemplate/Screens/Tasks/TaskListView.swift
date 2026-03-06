@@ -7,6 +7,8 @@ struct TaskListView: View {
     @ObservedObject var vm: TasksViewModel
     @State private var filter: Filter = .all
     @State private var searchText = ""
+    @State private var selectedTask: TaskItem?
+    @State private var showTaskDetail = false
 
     enum Filter: String, CaseIterable {
         case all = "All"
@@ -81,6 +83,11 @@ struct TaskListView: View {
                                     }
                                     .tint(Color.success)
                                 }
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    selectedTask = task
+                                    showTaskDetail = true
+                                }
                             }
                         }
                         .listStyle(.plain)
@@ -92,6 +99,11 @@ struct TaskListView: View {
             .navigationTitle("Tasks")
             .navigationBarTitleDisplayMode(.large)
             .searchable(text: $searchText, prompt: "Search tasks...")
+            .navigationDestination(isPresented: $showTaskDetail) {
+                if let selectedTask {
+                    TaskDetailView(vm: vm, task: selectedTask)
+                }
+            }
         }
     }
 

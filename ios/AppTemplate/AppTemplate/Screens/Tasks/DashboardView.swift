@@ -7,6 +7,8 @@ struct DashboardView: View {
     @ObservedObject var vm: TasksViewModel
     @Binding var showSettings: Bool
     @State private var showUpgrade = false
+    @State private var selectedTask: TaskItem?
+    @State private var showTaskDetail = false
 
     var body: some View {
         NavigationStack {
@@ -75,6 +77,11 @@ struct DashboardView: View {
             .sheet(isPresented: $showUpgrade) {
                 PaywallFlowView()
             }
+            .navigationDestination(isPresented: $showTaskDetail) {
+                if let selectedTask {
+                    TaskDetailView(vm: vm, task: selectedTask)
+                }
+            }
         }
     }
 
@@ -116,6 +123,11 @@ struct DashboardView: View {
                         vm.toggleComplete(task)
                     }
                     .padding(.horizontal, Spacing.lg)
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        selectedTask = task
+                        showTaskDetail = true
+                    }
                     .transition(.asymmetric(
                         insertion: .opacity.combined(with: .move(edge: .top)),
                         removal: .opacity
