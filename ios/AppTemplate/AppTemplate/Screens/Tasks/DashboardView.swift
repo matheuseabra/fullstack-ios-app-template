@@ -5,9 +5,15 @@ import SwiftUI
 
 struct DashboardView: View {
     @ObservedObject var vm: TasksViewModel
+    @Binding var isTabBarVisible: Bool
     @State private var selectedTask: TaskItem?
     @State private var showTaskDetail = false
     @State private var showPaywall = false
+
+    init(vm: TasksViewModel, isTabBarVisible: Binding<Bool> = .constant(true)) {
+        self._vm = ObservedObject(wrappedValue: vm)
+        self._isTabBarVisible = isTabBarVisible
+    }
 
     var body: some View {
         NavigationStack {
@@ -48,7 +54,16 @@ struct DashboardView: View {
                     showPaywall = false
                 }
             }
-            .onAppear { Analytics.track(.featureUsed(name: "today")) }
+            .onChange(of: showTaskDetail) { _, newValue in
+                isTabBarVisible = !newValue
+            }
+            .onChange(of: showPaywall) { _, newValue in
+                isTabBarVisible = !newValue
+            }
+            .onAppear {
+                isTabBarVisible = true
+                Analytics.track(.featureUsed(name: "today"))
+            }
         }
     }
 
@@ -89,7 +104,7 @@ struct DashboardView: View {
 
     private var tasksSection: some View {
         VStack(alignment: .leading, spacing: Spacing.xl) {
-            if orderedVisibleTasks.isEmpty {
+            if vm.activeTasksForSelectedDate.isEmpty {
                 VStack(spacing: Spacing.md) {
                     Image(systemName: "checklist")
                         .font(.system(size: 40, weight: .ultraLight))
@@ -104,14 +119,14 @@ struct DashboardView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, Spacing.xxxl)
             } else {
-                VStack(spacing: Spacing.md) {
-                    ForEach(orderedVisibleTasks, id: \.id) { task in
+                VStack(spacing: 0) {
+                    ForEach(Array(vm.activeTasksForSelectedDate.enumerated()), id: \.element.id) { index, task in
                         HStack(alignment: .top, spacing: Spacing.md) {
                             Text(createdTimeString(for: task))
                                 .font(.body(11, weight: .bold))
                                 .foregroundStyle(Color.textSecondary)
                                 .frame(width: 44, alignment: .trailing)
-                                .padding(.top, Spacing.md)
+                                .padding(.top, Spacing.lg)
 
                             TaskDetailCard(task: task) {
                                 vm.toggleComplete(task)
@@ -122,27 +137,17 @@ struct DashboardView: View {
                             selectedTask = task
                             showTaskDetail = true
                         }
-                    }
-                    .transition(.opacity.combined(with: .move(edge: .top)))
-                }
-            }
-        }
-        .animation(.snappy, value: orderedVisibleTasks.count)
-    }
 
-    private var orderedVisibleTasks: [TaskItem] {
-        vm.tasksForSelectedDate.sorted { lhs, rhs in
-            switch (lhs.dueDate, rhs.dueDate) {
-            case let (left?, right?):
-                return left < right
-            case (_?, nil):
-                return true
-            case (nil, _?):
-                return false
-            case (nil, nil):
-                return lhs.createdAt < rhs.createdAt
+                        if index < vm.activeTasksForSelectedDate.count - 1 {
+                            DottedDivider()
+                                .padding(.leading, 56)
+                        }
+                    }
+                }
+                .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
+        .animation(.snappy, value: vm.activeTasksForSelectedDate.count)
     }
 
     private var todayDateText: String {
@@ -152,11 +157,11 @@ struct DashboardView: View {
     }
 
     private var emptyStateTitle: String {
-        Calendar.current.isDateInToday(vm.selectedDate) ? "No tasks for today" : "No tasks for this day"
+        Calendar.current.isDateInToday(vm.selectedDate) ? "You have nothing scheduled for today." : "Nothing scheduled for this day."
     }
 
     private var emptyStateSubtitle: String {
-        Calendar.current.isDateInToday(vm.selectedDate) ? "Tap + to add one" : "Tap + to add one for this day"
+        Calendar.current.isDateInToday(vm.selectedDate) ? "Have a good \(vm.dayPartGreeting)." : "Pick another day or add a task."
     }
 
     private func createdTimeString(for task: TaskItem) -> String {

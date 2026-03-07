@@ -148,30 +148,42 @@ final class TasksViewModel: ObservableObject {
         #endif
     }
 
-    // MARK: - Derived Data
+    struct DaySummary {
+        let pendingCount: Int
+        let completedCount: Int
 
-    var tasksForSelectedDate: [TaskItem] {
-        let calendar = Calendar.current
-        let startOfSelected = calendar.startOfDay(for: selectedDate)
-        return tasks.filter { task in
-            if let dueDate = task.dueDate {
-                return calendar.startOfDay(for: dueDate) == startOfSelected
-            }
-            // Tasks with no due date appear on today's view
-            return calendar.isDateInToday(selectedDate)
+        var totalCount: Int {
+            pendingCount + completedCount
         }
     }
 
+    private enum TaskFilterScope {
+        case active
+        case completed
+        case all
+    }
+
+    // MARK: - Derived Data
+
+    var tasksForSelectedDate: [TaskItem] {
+        filteredTasks(for: selectedDate, scope: .all)
+    }
+
+    var activeTasksForSelectedDate: [TaskItem] {
+        filteredTasks(for: selectedDate, scope: .active)
+    }
+
+    var completedTasksForSelectedDate: [TaskItem] {
+        filteredTasks(for: selectedDate, scope: .completed)
+    }
+
+    var historicalTasksForSelectedDate: [TaskItem] {
+        historicalTasks(on: selectedDate)
+            .sorted(by: sortTasks)
+    }
+
     var todayTasks: [TaskItem] {
-        let calendar = Calendar.current
-        let startOfToday = calendar.startOfDay(for: Date())
-        return tasks.filter { task in
-            if let dueDate = task.dueDate {
-                return calendar.startOfDay(for: dueDate) == startOfToday
-            }
-            // Undated tasks count toward today's progress
-            return true
-        }
+        tasksOccurring(on: Date())
     }
 
     var completedToday: Int {
@@ -195,20 +207,122 @@ final class TasksViewModel: ObservableObject {
         tasks.filter(\.isCompleted)
     }
 
-    var greeting: String {
+    var dayPartGreeting: String {
         let hour = Calendar.current.component(.hour, from: Date())
-        let name = user?.fullName?.components(separatedBy: " ").first ?? ""
-        let prefix: String
+
         switch hour {
-        case 5..<12:  prefix = "Good morning"
-        case 12..<17: prefix = "Good afternoon"
-        case 17..<22: prefix = "Good evening"
-        default:      prefix = "Good night"
+        case 5..<12:
+            return "morning"
+        case 12..<17:
+            return "afternoon"
+        case 17..<22:
+            return "evening"
+        default:
+            return "night"
         }
+    }
+
+    var greeting: String {
+        let name = user?.fullName?.components(separatedBy: " ").first ?? ""
+        let prefix = "Good \(dayPartGreeting)"
         return name.isEmpty ? "\(prefix)!" : "\(prefix), \(name)!"
     }
 
+    func taskSummary(for date: Date) -> DaySummary {
+        let matchingTasks = historicalTasks(on: date)
+
+        return DaySummary(
+            pendingCount: matchingTasks.filter { !$0.isCompleted }.count,
+            completedCount: matchingTasks.filter(\.isCompleted).count
+        )
+    }
+
+    func monthSummaries(for month: Date) -> [Date: DaySummary] {
+        let calendar = Calendar.current
+        guard let monthInterval = calendar.dateInterval(of: .month, for: month),
+              let dayRange = calendar.range(of: .day, in: .month, for: monthInterval.start) else {
+            return [:]
+        }
+
+        return dayRange.reduce(into: [Date: DaySummary]()) { summaries, day in
+            guard let date = calendar.date(byAdding: .day, value: day - 1, to: monthInterval.start) else {
+                return
+            }
+
+            let summary = taskSummary(for: date)
+            if summary.totalCount > 0 {
+                summaries[calendar.startOfDay(for: date)] = summary
+            }
+        }
+    }
+
     // MARK: - Private
+
+    private func filteredTasks(for date: Date, scope: TaskFilterScope) -> [TaskItem] {
+        tasksOccurring(on: date)
+            .filter { task in
+                switch scope {
+                case .active:
+                    return !task.isCompleted
+                case .completed:
+                    return task.isCompleted
+                case .all:
+                    return true
+                }
+            }
+            .sorted(by: sortTasks)
+    }
+
+    private func historicalTasks(on date: Date) -> [TaskItem] {
+        let calendar = Calendar.current
+        let startOfDay = calendar.startOfDay(for: date)
+
+        return tasks.filter { task in
+            guard let dueDate = task.dueDate else {
+                return false
+            }
+
+            return calendar.startOfDay(for: dueDate) == startOfDay
+        }
+    }
+
+    private func tasksOccurring(on date: Date) -> [TaskItem] {
+        let calendar = Calendar.current
+        let startOfDay = calendar.startOfDay(for: date)
+
+        return tasks.filter { task in
+            if let dueDate = task.dueDate {
+                return calendar.startOfDay(for: dueDate) == startOfDay
+            }
+
+            return calendar.isDateInToday(startOfDay)
+        }
+    }
+
+    private func sortTasks(_ lhs: TaskItem, _ rhs: TaskItem) -> Bool {
+        if lhs.isCompleted != rhs.isCompleted {
+            return !lhs.isCompleted && rhs.isCompleted
+        }
+
+        switch (lhs.dueDate, rhs.dueDate) {
+        case let (left?, right?):
+            if left != right {
+                return left < right
+            }
+        case (_?, nil):
+            return true
+        case (nil, _?):
+            return false
+        case (nil, nil):
+            break
+        }
+
+        if lhs.isCompleted && rhs.isCompleted {
+            return (lhs.completedAt ?? lhs.updatedAt) > (rhs.completedAt ?? rhs.updatedAt)
+        }
+
+        return lhs.createdAt < rhs.createdAt
+    }
 
     private func saveContext() {
         do {

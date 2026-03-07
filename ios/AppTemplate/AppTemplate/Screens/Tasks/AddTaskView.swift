@@ -246,9 +246,9 @@ struct TaskFormView: View {
             HapticManager.selection()
         } label: {
             HStack(spacing: 6) {
-                Circle()
+                RoundedRectangle(cornerRadius: 4, style: .continuous)
                     .fill(chipColor(p))
-                    .frame(width: 8, height: 8)
+                    .frame(width: 10, height: 10)
                 Text(p.label)
                     .font(.body(13, weight: .bold))
             }
@@ -267,8 +267,8 @@ struct TaskFormView: View {
 
     private func chipColor(_ p: TaskItem.Priority) -> Color {
         switch p {
-        case .low:    return Color.warning
-        case .medium: return Color.accent
+        case .low:    return Color.success
+        case .medium: return Color.warning
         case .high:   return Color.danger
         }
     }

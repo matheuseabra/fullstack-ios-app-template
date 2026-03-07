@@ -13,13 +13,14 @@ final class AppTemplateUITests: XCTestCase {
     }
 
     @MainActor
-    func testCreateTaskAppearsInTaskList() throws {
+    func testCreateTaskAppearsInCalendarDaySheet() throws {
         let app = launchAppForTaskCRUD()
         let taskTitle = "UI Create \(UUID().uuidString.prefix(6))"
 
         createTask(app: app, title: taskTitle)
 
         app.buttons["tasksTab.listButton"].tap()
+        app.buttons["calendar.day.today"].tap()
         XCTAssertTrue(app.staticTexts[taskTitle].waitForExistence(timeout: 5))
     }
 
@@ -45,7 +46,6 @@ final class AppTemplateUITests: XCTestCase {
 
         createTask(app: app, title: initialTitle)
 
-        app.buttons["tasksTab.listButton"].tap()
         let initialTaskText = app.staticTexts[initialTitle]
         XCTAssertTrue(initialTaskText.waitForExistence(timeout: 5))
         initialTaskText.tap()
@@ -76,8 +76,28 @@ final class AppTemplateUITests: XCTestCase {
         XCTAssertTrue(deleteAlert.waitForExistence(timeout: 5))
         deleteAlert.buttons["Delete"].tap()
 
-        app.buttons["tasksTab.listButton"].tap()
         XCTAssertFalse(app.staticTexts[updatedTitle].waitForExistence(timeout: 3))
+    }
+
+    @MainActor
+    func testCompletedTaskDisappearsFromDashboard() throws {
+        let app = launchAppForTaskCRUD()
+        let taskTitle = "UI Complete \(UUID().uuidString.prefix(6))"
+
+        createTask(app: app, title: taskTitle)
+
+        let taskTitleText = app.staticTexts[taskTitle]
+        XCTAssertTrue(taskTitleText.waitForExistence(timeout: 5))
+        taskTitleText.tap()
+
+        let toggleStatusButton = app.buttons["taskDetail.toggleStatusButton"]
+        XCTAssertTrue(toggleStatusButton.waitForExistence(timeout: 5))
+        toggleStatusButton.tap()
+
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+
+        XCTAssertFalse(app.staticTexts[taskTitle].waitForExistence(timeout: 3))
+        XCTAssertTrue(app.staticTexts["You have nothing scheduled for today."].waitForExistence(timeout: 5))
     }
 
     // MARK: - Helpers

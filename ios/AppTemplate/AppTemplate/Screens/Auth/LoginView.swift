@@ -60,6 +60,7 @@ struct LoginView: View {
                         AppButton(
                             "Sign in with Google",
                             style: .ghost,
+                            icon: .googleMark,
                             isLoading: vm.isLoadingGoogle
                         ) {
                             Task { await vm.signInWithGoogle() }

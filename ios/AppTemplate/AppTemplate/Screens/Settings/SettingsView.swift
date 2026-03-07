@@ -5,8 +5,13 @@ struct SettingsView: View {
     @EnvironmentObject private var router: AppRouter
     @StateObject private var vm = SettingsViewModel()
     @EnvironmentObject private var theme: AppTheme
+    @Binding var isTabBarVisible: Bool
     @State private var showSignOutConfirm = false
     @State private var showAppearanceSheet = false
+
+    init(isTabBarVisible: Binding<Bool> = .constant(true)) {
+        self._isTabBarVisible = isTabBarVisible
+    }
 
     var body: some View {
         NavigationStack {
@@ -26,14 +31,18 @@ struct SettingsView: View {
                             rows: [
                                 AnyView(
                                     NavigationLink {
-                                        NotificationPreferencesView()
+                                        settingsDestination {
+                                            NotificationPreferencesView()
+                                        }
                                     } label: {
                                         settingsRow(icon: "bell.fill", title: "Notifications")
                                     }
                                 ),
                                 AnyView(
                                     NavigationLink {
-                                        SubscriptionManagementView()
+                                        settingsDestination {
+                                            SubscriptionManagementView()
+                                        }
                                     } label: {
                                         settingsRow(icon: "star.fill", title: "Subscription", trailing: PaymentManager.shared.hasProAccess ? "Pro" : nil)
                                     }
@@ -80,6 +89,10 @@ struct SettingsView: View {
                 AppearanceSheet(theme: theme)
             }
             .onAppear { Analytics.track(.featureUsed(name: "settings")) }
+            .onAppear { isTabBarVisible = true }
+            .onChange(of: showAppearanceSheet) { _, isPresented in
+                isTabBarVisible = !isPresented
+            }
         }
         .confirmationDialog("Are you sure?", isPresented: $showSignOutConfirm, titleVisibility: .visible) {
             Button("Sign Out", role: .destructive) { vm.signOut() }
@@ -87,6 +100,10 @@ struct SettingsView: View {
         } message: {
             Text("You'll need to sign in again to use the app.")
         }
+    }
+
+    private func settingsDestination<Content: View>(@ViewBuilder content: () -> Content) -> some View {
+        SettingsDestinationContainer(isTabBarVisible: $isTabBarVisible, content: content())
     }
 
     private var profileCard: some View {
@@ -230,6 +247,17 @@ struct SettingsView: View {
         }
         .padding(.horizontal, Spacing.lg)
         .frame(height: 58)
+    }
+}
+
+private struct SettingsDestinationContainer<Content: View>: View {
+    @Binding var isTabBarVisible: Bool
+    let content: Content
+
+    var body: some View {
+        content
+            .onAppear { isTabBarVisible = false }
+            .onDisappear { isTabBarVisible = true }
     }
 }
 

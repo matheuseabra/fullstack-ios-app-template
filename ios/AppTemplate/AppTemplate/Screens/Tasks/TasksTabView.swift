@@ -8,6 +8,7 @@ struct TasksTabView: View {
     @State private var selectedTab: Tab = .today
     @State private var previousTab: Tab = .today
     @State private var showAddTask = false
+    @State private var isTabBarVisible = true
 
     enum Tab: Int, CaseIterable {
         case today, calendar, stats, settings
@@ -36,35 +37,45 @@ struct TasksTabView: View {
                 currentScreen
                     .id(selectedTab)
                     .transition(tabTransition)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-                customTabBar
-                    .frame(width: proxy.size.width)
-                    .position(
-                        x: proxy.size.width / 2,
-                        y: proxy.size.height - proxy.safeAreaInsets.bottom
-                    )
+                if isTabBarVisible {
+                    customTabBar
+                        .frame(width: proxy.size.width)
+                        .position(
+                            x: proxy.size.width / 2,
+                            y: proxy.size.height - proxy.safeAreaInsets.bottom
+                        )
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
             }
         }
         .ignoresSafeArea(.keyboard)
         .drawer(isPresented: $showAddTask, detents: [.large]) {
             TaskFormView(vm: vm, isPresented: $showAddTask)
         }
+        .animation(.easeInOut(duration: 0.2), value: isTabBarVisible)
         .task { await vm.load() }
         .onAppear { Analytics.track(.featureUsed(name: "home")) }
+        .onChange(of: selectedTab) { _, _ in
+            isTabBarVisible = true
+        }
+        .onChange(of: showAddTask) { _, isPresented in
+            isTabBarVisible = !isPresented
+        }
     }
 
     @ViewBuilder
     private var currentScreen: some View {
         switch selectedTab {
         case .today:
-            DashboardView(vm: vm)
+            DashboardView(vm: vm, isTabBarVisible: $isTabBarVisible)
         case .calendar:
-            TaskListView(vm: vm)
+            TaskListView(vm: vm, isTabBarVisible: $isTabBarVisible)
         case .stats:
             StatsView(vm: vm)
         case .settings:
-            SettingsView()
+            SettingsView(isTabBarVisible: $isTabBarVisible)
         }
     }
 

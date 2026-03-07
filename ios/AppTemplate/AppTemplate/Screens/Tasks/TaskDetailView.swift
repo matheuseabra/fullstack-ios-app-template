@@ -138,8 +138,9 @@ struct TaskDetailView: View {
 
     private var priorityBadge: some View {
         HStack(spacing: 3) {
-            Image(systemName: task.priority.icon)
-                .font(.system(size: 10, weight: .bold))
+            RoundedRectangle(cornerRadius: 4, style: .continuous)
+                .fill(priorityColor)
+                .frame(width: 10, height: 10)
             Text(task.priority.label)
                 .font(.body(12, weight: .semibold))
         }
@@ -152,8 +153,8 @@ struct TaskDetailView: View {
 
     private var priorityColor: Color {
         switch task.priority {
-        case .low:    return Color.textTertiary
-        case .medium: return Color.accent
+        case .low:    return Color.success
+        case .medium: return Color.warning
         case .high:   return Color.danger
         }
     }

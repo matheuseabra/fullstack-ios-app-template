@@ -62,8 +62,8 @@ final class TaskItem {
 
         var color: String {
             switch self {
-            case .low:    return "textTertiary"
-            case .medium: return "accent"
+            case .low:    return "success"
+            case .medium: return "warning"
             case .high:   return "danger"
             }
         }
