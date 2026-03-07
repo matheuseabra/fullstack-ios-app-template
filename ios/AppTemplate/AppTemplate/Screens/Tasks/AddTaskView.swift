@@ -1,7 +1,7 @@
 import SwiftUI
 
 // MARK: - TaskFormView
-// Bottom sheet form for creating and editing tasks.
+// Bottom sheet matching the Stitch create-task reference.
 
 struct TaskFormView: View {
     @ObservedObject var vm: TasksViewModel
@@ -38,103 +38,205 @@ struct TaskFormView: View {
     private var submitIcon: String { isEditing ? "checkmark" : "plus" }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: Spacing.xl) {
-            // Header
-            HStack {
-                Text(headerTitle)
-                    .font(.display(22))
-                    .foregroundStyle(Color.textPrimary)
+        VStack(spacing: 0) {
+            Capsule()
+                .fill(Color.border)
+                .frame(width: 48, height: 5)
+                .padding(.top, Spacing.md)
+                .padding(.bottom, Spacing.lg)
 
-                Spacer()
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: Spacing.xl) {
+                    topModePicker
 
-                Button {
-                    isPresented = false
-                } label: {
-                    Image(systemName: "xmark.circle.fill")
-                        .font(.system(size: 28))
-                        .foregroundStyle(Color.textTertiary)
-                }
-                .buttonStyle(.plain)
-                .accessibilityIdentifier("taskForm.closeButton")
-            }
+                    TextField("Task title", text: $title)
+                        .font(.display(30, weight: .bold))
+                        .foregroundStyle(Color.textPrimary)
+                        .textFieldStyle(.plain)
+                        .focused($titleFocused)
+                        .accessibilityIdentifier("taskForm.titleField")
 
-            // Title
-            VStack(alignment: .leading, spacing: Spacing.xs) {
-                Text("Title")
-                    .font(.body(13, weight: .semibold))
-                    .foregroundStyle(Color.textSecondary)
-
-                TextField("What do you need to do?", text: $title)
-                    .font(.body(16))
-                    .padding(Spacing.md)
-                    .background(Color.bgSurface)
-                    .cornerRadius(Radius.md)
-                    .focused($titleFocused)
-                    .accessibilityIdentifier("taskForm.titleField")
-            }
-
-            // Note
-            VStack(alignment: .leading, spacing: Spacing.xs) {
-                Text("Note (optional)")
-                    .font(.body(13, weight: .semibold))
-                    .foregroundStyle(Color.textSecondary)
-
-                TextField("Add details...", text: $note, axis: .vertical)
-                    .font(.body(15))
-                    .lineLimit(3...5)
-                    .padding(Spacing.md)
-                    .background(Color.bgSurface)
-                    .cornerRadius(Radius.md)
-                    .accessibilityIdentifier("taskForm.noteField")
-            }
-
-            // Priority
-            VStack(alignment: .leading, spacing: Spacing.xs) {
-                Text("Priority")
-                    .font(.body(13, weight: .semibold))
-                    .foregroundStyle(Color.textSecondary)
-
-                HStack(spacing: Spacing.sm) {
-                    ForEach(TaskItem.Priority.allCases, id: \.self) { p in
-                        priorityChip(p)
-                    }
-                }
-            }
-
-            // Due date
-            VStack(alignment: .leading, spacing: Spacing.xs) {
-                Toggle(isOn: $hasDueDate.animation()) {
-                    Text("Due date")
-                        .font(.body(13, weight: .semibold))
+                    TextField("Task description", text: $note, axis: .vertical)
+                        .font(.body(18))
                         .foregroundStyle(Color.textSecondary)
-                }
-                .tint(Color.accent)
-                .accessibilityIdentifier("taskForm.dueDateToggle")
+                        .lineLimit(2...4)
+                        .textFieldStyle(.plain)
+                        .accessibilityIdentifier("taskForm.noteField")
 
-                if hasDueDate {
-                    DatePicker(
-                        "Due",
-                        selection: $dueDate,
-                        displayedComponents: [.date, .hourAndMinute]
-                    )
-                    .datePickerStyle(.compact)
-                    .labelsHidden()
-                    .accessibilityIdentifier("taskForm.dueDatePicker")
-                    .transition(.move(edge: .top).combined(with: .opacity))
+                    Rectangle()
+                        .fill(Color.border)
+                        .frame(height: 1)
+                        .overlay(
+                            HStack(spacing: 4) {
+                                ForEach(0..<24, id: \.self) { index in
+                                    Circle()
+                                        .fill(index.isMultiple(of: 2) ? Color.clear : Color.bgElevated)
+                                        .frame(width: 2, height: 2)
+                                }
+                            }
+                        )
+
+                    VStack(alignment: .leading, spacing: Spacing.md) {
+                        Text("Sub tasks")
+                            .font(.body(12, weight: .bold))
+                            .tracking(1.1)
+                            .textCase(.uppercase)
+                            .foregroundStyle(Color.textSecondary)
+
+                        Button {
+                            HapticManager.selection()
+                        } label: {
+                            Image(systemName: "plus")
+                                .font(.system(size: 20, weight: .bold))
+                                .foregroundStyle(Color.textSecondary)
+                                .frame(width: 42, height: 42)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: Radius.md)
+                                        .stroke(Color.border, style: StrokeStyle(lineWidth: 1.5, dash: [4]))
+                                )
+                        }
+                        .buttonStyle(.plain)
+                    }
+
+                    VStack(alignment: .leading, spacing: Spacing.md) {
+                        HStack(spacing: Spacing.sm) {
+                            scheduleChip(
+                                label: hasDueDate ? dayChipLabel : "No date",
+                                systemName: hasDueDate ? nil : "calendar.badge.minus",
+                                accent: hasDueDate
+                            ) {
+                                withAnimation(.snappy) {
+                                    hasDueDate.toggle()
+                                    if hasDueDate {
+                                        dueDate = vm.selectedDate
+                                    }
+                                }
+                            }
+
+                            scheduleChip(
+                                label: hasDueDate ? timeChipLabel : "All day",
+                                systemName: "clock",
+                                accent: hasDueDate
+                            ) {
+                                hasDueDate = true
+                            }
+
+                            Spacer()
+
+                            Button {
+                                withAnimation(.snappy) {
+                                    hasDueDate.toggle()
+                                }
+                            } label: {
+                                Image(systemName: "chevron.down")
+                                    .font(.system(size: 18, weight: .bold))
+                                    .foregroundStyle(Color.textPrimary)
+                                    .frame(width: 48, height: 48)
+                                    .background(Color.bgSurface)
+                                    .clipShape(RoundedRectangle(cornerRadius: Radius.lg))
+                            }
+                            .buttonStyle(.plain)
+                        }
+
+                        if hasDueDate {
+                            DatePicker(
+                                "Due",
+                                selection: $dueDate,
+                                displayedComponents: [.date, .hourAndMinute]
+                            )
+                            .datePickerStyle(.graphical)
+                            .labelsHidden()
+                            .tint(Color.accent)
+                            .accessibilityIdentifier("taskForm.dueDatePicker")
+                        }
+
+                        HStack(spacing: Spacing.sm) {
+                            ForEach(TaskItem.Priority.allCases, id: \.self) { value in
+                                priorityChip(value)
+                            }
+                        }
+                    }
+
+                    Button(action: submit) {
+                        Text(submitTitle)
+                            .font(.body(20, weight: .bold))
+                            .foregroundStyle(.white)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 62)
+                            .background(Color.black)
+                            .clipShape(RoundedRectangle(cornerRadius: 24))
+                    }
+                    .buttonStyle(.plain)
+                    .opacity(isValid ? 1 : 0.45)
+                    .disabled(!isValid)
+                    .accessibilityIdentifier("taskForm.submitButton")
                 }
+                .padding(.horizontal, Spacing.xl)
+                .padding(.bottom, Spacing.xxxl)
             }
-
-            Spacer()
-
-            // Submit
-            AppButton(submitTitle, style: .primary, icon: submitIcon, action: submit)
-            .opacity(isValid ? 1 : 0.5)
-            .accessibilityIdentifier("taskForm.submitButton")
         }
-        .padding(Spacing.xl)
+        .background(Color.bgElevated)
         .onAppear {
             titleFocused = true
         }
+    }
+
+    private var topModePicker: some View {
+        HStack(spacing: Spacing.sm) {
+            modeChip(title: "Task", systemName: "checkmark.circle", active: true)
+            modeChip(title: "Event", systemName: "calendar", active: false)
+            modeChip(title: "Habit", systemName: "repeat", active: false)
+        }
+    }
+
+    private func modeChip(title: String, systemName: String, active: Bool) -> some View {
+        HStack(spacing: 6) {
+            Image(systemName: systemName)
+                .font(.system(size: 15, weight: .semibold))
+            Text(title)
+                .font(.body(13, weight: active ? .bold : .medium))
+        }
+        .foregroundStyle(active ? Color.textPrimary : Color.textSecondary)
+        .frame(maxWidth: .infinity)
+        .frame(height: 42)
+        .background(active ? Color.bg : Color.bgSurface)
+        .clipShape(RoundedRectangle(cornerRadius: Radius.lg))
+    }
+
+    private func scheduleChip(label: String, systemName: String?, accent: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 6) {
+                if let systemName {
+                    Image(systemName: systemName)
+                        .font(.system(size: 12, weight: .bold))
+                } else {
+                    Circle()
+                        .fill(Color.danger)
+                        .frame(width: 8, height: 8)
+                }
+
+                Text(label)
+                    .font(.body(13, weight: .bold))
+            }
+            .foregroundStyle(accent ? Color.textPrimary : Color.textSecondary)
+            .padding(.horizontal, Spacing.md)
+            .frame(height: 42)
+            .background(Color.bgSurface)
+            .clipShape(Capsule())
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var dayChipLabel: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EEE, MMM d"
+        return formatter.string(from: dueDate)
+    }
+
+    private var timeChipLabel: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "h:mm a"
+        return formatter.string(from: dueDate)
     }
 
     private func priorityChip(_ p: TaskItem.Priority) -> some View {
@@ -143,24 +245,29 @@ struct TaskFormView: View {
             priority = p
             HapticManager.selection()
         } label: {
-            HStack(spacing: 4) {
-                Image(systemName: p.icon)
-                    .font(.system(size: 12, weight: .bold))
+            HStack(spacing: 6) {
+                Circle()
+                    .fill(chipColor(p))
+                    .frame(width: 8, height: 8)
                 Text(p.label)
-                    .font(.body(13, weight: .semibold))
+                    .font(.body(13, weight: .bold))
             }
             .padding(.horizontal, Spacing.md)
-            .padding(.vertical, Spacing.sm)
-            .foregroundStyle(isSelected ? .white : chipColor(p))
-            .background(isSelected ? chipColor(p) : chipColor(p).opacity(0.12))
-            .cornerRadius(Radius.full)
+            .frame(height: 40)
+            .foregroundStyle(isSelected ? Color.textPrimary : Color.textSecondary)
+            .background(isSelected ? Color.bgSurface : Color.bgSurface.opacity(0.7))
+            .overlay(
+                Capsule()
+                    .stroke(isSelected ? chipColor(p).opacity(0.65) : Color.clear, lineWidth: 1.5)
+            )
+            .clipShape(Capsule())
         }
         .buttonStyle(.plain)
     }
 
     private func chipColor(_ p: TaskItem.Priority) -> Color {
         switch p {
-        case .low:    return Color.textTertiary
+        case .low:    return Color.warning
         case .medium: return Color.accent
         case .high:   return Color.danger
         }

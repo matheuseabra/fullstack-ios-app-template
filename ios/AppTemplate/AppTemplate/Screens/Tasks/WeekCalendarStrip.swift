@@ -1,41 +1,44 @@
 import SwiftUI
 
 // MARK: - WeekCalendarStrip
-// Horizontal scrollable week view with day pills. Matches the mood tracker reference layout.
+// Horizontal week selector matching the Stitch timeline reference.
 
 struct WeekCalendarStrip: View {
     @Binding var selectedDate: Date
 
     private let calendar = Calendar.current
-    private let today = Date()
 
-    // Show 2 weeks (7 days back + today + 6 days forward)
     private var days: [Date] {
-        (-7...6).compactMap { offset in
-            calendar.date(byAdding: .day, value: offset, to: today)
+        let anchor = calendar.dateInterval(of: .weekOfYear, for: selectedDate)?.start ?? selectedDate
+        return (0..<7).compactMap { offset in
+            calendar.date(byAdding: .day, value: offset, to: anchor)
         }
     }
 
     var body: some View {
         ScrollViewReader { proxy in
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: Spacing.sm) {
+                HStack(spacing: Spacing.md) {
                     ForEach(days, id: \.self) { date in
-                        dayPill(date)
+                        dayCard(date)
                             .id(date)
                     }
                 }
-                .padding(.horizontal, Spacing.lg)
+                .padding(.horizontal, 2)
             }
             .onAppear {
-                proxy.scrollTo(today, anchor: .center)
+                proxy.scrollTo(selectedDate, anchor: .center)
+            }
+            .onChange(of: selectedDate) { _, newValue in
+                withAnimation(.snappy(duration: 0.2)) {
+                    proxy.scrollTo(newValue, anchor: .center)
+                }
             }
         }
     }
 
-    private func dayPill(_ date: Date) -> some View {
+    private func dayCard(_ date: Date) -> some View {
         let isSelected = calendar.isDate(date, inSameDayAs: selectedDate)
-        let isToday = calendar.isDateInToday(date)
 
         return Button {
             withAnimation(.snappy(duration: 0.2)) {
@@ -43,27 +46,20 @@ struct WeekCalendarStrip: View {
             }
             HapticManager.selection()
         } label: {
-            VStack(spacing: 6) {
+            VStack(spacing: Spacing.sm) {
                 Text(dayOfWeek(date))
-                    .font(.body(11, weight: .medium))
-                    .foregroundStyle(isSelected ? .white : Color.textTertiary)
+                    .font(.body(10, weight: .bold))
+                    .textCase(.uppercase)
+                    .foregroundStyle(isSelected ? Color.white : Color.textSecondary)
 
                 Text("\(calendar.component(.day, from: date))")
-                    .font(.body(16, weight: isSelected ? .bold : .semibold))
-                    .foregroundStyle(isSelected ? .white : Color.textPrimary)
+                    .font(.body(14, weight: isSelected ? .bold : .semibold))
+                    .foregroundStyle(isSelected ? Color.white : Color.textPrimary)
             }
-            .frame(width: 44, height: 64)
+            .frame(width: 44, height: 68)
             .background(
-                RoundedRectangle(cornerRadius: Radius.lg)
-                    .fill(isSelected ? Color.accent : Color.bgSurface)
-            )
-            .overlay(
-                isToday && !isSelected
-                    ? Circle()
-                        .fill(Color.accent)
-                        .frame(width: 5, height: 5)
-                        .offset(y: 26)
-                    : nil
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(isSelected ? Color.black : Color.clear)
             )
         }
         .buttonStyle(.plain)

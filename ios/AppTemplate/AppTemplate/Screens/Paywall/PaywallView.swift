@@ -2,189 +2,174 @@ import SwiftUI
 import RevenueCat
 
 // MARK: - PaywallView
-// Screen 2 — Custom pricing plans matching "Paywall Pricing Plans" Stitch design.
-// Replaces RevenueCat's native PaywallView with a fully custom UI while
-// keeping the RevenueCat SDK for purchase / restore logic.
+// Single-screen premium paywall matching the latest Stitch export.
 
 struct PaywallView: View {
     @EnvironmentObject private var router: AppRouter
     @StateObject private var vm = PaywallViewModel()
 
     var body: some View {
-        ZStack {
-            Color.bg.ignoresSafeArea()
+        NavigationStack {
+            ZStack {
+                Color.bg.ignoresSafeArea()
 
-            VStack(spacing: 0) {
-                // Close button
-                HStack {
-                    Spacer()
-                    Button {
-                        Analytics.track(.paywallDismissed)
-                        router.advanceToHome()
-                    } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 14, weight: .bold))
-                            .foregroundStyle(Color.textSecondary)
-                            .frame(width: 32, height: 32)
-                            .background(Color.bgSurface)
-                            .clipShape(Circle())
-                    }
-                }
-                .padding(.horizontal, Spacing.xl)
-                .padding(.top, Spacing.sm)
-
-                ScrollView(showsIndicators: false) {
-                    VStack(spacing: 0) {
-                        // MARK: Hero Icon
-                        RoundedRectangle(cornerRadius: 22)
-                            .fill(Color.accent)
-                            .frame(width: 80, height: 80)
-                            .shadow(color: Color.accent.opacity(0.25), radius: 12, y: 6)
-                            .overlay(
-                                Image(systemName: "sparkles")
-                                    .font(.system(size: 32, weight: .medium))
-                                    .foregroundStyle(.white)
-                            )
-                            .padding(.top, Spacing.lg)
-                            .padding(.bottom, Spacing.xl)
-
-                        // MARK: Title
-                        VStack(spacing: Spacing.sm) {
-                            Text("Unlock Full Access")
-                                .font(.display(30))
-                                .foregroundStyle(Color.textPrimary)
-                                .multilineTextAlignment(.center)
-
-                            Text("Join 10,000+ members getting more done\nevery day with premium features.")
-                                .font(.body(15))
-                                .foregroundStyle(Color.textSecondary)
-                                .multilineTextAlignment(.center)
-                                .fixedSize(horizontal: false, vertical: true)
-                        }
-                        .padding(.bottom, Spacing.xxl + Spacing.sm)
-
-                        // MARK: Plan Cards
-                        VStack(spacing: Spacing.lg) {
-                            // Yearly Plan
-                            PlanCard(
-                                title: "Yearly",
-                                subtitle: yearlySubtitle,
-                                priceLabel: yearlyPricePerMonth,
-                                pricePeriod: "per month",
-                                badge: "Best Value",
-                                isSelected: vm.selectedPlan == .yearly
-                            ) {
-                                HapticManager.selection()
-                                vm.selectedPlan = .yearly
-                            }
-
-                            // Monthly Plan
-                            PlanCard(
-                                title: "Monthly",
-                                subtitle: monthlySubtitle,
-                                priceLabel: monthlyPrice,
-                                pricePeriod: "per month",
-                                badge: nil,
-                                isSelected: vm.selectedPlan == .monthly
-                            ) {
-                                HapticManager.selection()
-                                vm.selectedPlan = .monthly
-                            }
-                        }
-                        .padding(.horizontal, Spacing.xl)
-                        .padding(.bottom, Spacing.xxl)
-
-                        // MARK: Features List
-                        VStack(alignment: .leading, spacing: Spacing.md) {
-                            FeatureRow(text: "Unlimited projects and cloud storage")
-                            FeatureRow(text: "Advanced AI-powered organization")
-                            FeatureRow(text: "Priority 24/7 customer support")
-                        }
-                        .padding(.horizontal, Spacing.xl + Spacing.sm)
-                        .padding(.bottom, Spacing.xxl)
-                    }
-                    .padding(.bottom, 200) // space for pinned CTA
-                }
-
-                // MARK: Pinned CTA Area
-                VStack(spacing: Spacing.lg) {
-                    // Subscribe button
-                    Button {
-                        HapticManager.medium()
-                        Task { await vm.purchase() }
-                    } label: {
-                        Group {
-                            if vm.isLoading {
-                                ProgressView()
-                                    .progressViewStyle(.circular)
-                                    .tint(.white)
-                            } else {
-                                Text("Start 7-Day Free Trial")
-                                    .font(.body(18, weight: .bold))
-                            }
-                        }
-                        .foregroundStyle(.white)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 60)
-                        .background(Color.accent)
-                        .clipShape(RoundedRectangle(cornerRadius: Radius.lg))
-                        .shadow(color: Color.accent.opacity(0.3), radius: 16, y: 8)
-                    }
-                    .disabled(vm.isLoading)
-                    .opacity(vm.isLoading ? 0.75 : 1)
-                    .animation(.snappy, value: vm.isLoading)
-
-                    // Legal text
-                    Text("By subscribing, you agree to our [Terms of Service](https://example.com/terms) and [Privacy Policy](https://example.com/privacy). Subscription automatically renews unless turned off.")
-                        .font(.body(11))
-                        .foregroundStyle(Color.textSecondary)
-                        .multilineTextAlignment(.center)
-                        .tint(Color.textSecondary)
-
-                    // Footer actions
-                    HStack(spacing: Spacing.xl) {
-                        Button {
-                            Task { await vm.restorePurchases() }
-                        } label: {
-                            Text("Restore Purchase")
-                                .font(.body(12, weight: .semibold))
-                                .foregroundStyle(Color.textSecondary)
-                        }
-
-                        Circle()
-                            .fill(Color.border)
-                            .frame(width: 4, height: 4)
-
+                VStack(spacing: 0) {
+                    HStack {
+                        Spacer()
                         Button {
                             Analytics.track(.paywallDismissed)
                             router.advanceToHome()
                         } label: {
-                            Text("Not Now")
-                                .font(.body(12, weight: .semibold))
-                                .foregroundStyle(Color.textSecondary)
+                            Image(systemName: "xmark")
+                                .font(.system(size: 14, weight: .bold))
+                                .foregroundStyle(Color.textPrimary)
+                                .frame(width: 34, height: 34)
+                                .background(Color.bgSurface)
+                                .clipShape(Circle())
                         }
                     }
-                }
-                .padding(.horizontal, Spacing.xl)
-                .padding(.bottom, Spacing.xl)
-                .background(
-                    LinearGradient(
-                        colors: [Color.bg.opacity(0), Color.bg, Color.bg],
-                        startPoint: .top,
-                        endPoint: .center
+                    .padding(.horizontal, Spacing.xl)
+                    .padding(.top, Spacing.lg)
+
+                    ScrollView(showsIndicators: false) {
+                        VStack(spacing: Spacing.xxl) {
+                            VStack(spacing: Spacing.sm) {
+                                Text("Unlock Premium")
+                                    .font(.display(32, weight: .bold))
+                                    .foregroundStyle(Color.textPrimary)
+
+                                Text("Master your productivity with unlimited tasks and advanced insights.")
+                                    .font(.body(15))
+                                    .foregroundStyle(Color.textSecondary)
+                                    .multilineTextAlignment(.center)
+                            }
+                            .padding(.top, Spacing.md)
+
+                            timelineCard
+
+                            VStack(spacing: Spacing.md) {
+                                PlanCard(
+                                    title: "Yearly Plan",
+                                    subtitle: yearlySubtitle,
+                                    priceLabel: yearlyPricePerMonth,
+                                    pricePeriod: "per month",
+                                    badge: "Best Value",
+                                    isSelected: vm.selectedPlan == .yearly
+                                ) {
+                                    HapticManager.selection()
+                                    vm.selectedPlan = .yearly
+                                    Analytics.track(.planSelected(plan: PaywallViewModel.Plan.yearly.rawValue))
+                                }
+
+                                PlanCard(
+                                    title: "Monthly Plan",
+                                    subtitle: monthlySubtitle,
+                                    priceLabel: monthlyPrice,
+                                    pricePeriod: "per month",
+                                    badge: nil,
+                                    isSelected: vm.selectedPlan == .monthly
+                                ) {
+                                    HapticManager.selection()
+                                    vm.selectedPlan = .monthly
+                                    Analytics.track(.planSelected(plan: PaywallViewModel.Plan.monthly.rawValue))
+                                }
+                            }
+
+                            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: Spacing.md) {
+                                FeatureRow(text: "Cloud Sync")
+                                FeatureRow(text: "Unlimited Tasks")
+                                FeatureRow(text: "Priority Support")
+                                FeatureRow(text: "Custom Themes")
+                            }
+                        }
+                        .padding(.horizontal, Spacing.xl)
+                        .padding(.bottom, 220)
+                    }
+
+                    VStack(spacing: Spacing.md) {
+                        Button {
+                            HapticManager.medium()
+                            Analytics.track(.trialStarted)
+                            Task { await vm.purchase() }
+                        } label: {
+                            Group {
+                                if vm.isLoading {
+                                    ProgressView()
+                                        .progressViewStyle(.circular)
+                                        .tint(.white)
+                                } else {
+                                    Text("Start Free Trial")
+                                        .font(.body(20, weight: .bold))
+                                }
+                            }
+                            .foregroundStyle(.white)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 58)
+                            .background(Color.textPrimary)
+                            .clipShape(RoundedRectangle(cornerRadius: 24))
+                        }
+                        .buttonStyle(.plain)
+                        .disabled(vm.isLoading)
+
+                        Text("By starting your trial, you agree to our Terms of Service and Privacy Policy. Subscription renews automatically.")
+                            .font(.body(11))
+                            .foregroundStyle(Color.textSecondary)
+                            .multilineTextAlignment(.center)
+
+                        HStack(spacing: Spacing.xl) {
+                            Button("Restore Purchase") {
+                                Task { await vm.restorePurchases() }
+                            }
+                            .font(.body(12, weight: .semibold))
+                            .foregroundStyle(Color.textSecondary)
+
+                            Circle()
+                                .fill(Color.border)
+                                .frame(width: 4, height: 4)
+
+                            Button("Not Now") {
+                                Analytics.track(.paywallDismissed)
+                                router.advanceToHome()
+                            }
+                            .font(.body(12, weight: .semibold))
+                            .foregroundStyle(Color.textSecondary)
+                        }
+                    }
+                    .padding(.horizontal, Spacing.xl)
+                    .padding(.bottom, Spacing.xl)
+                    .background(
+                        LinearGradient(
+                            colors: [Color.bg.opacity(0), Color.bg, Color.bg],
+                            startPoint: .top,
+                            endPoint: .center
+                        )
                     )
-                    .ignoresSafeArea()
-                )
+                }
             }
+            .navigationBarHidden(true)
         }
-        .navigationBarHidden(true)
         .task { await vm.loadOfferings() }
-        .onAppear { Analytics.track(.paywallViewed(screen: 2)) }
+        .onAppear { Analytics.track(.paywallViewed(screen: 1)) }
         .alert("Error", isPresented: $vm.showError) {
             Button("OK") {}
         } message: {
             Text(vm.errorMessage ?? "Something went wrong.")
         }
+    }
+
+    private var timelineCard: some View {
+        VStack(alignment: .leading, spacing: Spacing.lg) {
+            PaywallTimelineRow(icon: "lock.open.fill", title: "Today: Trial starts", subtitle: "Get 7 days of full access for free.", accent: true)
+            PaywallTimelineRow(icon: "bell.fill", title: "Day 5: Reminder", subtitle: "We’ll let you know your trial is about to end.", accent: false)
+            PaywallTimelineRow(icon: "creditcard.fill", title: "Day 7: First charge", subtitle: "Subscription begins unless you cancel first.", accent: false)
+        }
+        .padding(Spacing.xl)
+        .background(Color.bgElevated)
+        .clipShape(RoundedRectangle(cornerRadius: Radius.xl))
+        .overlay(
+            RoundedRectangle(cornerRadius: Radius.xl)
+                .stroke(Color.border.opacity(0.75), lineWidth: 1)
+        )
     }
 
     // MARK: - Price Helpers
@@ -217,6 +202,39 @@ struct PaywallView: View {
             return pkg.storeProduct.localizedPriceString
         }
         return "$4.99"
+    }
+}
+
+private struct PaywallTimelineRow: View {
+    let icon: String
+    let title: String
+    let subtitle: String
+    let accent: Bool
+
+    var body: some View {
+        HStack(alignment: .top, spacing: Spacing.md) {
+            ZStack {
+                Circle()
+                    .fill(accent ? Color.accent : Color.bgSurface)
+                    .frame(width: 28, height: 28)
+
+                Image(systemName: icon)
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundStyle(accent ? Color.white : Color.textSecondary)
+            }
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text(title)
+                    .font(.body(14, weight: .bold))
+                    .foregroundStyle(Color.textPrimary)
+
+                Text(subtitle)
+                    .font(.body(12))
+                    .foregroundStyle(Color.textSecondary)
+            }
+
+            Spacer(minLength: 0)
+        }
     }
 }
 
@@ -310,8 +328,13 @@ private struct FeatureRow: View {
                 .font(.system(size: 20))
                 .foregroundStyle(Color.accent)
             Text(text)
-                .font(.body(14, weight: .medium))
+                .font(.body(13, weight: .medium))
                 .foregroundStyle(Color.textPrimary)
+
+            Spacer(minLength: 0)
         }
+        .padding(Spacing.md)
+        .background(Color.bgElevated)
+        .clipShape(RoundedRectangle(cornerRadius: Radius.lg))
     }
 }

@@ -16,6 +16,7 @@ You are an AI coding agent working on an iOS app built from the **AppStudio Boil
 ios/          SwiftUI iOS app
 backend/      Hono API (Node.js + TypeScript)
 supabase/     DB migrations + local config
+designs/      Stitch UI design html files
 docs/         Architecture docs — read before building
 .agents/      You are here
   AGENTS.md             This file

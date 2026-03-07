@@ -1,52 +1,60 @@
 import SwiftUI
 
 // MARK: - TasksTabView
-// Root container with custom tab bar: Dashboard | Add (FAB) | Task List
+// Root signed-in shell matching the Stitch bottom navigation.
 
 struct TasksTabView: View {
     @StateObject private var vm = TasksViewModel()
-    @State private var selectedTab: Tab = .dashboard
+    @State private var selectedTab: Tab = .today
     @State private var showAddTask = false
-    @State private var showSettings = false
 
     enum Tab: Int, CaseIterable {
-        case dashboard, taskList
+        case today, calendar, stats, settings
 
         var icon: String {
             switch self {
-            case .dashboard: return "square.grid.2x2"
-            case .taskList:  return "list.bullet"
+            case .today: return "house.fill"
+            case .calendar: return "calendar"
+            case .stats: return "chart.bar.fill"
+            case .settings: return "person.fill"
             }
         }
 
-        var label: String {
+        var accessibilityID: String? {
             switch self {
-            case .dashboard: return "Dashboard"
-            case .taskList:  return "Tasks"
+            case .today: return "tasksTab.dashboardButton"
+            case .calendar: return "tasksTab.listButton"
+            case .stats, .settings: return nil
             }
         }
     }
 
     var body: some View {
-        ZStack(alignment: .bottom) {
-            // Content
-            Group {
-                switch selectedTab {
-                case .dashboard:
-                    DashboardView(vm: vm, showSettings: $showSettings)
-                case .taskList:
-                    TaskListView(vm: vm)
+        GeometryReader { proxy in
+            ZStack {
+                Group {
+                    switch selectedTab {
+                    case .today:
+                        DashboardView(vm: vm)
+                    case .calendar:
+                        TaskListView(vm: vm)
+                    case .stats:
+                        StatsView(vm: vm)
+                    case .settings:
+                        SettingsView()
+                    }
                 }
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-            // Custom Tab Bar
-            customTabBar
+                customTabBar
+                    .frame(width: proxy.size.width)
+                    .position(
+                        x: proxy.size.width / 2,
+                        y: proxy.size.height - proxy.safeAreaInsets.bottom
+                    )
+            }
         }
         .ignoresSafeArea(.keyboard)
-        .sheet(isPresented: $showSettings) {
-            NavigationStack { SettingsView() }
-        }
         .drawer(isPresented: $showAddTask, detents: [.large]) {
             TaskFormView(vm: vm, isPresented: $showAddTask)
         }
@@ -54,42 +62,46 @@ struct TasksTabView: View {
         .onAppear { Analytics.track(.featureUsed(name: "home")) }
     }
 
-    // MARK: - Custom Tab Bar
-
     private var customTabBar: some View {
         let fabSize: CGFloat = 56
 
-        return ZStack(alignment: .top) {
-            HStack {
-                tabButton(.dashboard)
-                Spacer(minLength: fabSize + Spacing.xl)
-                tabButton(.taskList)
-            }
-            .padding(.horizontal, Spacing.xxl)
-            .padding(.top, Spacing.md)
-            .padding(.bottom, Spacing.sm)
-            .background(
-                Color.bgElevated
-                    .shadow(color: .black.opacity(0.08), radius: 12, y: -4)
-                    .ignoresSafeArea(edges: .bottom)
-            )
+        return ZStack {
+            RoundedRectangle(cornerRadius: 30)
+                .fill(Color.black.opacity(0.94))
+                .frame(maxWidth: 364)
+                .frame(height: 82)
+                .shadow(color: .black.opacity(0.22), radius: 20, y: 12)
 
-            // Center the FAB on the top border of the tab bar.
+            HStack(spacing: 0) {
+                tabButton(.today)
+                tabButton(.calendar)
+                Color.clear.frame(width: fabSize + Spacing.xxl)
+                tabButton(.stats)
+                tabButton(.settings)
+            }
+            .frame(maxWidth: 364)
+
             Button {
+                if selectedTab == .today {
+                    vm.selectedDate = Date()
+                }   
                 showAddTask = true
                 HapticManager.medium()
             } label: {
                 Image(systemName: "plus")
-                    .font(.system(size: 24, weight: .bold))
-                    .foregroundStyle(.white)
+                    .font(.system(size: 28, weight: .bold))
+                    .foregroundStyle(Color.black)
                     .frame(width: fabSize, height: fabSize)
-                    .background(Color.accent)
-                    .clipShape(Circle())
-                    .shadow(color: Color.accent.opacity(0.3), radius: 8, y: 4)
+                    .background(Color.white)
+                    .clipShape(RoundedRectangle(cornerRadius: 18))
+                    .shadow(color: .white.opacity(0.08), radius: 10, y: 2)
             }
             .accessibilityIdentifier("tasksTab.addButton")
-            .offset(y: -(fabSize / 2))
+            .offset(y: -4)
         }
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, Spacing.lg)
+        .background(Color.clear)
     }
 
     private func tabButton(_ tab: Tab) -> some View {
@@ -99,18 +111,19 @@ struct TasksTabView: View {
             }
             HapticManager.selection()
         } label: {
-            VStack(spacing: 4) {
+            VStack(spacing: 6) {
                 Image(systemName: tab.icon)
-                    .font(.system(size: 20, weight: selectedTab == tab ? .semibold : .regular))
-                    .symbolVariant(selectedTab == tab ? .fill : .none)
-                Text(tab.label)
-                    .font(.body(11, weight: .medium))
+                    .font(.system(size: 19, weight: selectedTab == tab ? .semibold : .regular))
+                Circle()
+                    .fill(selectedTab == tab ? Color.accent : Color.clear)
+                    .frame(width: 5, height: 5)
             }
-            .foregroundStyle(selectedTab == tab ? Color.accent : Color.textTertiary)
+            .foregroundStyle(selectedTab == tab ? Color.white : Color.white.opacity(0.38))
             .frame(maxWidth: .infinity)
+            .frame(height: 82)
         }
         .buttonStyle(.plain)
-        .accessibilityIdentifier(tab == .dashboard ? "tasksTab.dashboardButton" : "tasksTab.listButton")
+        .accessibilityIdentifier(tab.accessibilityID ?? "")
     }
 }
 

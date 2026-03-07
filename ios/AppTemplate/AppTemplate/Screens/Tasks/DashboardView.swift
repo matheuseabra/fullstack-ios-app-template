@@ -1,12 +1,10 @@
 import SwiftUI
 
 // MARK: - DashboardView
-// Calendar strip, summary card, and task cards for the selected day.
+// Today task list matching the Stitch reference.
 
 struct DashboardView: View {
     @ObservedObject var vm: TasksViewModel
-    @Binding var showSettings: Bool
-    @State private var showUpgrade = false
     @State private var selectedTask: TaskItem?
     @State private var showTaskDetail = false
 
@@ -27,88 +25,55 @@ struct DashboardView: View {
                         )
                     } else {
                         ScrollView(showsIndicators: false) {
-                            VStack(spacing: Spacing.xl) {
-                                // Week calendar strip
-                                WeekCalendarStrip(selectedDate: $vm.selectedDate)
-                                    .padding(.top, Spacing.xs)
-
-                                // Summary card
-                                TaskSummaryCard(
-                                    completed: vm.completedToday,
-                                    total: vm.totalToday,
-                                    rate: vm.completionRate
-                                )
-
-                                // Task cards centered
+                            VStack(alignment: .leading, spacing: Spacing.xl) {
+                                header
                                 tasksSection
                             }
-                            .padding(.bottom, 100)
+                            .padding(.horizontal, Spacing.lg)
+                            .padding(.top, Spacing.lg)
+                            .padding(.bottom, 120)
                         }
                     }
                 }
-            }
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    // Show upgrade only when user is NOT on a paid plan
-                    if vm.subscription == nil || vm.subscription?.isActive == false {
-                        Button {
-                            showUpgrade = true
-                            HapticManager.light()
-                        } label: {
-                            HStack(spacing: 5) {
-                                Image(systemName: "arrow.up.circle.fill")
-                                Text("Upgrade")
-                                    .font(.body(14, weight: .semibold))
-                            }
-                            .foregroundStyle(Color.accent)
-                        }
-                    }
-                }
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        showSettings = true
-                    } label: {
-                        Image(systemName: "gearshape")
-                            .foregroundStyle(Color.textSecondary)
-                    }
-                }
-            }
-            .sheet(isPresented: $showUpgrade) {
-                PaywallFlowView()
             }
             .navigationDestination(isPresented: $showTaskDetail) {
                 if let selectedTask {
                     TaskDetailView(vm: vm, task: selectedTask)
                 }
             }
+            .onAppear { Analytics.track(.featureUsed(name: "today")) }
         }
     }
 
-    // MARK: - Tasks Section
+    private var header: some View {
+        HStack(alignment: .firstTextBaseline) {
+            HStack(spacing: Spacing.sm) {
+                Text("Today")
+                    .font(.display(38, weight: .bold))
+                    .foregroundStyle(Color.textPrimary)
+
+                Circle()
+                    .fill(Color.danger)
+                    .frame(width: 10, height: 10)
+                    .offset(y: -6)
+            }
+
+            Spacer()
+
+            Text(todayDateText)
+                .font(.body(13, weight: .semibold))
+                .foregroundStyle(Color.textSecondary)
+        }
+    }
 
     private var tasksSection: some View {
-        VStack(spacing: Spacing.md) {
-            let dateTasks = vm.tasksForSelectedDate
-
-            // Section header
-            HStack {
-                Text(formattedDate)
-                    .font(.body(14, weight: .semibold))
-                    .foregroundStyle(Color.textSecondary)
-                Spacer()
-                Text("\(dateTasks.filter(\.isCompleted).count)/\(dateTasks.count)")
-                    .font(.mono(13))
-                    .foregroundStyle(Color.textTertiary)
-            }
-            .padding(.horizontal, Spacing.lg)
-
-            if dateTasks.isEmpty {
+        VStack(alignment: .leading, spacing: Spacing.xl) {
+            if groupedTodayTasks.isEmpty {
                 VStack(spacing: Spacing.md) {
                     Image(systemName: "checklist")
                         .font(.system(size: 40, weight: .ultraLight))
                         .foregroundStyle(Color.textTertiary)
-                    Text("No tasks for this day")
+                    Text("No tasks for today")
                         .font(.body(15))
                         .foregroundStyle(Color.textSecondary)
                     Text("Tap + to add one")
@@ -118,48 +83,77 @@ struct DashboardView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, Spacing.xxxl)
             } else {
-                ForEach(dateTasks, id: \.id) { task in
-                    TaskDetailCard(task: task) {
-                        vm.toggleComplete(task)
+                ForEach(Array(groupedTodayTasks.enumerated()), id: \.offset) { _, section in
+                    VStack(alignment: .leading, spacing: Spacing.md) {
+                        Text(section.title)
+                            .font(.body(12, weight: .bold))
+                            .tracking(1.2)
+                            .foregroundStyle(Color.textSecondary)
+
+                        VStack(spacing: Spacing.md) {
+                            ForEach(section.tasks, id: \.id) { task in
+                                TaskDetailCard(task: task) {
+                                    vm.toggleComplete(task)
+                                }
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    selectedTask = task
+                                    showTaskDetail = true
+                                }
+                            }
+                        }
                     }
-                    .padding(.horizontal, Spacing.lg)
-                    .contentShape(Rectangle())
-                    .onTapGesture {
-                        selectedTask = task
-                        showTaskDetail = true
-                    }
-                    .transition(.asymmetric(
-                        insertion: .opacity.combined(with: .move(edge: .top)),
-                        removal: .opacity
-                    ))
+                    .transition(.opacity.combined(with: .move(edge: .top)))
                 }
             }
         }
         .animation(.snappy, value: vm.tasksForSelectedDate.count)
     }
 
-    private var formattedDate: String {
-        if Calendar.current.isDateInToday(vm.selectedDate) {
-            return "Today"
-        } else if Calendar.current.isDateInTomorrow(vm.selectedDate) {
-            return "Tomorrow"
-        } else {
+    private var groupedTodayTasks: [(title: String, tasks: [TaskItem])] {
+        let sortedTasks = vm.todayTasks.sorted { lhs, rhs in
+            switch (lhs.dueDate, rhs.dueDate) {
+            case let (left?, right?):
+                return left < right
+            case (_?, nil):
+                return true
+            case (nil, _?):
+                return false
+            case (nil, nil):
+                return lhs.createdAt < rhs.createdAt
+            }
+        }
+
+        let grouped = Dictionary(grouping: sortedTasks) { task -> String in
+            guard let dueDate = task.dueDate else { return "Any Time" }
             let formatter = DateFormatter()
-            formatter.dateFormat = "MMM d"
-            return formatter.string(from: vm.selectedDate)
+            formatter.dateFormat = "HH:mm"
+            return formatter.string(from: dueDate)
+        }
+
+        return grouped.keys.sorted { lhs, rhs in
+            if lhs == "Any Time" { return false }
+            if rhs == "Any Time" { return true }
+            return lhs < rhs
+        }.map { key in
+            (title: key, tasks: grouped[key] ?? [])
         }
     }
 
-    // MARK: - Loading Skeleton
+    private var todayDateText: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EEE, MMM d"
+        return formatter.string(from: Date())
+    }
 
     private var loadingSkeleton: some View {
         VStack(spacing: Spacing.md) {
             SkeletonView(style: .row)
-            SkeletonView(style: .card)
             SkeletonView(style: .row)
-            SkeletonView(style: .card)
+            SkeletonView(style: .row)
+            SkeletonView(style: .row)
         }
         .padding(.horizontal, Spacing.lg)
-        .padding(.top, Spacing.md)
+        .padding(.top, Spacing.xl)
     }
 }
