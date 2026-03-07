@@ -5,6 +5,7 @@ import SwiftUI
 
 struct WeekCalendarStrip: View {
     @Binding var selectedDate: Date
+    let tasks: [TaskItem]
 
     private let calendar = Calendar.current
 
@@ -46,15 +47,22 @@ struct WeekCalendarStrip: View {
             }
             HapticManager.selection()
         } label: {
-            VStack(spacing: Spacing.sm) {
+            VStack(spacing: 6) {
                 Text(dayOfWeek(date))
                     .font(.body(10, weight: .bold))
                     .textCase(.uppercase)
                     .foregroundStyle(isSelected ? Color.white : Color.textSecondary)
 
-                Text("\(calendar.component(.day, from: date))")
-                    .font(.body(14, weight: isSelected ? .bold : .semibold))
-                    .foregroundStyle(isSelected ? Color.white : Color.textPrimary)
+                VStack(spacing: 4) {
+                    Text("\(calendar.component(.day, from: date))")
+                        .font(.body(14, weight: isSelected ? .bold : .semibold))
+                        .foregroundStyle(isSelected ? Color.white : Color.textPrimary)
+
+                    Circle()
+                        .fill(isSelected ? Color.white : Color.textPrimary)
+                        .frame(width: 4, height: 4)
+                        .opacity(hasTasks(on: date) ? 1 : 0)
+                }
             }
             .frame(width: 44, height: 68)
             .background(
@@ -70,9 +78,21 @@ struct WeekCalendarStrip: View {
         formatter.dateFormat = "EEE"
         return formatter.string(from: date).uppercased()
     }
+
+    private func hasTasks(on date: Date) -> Bool {
+        let dayStart = calendar.startOfDay(for: date)
+
+        return tasks.contains { task in
+            if let dueDate = task.dueDate {
+                return calendar.isDate(dueDate, inSameDayAs: dayStart)
+            }
+
+            return calendar.isDateInToday(dayStart)
+        }
+    }
 }
 
 #Preview {
-    WeekCalendarStrip(selectedDate: .constant(Date()))
+    WeekCalendarStrip(selectedDate: .constant(Date()), tasks: [])
         .background(Color.bg)
 }

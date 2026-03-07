@@ -6,6 +6,7 @@ import SwiftUI
 struct TasksTabView: View {
     @StateObject private var vm = TasksViewModel()
     @State private var selectedTab: Tab = .today
+    @State private var previousTab: Tab = .today
     @State private var showAddTask = false
 
     enum Tab: Int, CaseIterable {
@@ -32,18 +33,9 @@ struct TasksTabView: View {
     var body: some View {
         GeometryReader { proxy in
             ZStack {
-                Group {
-                    switch selectedTab {
-                    case .today:
-                        DashboardView(vm: vm)
-                    case .calendar:
-                        TaskListView(vm: vm)
-                    case .stats:
-                        StatsView(vm: vm)
-                    case .settings:
-                        SettingsView()
-                    }
-                }
+                currentScreen
+                    .id(selectedTab)
+                    .transition(tabTransition)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
 
                 customTabBar
@@ -60,6 +52,34 @@ struct TasksTabView: View {
         }
         .task { await vm.load() }
         .onAppear { Analytics.track(.featureUsed(name: "home")) }
+    }
+
+    @ViewBuilder
+    private var currentScreen: some View {
+        switch selectedTab {
+        case .today:
+            DashboardView(vm: vm)
+        case .calendar:
+            TaskListView(vm: vm)
+        case .stats:
+            StatsView(vm: vm)
+        case .settings:
+            SettingsView()
+        }
+    }
+
+    private var tabTransition: AnyTransition {
+        if selectedTab.rawValue >= previousTab.rawValue {
+            return .asymmetric(
+                insertion: .move(edge: .trailing),
+                removal: .move(edge: .leading)
+            )
+        }
+
+        return .asymmetric(
+            insertion: .move(edge: .leading),
+            removal: .move(edge: .trailing)
+        )
     }
 
     private var customTabBar: some View {
@@ -107,7 +127,10 @@ struct TasksTabView: View {
 
     private func tabButton(_ tab: Tab) -> some View {
         Button {
-            withAnimation(.snappy(duration: 0.2)) {
+            guard selectedTab != tab else { return }
+
+            previousTab = selectedTab
+            withAnimation(.easeInOut(duration: 0.24)) {
                 selectedTab = tab
             }
             HapticManager.selection()

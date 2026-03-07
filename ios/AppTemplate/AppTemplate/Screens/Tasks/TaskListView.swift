@@ -17,7 +17,7 @@ struct TaskListView: View {
                     VStack(alignment: .leading, spacing: Spacing.xl) {
                         header
 
-                        WeekCalendarStrip(selectedDate: $vm.selectedDate)
+                        WeekCalendarStrip(selectedDate: $vm.selectedDate, tasks: vm.tasks)
 
                         if timelineTasks.isEmpty {
                             emptyState
@@ -59,16 +59,9 @@ struct TaskListView: View {
 
     private var header: some View {
         HStack(alignment: .firstTextBaseline) {
-            HStack(spacing: Spacing.sm) {
-                Text("Today")
-                    .font(.display(32, weight: .bold))
-                    .foregroundStyle(Color.textPrimary)
-
-                Circle()
-                    .fill(Color.danger)
-                    .frame(width: 10, height: 10)
-                    .offset(y: -5)
-            }
+            Text("Calendar")
+                .font(.display(32, weight: .bold))
+                .foregroundStyle(Color.textPrimary)
 
             Spacer()
 

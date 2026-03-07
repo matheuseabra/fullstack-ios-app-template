@@ -27,6 +27,7 @@ struct DashboardView: View {
                         ScrollView(showsIndicators: false) {
                             VStack(alignment: .leading, spacing: Spacing.xl) {
                                 header
+                                WeekCalendarStrip(selectedDate: $vm.selectedDate, tasks: vm.tasks)
                                 tasksSection
                             }
                             .padding(.horizontal, Spacing.lg)
@@ -57,15 +58,15 @@ struct DashboardView: View {
 
     private var tasksSection: some View {
         VStack(alignment: .leading, spacing: Spacing.xl) {
-            if orderedTodayTasks.isEmpty {
+            if orderedVisibleTasks.isEmpty {
                 VStack(spacing: Spacing.md) {
                     Image(systemName: "checklist")
                         .font(.system(size: 40, weight: .ultraLight))
                         .foregroundStyle(Color.textTertiary)
-                    Text("No tasks for today")
+                    Text(emptyStateTitle)
                         .font(.body(15))
                         .foregroundStyle(Color.textSecondary)
-                    Text("Tap + to add one")
+                    Text(emptyStateSubtitle)
                         .font(.body(13))
                         .foregroundStyle(Color.textTertiary)
                 }
@@ -73,7 +74,7 @@ struct DashboardView: View {
                 .padding(.vertical, Spacing.xxxl)
             } else {
                 VStack(spacing: Spacing.md) {
-                    ForEach(orderedTodayTasks, id: \.id) { task in
+                    ForEach(orderedVisibleTasks, id: \.id) { task in
                         HStack(alignment: .top, spacing: Spacing.md) {
                             Text(createdTimeString(for: task))
                                 .font(.body(11, weight: .bold))
@@ -95,11 +96,11 @@ struct DashboardView: View {
                 }
             }
         }
-        .animation(.snappy, value: orderedTodayTasks.count)
+        .animation(.snappy, value: orderedVisibleTasks.count)
     }
 
-    private var orderedTodayTasks: [TaskItem] {
-        vm.todayTasks.sorted { lhs, rhs in
+    private var orderedVisibleTasks: [TaskItem] {
+        vm.tasksForSelectedDate.sorted { lhs, rhs in
             switch (lhs.dueDate, rhs.dueDate) {
             case let (left?, right?):
                 return left < right
@@ -116,7 +117,15 @@ struct DashboardView: View {
     private var todayDateText: String {
         let formatter = DateFormatter()
         formatter.dateFormat = "EEE, MMM d"
-        return formatter.string(from: Date())
+        return formatter.string(from: vm.selectedDate)
+    }
+
+    private var emptyStateTitle: String {
+        Calendar.current.isDateInToday(vm.selectedDate) ? "No tasks for today" : "No tasks for this day"
+    }
+
+    private var emptyStateSubtitle: String {
+        Calendar.current.isDateInToday(vm.selectedDate) ? "Tap + to add one" : "Tap + to add one for this day"
     }
 
     private func createdTimeString(for task: TaskItem) -> String {
