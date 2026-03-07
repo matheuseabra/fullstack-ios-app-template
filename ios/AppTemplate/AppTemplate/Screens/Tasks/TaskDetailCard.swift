@@ -26,11 +26,6 @@ struct TaskDetailCard: View {
                         .lineLimit(2)
 
                     Spacer(minLength: 0)
-
-                    Circle()
-                        .fill(priorityColor)
-                        .frame(width: 10, height: 10)
-                        .padding(.top, 4)
                 }
 
                 if !task.note.isEmpty {

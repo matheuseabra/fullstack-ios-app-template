@@ -66,20 +66,21 @@ struct TasksTabView: View {
         let fabSize: CGFloat = 56
 
         return ZStack {
-            RoundedRectangle(cornerRadius: 30)
+            Capsule()
                 .fill(Color.black.opacity(0.94))
-                .frame(maxWidth: 364)
+                .frame(width: 364)
                 .frame(height: 82)
                 .shadow(color: .black.opacity(0.22), radius: 20, y: 12)
 
             HStack(spacing: 0) {
-                tabButton(.today)
-                tabButton(.calendar)
-                Color.clear.frame(width: fabSize + Spacing.xxl)
-                tabButton(.stats)
-                tabButton(.settings)
+                tabSlot(.today)
+                tabSlot(.calendar)
+                Color.clear
+                    .frame(maxWidth: .infinity)
+                tabSlot(.stats)
+                tabSlot(.settings)
             }
-            .frame(maxWidth: 364)
+            .frame(width: 364)
 
             Button {
                 if selectedTab == .today {
@@ -111,12 +112,9 @@ struct TasksTabView: View {
             }
             HapticManager.selection()
         } label: {
-            VStack(spacing: 6) {
+            VStack(spacing: 0) {
                 Image(systemName: tab.icon)
                     .font(.system(size: 19, weight: selectedTab == tab ? .semibold : .regular))
-                Circle()
-                    .fill(selectedTab == tab ? Color.accent : Color.clear)
-                    .frame(width: 5, height: 5)
             }
             .foregroundStyle(selectedTab == tab ? Color.white : Color.white.opacity(0.38))
             .frame(maxWidth: .infinity)
@@ -124,6 +122,12 @@ struct TasksTabView: View {
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier(tab.accessibilityID ?? "")
+    }
+
+    private func tabSlot(_ tab: Tab) -> some View {
+        tabButton(tab)
+            .frame(maxWidth: .infinity)
+            .contentShape(Rectangle())
     }
 }
 

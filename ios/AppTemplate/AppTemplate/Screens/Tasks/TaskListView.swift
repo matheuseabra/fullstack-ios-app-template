@@ -112,16 +112,13 @@ struct TaskListView: View {
 
     private func timelineRow(_ task: TaskItem) -> some View {
         HStack(alignment: .top, spacing: Spacing.md) {
-            VStack(alignment: .trailing, spacing: Spacing.xs) {
+            VStack(alignment: .trailing, spacing: 0) {
                 Text(timeLabel(for: task))
                     .font(.body(11, weight: .bold))
                     .foregroundStyle(Color.textSecondary)
-
-                Image(systemName: task.isCompleted ? "checkmark.circle.fill" : "bell.badge")
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(task.isCompleted ? Color.success : Color.textTertiary)
             }
             .frame(width: 40)
+            .padding(.top, Spacing.md)
 
             HStack(alignment: .top, spacing: Spacing.md) {
                 Button {
