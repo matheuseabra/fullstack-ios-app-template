@@ -9,66 +9,16 @@ struct SplashView: View {
         ZStack {
             Color.bg.ignoresSafeArea()
 
-            Circle()
-                .fill(Color.accent.opacity(0.08))
-                .frame(width: 260, height: 260)
-                .blur(radius: 24)
-                .offset(x: 110, y: -220)
+            VStack(spacing: Spacing.xl) {
+                Image("AppLogo")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 72, height: 72)
+                    .clipShape(RoundedRectangle(cornerRadius: Radius.lg))
 
-            Circle()
-                .fill(Color.accent.opacity(0.06))
-                .frame(width: 180, height: 180)
-                .blur(radius: 20)
-                .offset(x: -120, y: 260)
-
-            VStack(spacing: 0) {
-                Spacer()
-
-                VStack(spacing: Spacing.xxl) {
-                    ZStack {
-                        RoundedRectangle(cornerRadius: Radius.xl)
-                            .fill(Color.accent)
-                            .frame(width: 96, height: 96)
-                            .shadow(color: Color.accent.opacity(0.28), radius: 18, y: 10)
-
-                        RoundedRectangle(cornerRadius: Radius.md)
-                            .strokeBorder(Color.white.opacity(0.92), lineWidth: 4)
-                            .frame(width: 42, height: 42)
-                    }
-
-                    VStack(spacing: Spacing.sm) {
-                        Text("AppTemplate")
-                            .font(.display(36, weight: .bold))
-                            .foregroundStyle(Color.textPrimary)
-
-                        Text("Tasks & Focus")
-                            .font(.body(13, weight: .semibold))
-                            .tracking(2)
-                            .textCase(.uppercase)
-                            .foregroundStyle(Color.textSecondary)
-                    }
-                }
-
-                Spacer()
-
-                VStack(spacing: Spacing.lg) {
-                    ZStack(alignment: .leading) {
-                        Capsule()
-                            .fill(Color.bgSurface)
-                            .frame(width: 128, height: 6)
-
-                        Capsule()
-                            .fill(Color.accent)
-                            .frame(width: 42, height: 6)
-                    }
-
-                    Text("Minimal Design Lab")
-                        .font(.body(11, weight: .bold))
-                        .tracking(3)
-                        .textCase(.uppercase)
-                        .foregroundStyle(Color.textTertiary)
-                }
-                .padding(.bottom, Spacing.xxxl)
+                Text("AppTemplate")
+                    .font(.display(36, weight: .bold))
+                    .foregroundStyle(Color.textPrimary)
             }
             .opacity(opacity)
             .scaleEffect(scale)

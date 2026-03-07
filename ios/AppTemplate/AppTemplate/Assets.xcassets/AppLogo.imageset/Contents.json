@@ -1,15 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "AppLogo.png",
+      "filename" : "black-rounded-square-with-light-diagonal-gradient-.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
+      "filename" : "black-rounded-square-with-light-diagonal-gradient- 1.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
+      "filename" : "black-rounded-square-with-light-diagonal-gradient- 2.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

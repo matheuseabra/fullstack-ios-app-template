@@ -14,12 +14,16 @@ struct LoginView: View {
 
                 // Logo + tagline
                 VStack(spacing: Spacing.sm) {
-                    Image(systemName: "app.fill")
-                        .font(.system(size: 72, weight: .thin))
-                        .foregroundStyle(Color.accent)
+                    Image("AppLogo")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 72, height: 72)
+                        .clipShape(RoundedRectangle(cornerRadius: Radius.lg))
+
                     Text("AppTemplate")
                         .font(.display(28))
                         .foregroundStyle(Color.textPrimary)
+
                     Text("Your tagline here")
                         .font(.body(17))
                         .foregroundStyle(Color.textSecondary)
