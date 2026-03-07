@@ -7,6 +7,11 @@ import RevenueCat
 struct PaywallView: View {
     @EnvironmentObject private var router: AppRouter
     @StateObject private var vm = PaywallViewModel()
+    let onDismiss: (() -> Void)?
+
+    init(onDismiss: (() -> Void)? = nil) {
+        self.onDismiss = onDismiss
+    }
 
     var body: some View {
         NavigationStack {
@@ -17,8 +22,7 @@ struct PaywallView: View {
                     HStack {
                         Spacer()
                         Button {
-                            Analytics.track(.paywallDismissed)
-                            router.advanceToHome()
+                            dismissPaywall(trackDismissed: true)
                         } label: {
                             Image(systemName: "xmark")
                                 .font(.system(size: 14, weight: .bold))
@@ -90,7 +94,11 @@ struct PaywallView: View {
                         Button {
                             HapticManager.medium()
                             Analytics.track(.trialStarted)
-                            Task { await vm.purchase() }
+                            Task {
+                                if await vm.purchase() {
+                                    dismissPaywall()
+                                }
+                            }
                         } label: {
                             Group {
                                 if vm.isLoading {
@@ -118,7 +126,11 @@ struct PaywallView: View {
 
                         HStack(spacing: Spacing.xl) {
                             Button("Restore Purchase") {
-                                Task { await vm.restorePurchases() }
+                                Task {
+                                    if await vm.restorePurchases() {
+                                        dismissPaywall()
+                                    }
+                                }
                             }
                             .font(.body(12, weight: .semibold))
                             .foregroundStyle(Color.textSecondary)
@@ -128,8 +140,7 @@ struct PaywallView: View {
                                 .frame(width: 4, height: 4)
 
                             Button("Not Now") {
-                                Analytics.track(.paywallDismissed)
-                                router.advanceToHome()
+                                dismissPaywall(trackDismissed: true)
                             }
                             .font(.body(12, weight: .semibold))
                             .foregroundStyle(Color.textSecondary)
@@ -154,6 +165,18 @@ struct PaywallView: View {
             Button("OK") {}
         } message: {
             Text(vm.errorMessage ?? "Something went wrong.")
+        }
+    }
+
+    private func dismissPaywall(trackDismissed: Bool = false) {
+        if trackDismissed {
+            Analytics.track(.paywallDismissed)
+        }
+
+        if let onDismiss {
+            onDismiss()
+        } else {
+            router.advanceToHome()
         }
     }
 

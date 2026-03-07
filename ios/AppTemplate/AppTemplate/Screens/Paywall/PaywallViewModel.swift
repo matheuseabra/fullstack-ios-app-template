@@ -47,11 +47,11 @@ final class PaywallViewModel: ObservableObject {
 
     // MARK: - Purchase
 
-    func purchase() async {
+    func purchase() async -> Bool {
         guard let package = selectedPackage else {
             errorMessage = "Please select a plan."
             showError = true
-            return
+            return false
         }
 
         isLoading = true
@@ -61,7 +61,7 @@ final class PaywallViewModel: ObservableObject {
             try await PaymentManager.shared.purchase(package: package)
             if PaymentManager.shared.hasProAccess {
                 HapticManager.success()
-                AppRouter.shared.advanceToHome()
+                return true
             }
         } catch PaymentError.userCancelled {
             // User tapped cancel — do nothing
@@ -70,11 +70,13 @@ final class PaywallViewModel: ObservableObject {
             showError = true
             HapticManager.error()
         }
+
+        return false
     }
 
     // MARK: - Restore
 
-    func restorePurchases() async {
+    func restorePurchases() async -> Bool {
         isLoading = true
         errorMessage = nil
         defer { isLoading = false }
@@ -82,7 +84,7 @@ final class PaywallViewModel: ObservableObject {
             try await PaymentManager.shared.restorePurchases()
             if PaymentManager.shared.hasProAccess {
                 HapticManager.success()
-                AppRouter.shared.advanceToHome()
+                return true
             } else {
                 errorMessage = "No prior purchases found."
                 showError = true
@@ -92,5 +94,7 @@ final class PaywallViewModel: ObservableObject {
             showError = true
             HapticManager.error()
         }
+
+        return false
     }
 }

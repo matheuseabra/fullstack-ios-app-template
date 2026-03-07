@@ -86,7 +86,7 @@ struct TasksTabView: View {
         let fabSize: CGFloat = 56
 
         return ZStack {
-            Capsule()
+            RoundedRectangle(cornerRadius: 28, style: .continuous)
                 .fill(Color.black.opacity(0.94))
                 .frame(width: 364)
                 .frame(height: 82)

@@ -7,6 +7,7 @@ struct DashboardView: View {
     @ObservedObject var vm: TasksViewModel
     @State private var selectedTask: TaskItem?
     @State private var showTaskDetail = false
+    @State private var showPaywall = false
 
     var body: some View {
         NavigationStack {
@@ -42,12 +43,42 @@ struct DashboardView: View {
                     TaskDetailView(vm: vm, task: selectedTask)
                 }
             }
+            .drawer(isPresented: $showPaywall, detents: [.large]) {
+                PaywallFlowView {
+                    showPaywall = false
+                }
+            }
             .onAppear { Analytics.track(.featureUsed(name: "today")) }
         }
     }
 
     private var header: some View {
         HStack {
+            if !PaymentManager.shared.hasProAccess {
+                Button {
+                    HapticManager.medium()
+                    showPaywall = true
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "crown.fill")
+                            .font(.system(size: 12, weight: .bold))
+
+                        Text("Upgrade")
+                            .font(.body(13, weight: .bold))
+                    }
+                    .foregroundStyle(Color.textPrimary)
+                    .padding(.horizontal, Spacing.md)
+                    .padding(.vertical, 9)
+                    .background(Color.bgElevated)
+                    .clipShape(Capsule())
+                    .overlay(
+                        Capsule()
+                            .stroke(Color.border.opacity(0.75), lineWidth: 1)
+                    )
+                }
+                .buttonStyle(.plain)
+            }
+
             Spacer()
 
             Text(todayDateText)
