@@ -68,7 +68,19 @@ struct DashboardView: View {
     }
 
     private var header: some View {
-        HStack {
+        HStack(alignment: .top) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Today")
+                    .font(.display(34, weight: .bold))
+                    .foregroundStyle(Color.textPrimary)
+
+                Text(todayDateText)
+                    .font(.body(12, weight: .semibold))
+                    .foregroundStyle(Color.textSecondary)
+            }
+
+            Spacer()
+
             if !PaymentManager.shared.hasProAccess {
                 Button {
                     HapticManager.medium()
@@ -92,13 +104,8 @@ struct DashboardView: View {
                     )
                 }
                 .buttonStyle(.plain)
+                .padding(.top, 4)
             }
-
-            Spacer()
-
-            Text(todayDateText)
-                .font(.body(12, weight: .semibold))
-                .foregroundStyle(Color.textSecondary)
         }
     }
 
@@ -122,11 +129,11 @@ struct DashboardView: View {
                 VStack(spacing: 0) {
                     ForEach(Array(vm.activeTasksForSelectedDate.enumerated()), id: \.element.id) { index, task in
                         HStack(alignment: .top, spacing: Spacing.md) {
-                            Text(createdTimeString(for: task))
+                            Text(taskTimeString(for: task))
                                 .font(.body(11, weight: .bold))
                                 .foregroundStyle(Color.textSecondary)
-                                .frame(width: 44, alignment: .trailing)
-                                .padding(.top, Spacing.lg)
+                                .frame(width: 50, alignment: .trailing)
+                                .padding(.top, 15)
 
                             TaskDetailCard(task: task) {
                                 vm.toggleComplete(task)
@@ -164,10 +171,10 @@ struct DashboardView: View {
         Calendar.current.isDateInToday(vm.selectedDate) ? "Have a good \(vm.dayPartGreeting)." : "Pick another day or add a task."
     }
 
-    private func createdTimeString(for task: TaskItem) -> String {
+    private func taskTimeString(for task: TaskItem) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "HH:mm"
-        return formatter.string(from: task.createdAt)
+        return formatter.string(from: task.dueDate ?? task.createdAt)
     }
 
     private var loadingSkeleton: some View {

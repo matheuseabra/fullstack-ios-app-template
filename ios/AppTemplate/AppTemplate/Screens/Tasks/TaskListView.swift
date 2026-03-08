@@ -162,7 +162,7 @@ struct TaskListView: View {
                     dayCell(for: date)
                 } else {
                     Color.clear
-                        .frame(height: 76)
+                        .frame(height: 52)
                 }
             }
         }
@@ -171,53 +171,41 @@ struct TaskListView: View {
     private func dayCell(for date: Date) -> some View {
         let summary = monthSummaries[Calendar.current.startOfDay(for: date)] ?? .init(pendingCount: 0, completedCount: 0)
         let isSelected = Calendar.current.isDate(date, inSameDayAs: vm.selectedDate)
+        let isToday = Calendar.current.isDateInToday(date)
 
         return Button {
             vm.selectedDate = date
             showDaySheet = true
             HapticManager.selection()
         } label: {
-            VStack(alignment: .leading, spacing: 10) {
-                HStack(alignment: .top) {
+            VStack(spacing: 4) {
+                ZStack {
+                    if isToday {
+                        Circle()
+                            .fill(Color.black)
+                            .frame(width: 28, height: 28)
+                    } else if isSelected {
+                        Circle()
+                            .stroke(Color.border, lineWidth: 1)
+                            .frame(width: 28, height: 28)
+                    }
+
                     Text(dayNumber(date))
-                        .font(.body(15, weight: isSelected ? .bold : .semibold))
-                        .foregroundStyle(isSelected ? Color.white : Color.textPrimary)
-
-                    Spacer(minLength: 0)
-
-                    if summary.totalCount > 0 {
-                        Text("\(summary.totalCount)")
-                            .font(.body(10, weight: .bold))
-                            .foregroundStyle(isSelected ? Color.white.opacity(0.92) : Color.textSecondary)
-                    }
+                        .font(.body(15, weight: isToday || isSelected ? .bold : .semibold))
+                        .foregroundStyle(isToday ? Color.white : Color.textPrimary)
                 }
+                .frame(height: 28)
 
-                Spacer(minLength: 0)
-
-                HStack(spacing: 4) {
-                    if summary.pendingCount > 0 {
-                        Circle()
-                            .fill(isSelected ? Color.white : Color.textPrimary)
-                            .frame(width: 6, height: 6)
-                    }
-
-                    if summary.completedCount > 0 {
-                        Circle()
-                            .fill(isSelected ? Color.white.opacity(0.7) : Color.success)
-                            .frame(width: 6, height: 6)
-                    }
+                if summary.totalCount > 0 {
+                    Circle()
+                        .fill(dayIndicatorColor(summary: summary, isToday: isToday))
+                        .frame(width: 5, height: 5)
+                } else {
+                    Color.clear
+                        .frame(width: 5, height: 5)
                 }
             }
-            .padding(Spacing.md)
-            .frame(maxWidth: .infinity, minHeight: 76, alignment: .topLeading)
-            .background(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(isSelected ? Color.black : Color.bgElevated)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .stroke(Color.border.opacity(isSelected ? 0 : 0.65), lineWidth: 1)
-            )
+            .frame(maxWidth: .infinity, minHeight: 52)
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier(calendarDayIdentifier(for: date))
@@ -295,6 +283,14 @@ struct TaskListView: View {
 
     private func dayNumber(_ date: Date) -> String {
         String(Calendar.current.component(.day, from: date))
+    }
+
+    private func dayIndicatorColor(summary: TasksViewModel.DaySummary, isToday: Bool) -> Color {
+        if isToday {
+            return Color.black
+        }
+
+        return summary.pendingCount > 0 ? Color.textPrimary : Color.success
     }
 
     private func calendarDayIdentifier(for date: Date) -> String {
@@ -424,8 +420,8 @@ private struct DayHistorySheet: View {
                         Text(historyTimeString(for: task))
                             .font(.body(11, weight: .bold))
                             .foregroundStyle(Color.textSecondary)
-                            .frame(width: 44, alignment: .trailing)
-                            .padding(.top, Spacing.lg)
+                            .frame(width: 50, alignment: .trailing)
+                            .padding(.top, 15)
 
                         TaskDetailCard(task: task) {
                             vm.toggleComplete(task)

@@ -10,16 +10,13 @@ struct TaskDetailCard: View {
     var body: some View {
         HStack(alignment: .top, spacing: Spacing.md) {
             Button(action: onToggle) {
-                Image(systemName: task.isCompleted ? "checkmark.circle.fill" : "circle")
-                    .font(.system(size: 24))
-                    .foregroundStyle(task.isCompleted ? Color.success : Color.textTertiary)
-                    .animation(.snappy, value: task.isCompleted)
+                checkbox
             }
             .buttonStyle(.plain)
-            .padding(.top, 2)
+            .padding(.top, 1)
 
-            VStack(alignment: .leading, spacing: Spacing.xs) {
-                HStack(alignment: .top, spacing: Spacing.md) {
+            VStack(alignment: .leading, spacing: 5) {
+                HStack(alignment: .firstTextBaseline, spacing: Spacing.sm) {
                     Text(task.title)
                         .font(.body(16, weight: .bold))
                         .foregroundStyle(task.isCompleted ? Color.textSecondary : Color.textPrimary)
@@ -49,10 +46,25 @@ struct TaskDetailCard: View {
         .padding(.vertical, Spacing.lg)
     }
 
+    private var checkbox: some View {
+        RoundedRectangle(cornerRadius: 7, style: .continuous)
+            .fill(task.isCompleted ? Color.success : Color.clear)
+            .stroke(task.isCompleted ? Color.success : Color.textTertiary, lineWidth: task.isCompleted ? 0 : 1.75)
+            .frame(width: 22, height: 22)
+            .overlay {
+                if task.isCompleted {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundStyle(Color.white)
+                }
+            }
+            .animation(.snappy, value: task.isCompleted)
+    }
+
     private var priorityIndicator: some View {
         RoundedRectangle(cornerRadius: 4, style: .continuous)
             .fill(priorityColor)
-            .frame(width: 14, height: 14)
+            .frame(width: 11, height: 11)
     }
 
     private var priorityColor: Color {

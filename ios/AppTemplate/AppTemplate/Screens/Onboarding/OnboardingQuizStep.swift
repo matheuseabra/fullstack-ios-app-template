@@ -178,18 +178,6 @@ private struct OptionCard: View {
                 }
 
                 Spacer()
-
-                ZStack {
-                    Circle()
-                        .strokeBorder(isSelected ? Color.accent : Color.border, lineWidth: 2)
-                        .frame(width: 22, height: 22)
-
-                    if isSelected {
-                        Circle()
-                            .fill(Color.accent)
-                            .frame(width: 10, height: 10)
-                    }
-                }
             }
             .padding(Spacing.lg)
             .background(Color.bgSurface)
