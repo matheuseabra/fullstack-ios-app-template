@@ -9,7 +9,7 @@ struct SplashView: View {
         ZStack {
             Color.bg.ignoresSafeArea()
 
-            VStack(spacing: Spacing.xl) {
+            VStack(spacing: Spacing.md) {
                 Image("AppLogo")
                     .resizable()
                     .aspectRatio(contentMode: .fit)
