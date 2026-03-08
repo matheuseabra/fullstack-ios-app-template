@@ -86,14 +86,14 @@ struct TaskListView: View {
     private var monthTransition: AnyTransition {
         if monthTransitionDirection >= 0 {
             return .asymmetric(
-                insertion: .move(edge: .trailing).combined(with: .opacity),
-                removal: .move(edge: .leading).combined(with: .opacity)
+                insertion: .move(edge: .trailing),
+                removal: .move(edge: .leading)
             )
         }
 
         return .asymmetric(
-            insertion: .move(edge: .leading).combined(with: .opacity),
-            removal: .move(edge: .trailing).combined(with: .opacity)
+            insertion: .move(edge: .leading),
+            removal: .move(edge: .trailing)
         )
     }
 

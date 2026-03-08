@@ -64,23 +64,23 @@ struct WeekCalendarStrip: View {
                 Text(dayOfWeek(date))
                     .font(.body(10, weight: .bold))
                     .textCase(.uppercase)
-                    .foregroundStyle(isSelected ? Color.white : Color.textSecondary)
+                    .foregroundStyle(Color.textSecondary)
 
                 VStack(spacing: 4) {
                     Text("\(calendar.component(.day, from: date))")
                         .font(.body(14, weight: isSelected ? .bold : .semibold))
-                        .foregroundStyle(isSelected ? Color.white : Color.textPrimary)
+                        .foregroundStyle(Color.textPrimary)
 
                     Circle()
-                        .fill(isSelected ? Color.white : Color.textPrimary)
+                        .fill(Color.textPrimary)
                         .frame(width: 4, height: 4)
                         .opacity(hasTasks(on: date) ? 1 : 0)
                 }
             }
             .frame(width: 44, height: 68)
-            .background(
+            .overlay(
                 RoundedRectangle(cornerRadius: 16)
-                    .fill(isSelected ? Color.black : Color.clear)
+                    .stroke(isSelected ? Color.textPrimary : Color.clear, lineWidth: 1.5)
             )
         }
         .buttonStyle(.plain)

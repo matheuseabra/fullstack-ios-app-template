@@ -9,6 +9,7 @@ struct DashboardView: View {
     @State private var selectedTask: TaskItem?
     @State private var showTaskDetail = false
     @State private var showPaywall = false
+    @State private var dayTransitionDirection = 1
 
     private let calendar = Calendar.current
 
@@ -37,7 +38,13 @@ struct DashboardView: View {
                             VStack(alignment: .leading, spacing: Spacing.xl) {
                                 header
                                 WeekCalendarStrip(selectedDate: $vm.selectedDate, tasks: vm.tasks)
-                                tasksSection
+                                ZStack {
+                                    tasksSection
+                                        .id(Calendar.current.startOfDay(for: vm.selectedDate))
+                                        .transition(dayTransition)
+                                }
+                                .clipped()
+                                .animation(.easeInOut(duration: 0.24), value: vm.selectedDate)
                             }
                             .padding(.horizontal, Spacing.lg)
                             .padding(.top, Spacing.lg)
@@ -161,6 +168,20 @@ struct DashboardView: View {
         .animation(.snappy, value: vm.activeTasksForSelectedDate.count)
     }
 
+    private var dayTransition: AnyTransition {
+        if dayTransitionDirection >= 0 {
+            return .asymmetric(
+                insertion: .move(edge: .trailing),
+                removal: .move(edge: .leading)
+            )
+        }
+
+        return .asymmetric(
+            insertion: .move(edge: .leading),
+            removal: .move(edge: .trailing)
+        )
+    }
+
     private var daySwipeGesture: some Gesture {
         DragGesture(minimumDistance: 20)
             .onEnded { value in
@@ -216,7 +237,8 @@ struct DashboardView: View {
             return
         }
 
-        withAnimation(.snappy(duration: 0.22)) {
+        dayTransitionDirection = value
+        withAnimation(.easeInOut(duration: 0.24)) {
             vm.selectedDate = nextDate
         }
         HapticManager.selection()
