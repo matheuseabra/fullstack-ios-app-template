@@ -37,16 +37,17 @@ struct DashboardView: View {
                         ScrollView(showsIndicators: false) {
                             VStack(alignment: .leading, spacing: Spacing.xl) {
                                 header
+                                    .padding(.horizontal, Spacing.lg)
                                 WeekCalendarStrip(selectedDate: $vm.selectedDate, tasks: vm.tasks)
                                 ZStack {
                                     tasksSection
                                         .id(Calendar.current.startOfDay(for: vm.selectedDate))
                                         .transition(dayTransition)
                                 }
+                                .padding(.horizontal, Spacing.lg)
                                 .clipped()
                                 .animation(.easeInOut(duration: 0.24), value: vm.selectedDate)
                             }
-                            .padding(.horizontal, Spacing.lg)
                             .padding(.top, Spacing.lg)
                             .padding(.bottom, 120)
                         }

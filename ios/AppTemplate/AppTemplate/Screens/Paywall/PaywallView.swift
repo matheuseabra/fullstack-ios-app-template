@@ -104,13 +104,13 @@ struct PaywallView: View {
                                 if vm.isLoading {
                                     ProgressView()
                                         .progressViewStyle(.circular)
-                                        .tint(.white)
+                                        .tint(Color.bg)
                                 } else {
                                     Text("Start Free Trial")
                                         .font(.body(20, weight: .bold))
                                 }
                             }
-                            .foregroundStyle(.white)
+                            .foregroundStyle(Color.bg)
                             .frame(maxWidth: .infinity)
                             .frame(height: 58)
                             .background(Color.textPrimary)
@@ -243,7 +243,7 @@ private struct PaywallTimelineRow: View {
 
                 Image(systemName: icon)
                     .font(.system(size: 12, weight: .bold))
-                    .foregroundStyle(accent ? Color.white : Color.textSecondary)
+                    .foregroundStyle(accent ? Color.bg : Color.textSecondary)
             }
 
             VStack(alignment: .leading, spacing: 3) {
@@ -323,7 +323,7 @@ private struct PlanCard: View {
                 if let badge {
                     Text(badge)
                         .font(.body(10, weight: .bold))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(Color.bg)
                         .textCase(.uppercase)
                         .tracking(0.5)
                         .padding(.horizontal, Spacing.md)

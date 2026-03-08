@@ -63,26 +63,7 @@ struct OnboardingView: View {
             }
 
             // Bottom actions — varies by step type
-            if case .welcomeHero = vm.currentQuestion.type {
-                // Welcome screen: privacy text + full-width Continue button
-                VStack(spacing: Spacing.lg) {
-                    HStack(spacing: 4) {
-                        Text("By continuing, you are agreeing to our")
-                            .font(.body(13))
-                            .foregroundStyle(Color.textSecondary)
-                        Text("Privacy Policy")
-                            .font(.body(13, weight: .medium))
-                            .foregroundStyle(Color.textPrimary)
-                            .underline()
-                    }
-
-                    AppButton("Continue", style: .primary) {
-                        vm.advance()
-                    }
-                }
-                .padding(.horizontal, Spacing.xl)
-                .padding(.bottom, Spacing.xxl)
-            } else if vm.showsFAB {
+            if vm.showsFAB {
                 // Circular FAB next / finish button (text input, info, notifications)
                 Button {
                     vm.advance()
@@ -95,12 +76,12 @@ struct OnboardingView: View {
                         if vm.isSaving {
                             ProgressView()
                                 .progressViewStyle(.circular)
-                                .tint(.white)
+                                .tint(Color.bg)
                                 .scaleEffect(0.85)
                         } else {
                             Image(systemName: vm.isLastStep ? "checkmark" : "chevron.right")
                                 .font(.system(size: 18, weight: .semibold))
-                                .foregroundStyle(.white)
+                                .foregroundStyle(Color.bg)
                         }
                     }
                 }

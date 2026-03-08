@@ -10,48 +10,7 @@ struct OnboardingQuizStep: View {
     var onChoiceSelected: (() -> Void)? = nil
 
     var body: some View {
-        switch question.type {
-        case .welcomeHero:
-            welcomeHeroContent
-        default:
-            defaultStepContent
-        }
-    }
-
-    // MARK: - Welcome Hero (Screen 0)
-
-    private var welcomeHeroContent: some View {
-        VStack(spacing: 0) {
-            Spacer()
-
-            VStack(spacing: Spacing.xl) {
-                // App logo — only on welcome screen
-                Image("AppLogo")
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 56, height: 56)
-                    .clipShape(RoundedRectangle(cornerRadius: Radius.md))
-
-                VStack(spacing: Spacing.lg) {
-                    Text(question.headline)
-                        .font(.display(question.type.headlineSize))
-                        .foregroundStyle(Color.textPrimary)
-                        .multilineTextAlignment(.center)
-                        .fixedSize(horizontal: false, vertical: true)
-
-                    if let sub = question.subheadline {
-                        Text(sub)
-                            .font(.body(17))
-                            .foregroundStyle(Color.textSecondary)
-                            .multilineTextAlignment(.center)
-                    }
-                }
-            }
-            .padding(.horizontal, Spacing.xl)
-
-            Spacer()
-            Spacer()
-        }
+        defaultStepContent
     }
 
     // MARK: - Default Step Content

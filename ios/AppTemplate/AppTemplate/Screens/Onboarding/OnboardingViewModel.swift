@@ -68,12 +68,6 @@ final class OnboardingViewModel: ObservableObject {
 
     let questions: [OnboardingQuestion] = [
         OnboardingQuestion(
-            key: "welcome",
-            headline: "Get more done\nwith less stress",
-            subheadline: "Your personal task manager that helps you stay focused and organized.",
-            type: .welcomeHero
-        ),
-        OnboardingQuestion(
             key: "name",
             headline: "What should we call you?",
             subheadline: "We'll use this to personalize your experience.",

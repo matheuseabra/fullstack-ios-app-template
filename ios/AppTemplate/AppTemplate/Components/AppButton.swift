@@ -82,8 +82,9 @@ struct AppButton: View {
 
     private var tintColor: Color {
         switch style {
-        case .primary, .destructive: return .white
-        case .ghost:                 return .textPrimary
+        case .primary:      return .bg
+        case .destructive:  return .white
+        case .ghost:        return .textPrimary
         }
     }
 

@@ -6,12 +6,12 @@ import SwiftUI
 extension Font {
     /// Large headings and hero text
     static func display(_ size: CGFloat, weight: Font.Weight = .bold) -> Font {
-        .system(size: size, weight: weight, design: .rounded)
+        .system(size: size, weight: weight, design: .default)
     }
 
     /// Body copy and UI labels
     static func body(_ size: CGFloat, weight: Font.Weight = .regular) -> Font {
-        .system(size: size, weight: weight, design: .rounded)
+        .system(size: size, weight: weight, design: .default)
     }
 
     /// Code blocks and numeric data

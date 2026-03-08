@@ -20,13 +20,15 @@ struct LoginView: View {
                         .frame(width: 72, height: 72)
                         .clipShape(RoundedRectangle(cornerRadius: Radius.lg))
 
-                    Text("AppTemplate")
+                    Text("Get more done\nwith less stress")
                         .font(.display(28))
                         .foregroundStyle(Color.textPrimary)
+                        .multilineTextAlignment(.center)
 
-                    Text("Your tagline here")
+                    Text("Your personal task manager that helps you stay focused and organized.")
                         .font(.body(17))
                         .foregroundStyle(Color.textSecondary)
+                        .multilineTextAlignment(.center)
                         .padding(.top, Spacing.xs)
                 }
 

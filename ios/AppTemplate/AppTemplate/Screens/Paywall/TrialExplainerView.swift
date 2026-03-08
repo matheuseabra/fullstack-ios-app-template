@@ -57,7 +57,7 @@ struct TrialExplainerView: View {
                                     .overlay(
                                         Image(systemName: "sparkles")
                                             .font(.system(size: 36, weight: .medium))
-                                            .foregroundStyle(.white)
+                                            .foregroundStyle(Color.bg)
                                     )
                             }
                             .padding(.bottom, Spacing.md)
@@ -139,7 +139,7 @@ struct TrialExplainerView: View {
                     } label: {
                         Text("Try Free & Subscribe")
                             .font(.body(17, weight: .bold))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(Color.bg)
                             .frame(maxWidth: .infinity)
                             .frame(height: 56)
                             .background(
@@ -240,7 +240,7 @@ private struct TimelineNodeCircle: View {
                 )
             Image(systemName: icon)
                 .font(.system(size: 10, weight: .bold))
-                .foregroundStyle(.white)
+                .foregroundStyle(Color.bg)
         }
     }
 }
