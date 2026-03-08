@@ -14,9 +14,9 @@ const router = new Hono<AppEnv>()
 // Receives RevenueCat subscription lifecycle events and syncs subscription state.
 router.post('/webhook/revenuecat', async (c) => {
   const rawBody = await c.req.text()
-  const signature = c.req.header('X-RevenueCat-Signature')
+  const authorization = c.req.header('Authorization')
 
-  if (!validateRevenueCatSignature(rawBody, signature)) {
+  if (!validateRevenueCatSignature(rawBody, authorization)) {
     throw new AppError(401, 'INVALID_SIGNATURE', 'Invalid RevenueCat webhook signature')
   }
 
@@ -68,8 +68,7 @@ router.post('/webhook/revenuecat', async (c) => {
 
   const { error } = await supabaseService.from('subscriptions').upsert(
     {
-      user_id: appUserId,
-      revenuecat_user_id: event.app_user_id,
+      revenuecat_user_id: appUserId,
       product_id: event.product_id ?? null,
       status: newStatus,
       trial_ends_at: trialEndsAt,
@@ -77,7 +76,7 @@ router.post('/webhook/revenuecat', async (c) => {
       cancel_at_period_end: event.type === 'CANCELLATION',
       entitlements: event.entitlement_ids ? { ids: event.entitlement_ids } : null,
     },
-    { onConflict: 'user_id' },
+    { onConflict: 'revenuecat_user_id' },
   )
 
   if (error) {

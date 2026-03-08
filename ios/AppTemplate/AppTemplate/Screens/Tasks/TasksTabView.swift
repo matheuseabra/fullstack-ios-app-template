@@ -129,7 +129,7 @@ struct TasksTabView: View {
                     .shadow(color: .white.opacity(0.08), radius: 10, y: 2)
             }
             .accessibilityIdentifier("tasksTab.addButton")
-            .offset(y: -4)
+            .offset(y: 0)
         }
         .frame(maxWidth: .infinity)
         .padding(.horizontal, Spacing.lg)

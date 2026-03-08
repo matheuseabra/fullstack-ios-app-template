@@ -1,4 +1,7 @@
 import Foundation
+#if canImport(PostHog)
+import PostHog
+#endif
 
 // MARK: - Analytics
 // Typed analytics wrapper. Swap the underlying SDK by changing the capture call.

@@ -17,7 +17,7 @@ export async function captureEvent({
   if (!env.POSTHOG_API_KEY) return
 
   try {
-    await fetch(`${env.POSTHOG_HOST}/capture/`, {
+    const res = await fetch(`${env.POSTHOG_HOST}/capture/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -28,6 +28,10 @@ export async function captureEvent({
         timestamp: new Date().toISOString(),
       }),
     })
+    if (!res.ok) {
+      const body = await res.text().catch(() => '')
+      logger.warn({ status: res.status, body, event }, 'PostHog capture rejected')
+    }
   } catch (err) {
     // Non-fatal — analytics failure must never break the request
     logger.warn({ err, event }, 'PostHog capture failed')

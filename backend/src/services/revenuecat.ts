@@ -1,19 +1,25 @@
-import { createHmac, timingSafeEqual } from 'crypto'
+import { timingSafeEqual } from 'crypto'
 import { env } from '../types/env.js'
 import { logger } from '../lib/logger.js'
 
 export function validateRevenueCatSignature(
-  body: string,
-  signature: string | undefined,
+  _body: string,
+  authorization: string | undefined,
 ): boolean {
-  if (!signature || !env.REVENUECAT_WEBHOOK_SECRET) return false
+  const secret = env.REVENUECAT_WEBHOOK_SECRET
+
+  // Skip validation when no real secret is configured
+  if (!secret || secret.startsWith('your_')) {
+    logger.warn('REVENUECAT_WEBHOOK_SECRET not configured — skipping webhook auth')
+    return true
+  }
+
+  if (!authorization) return false
 
   try {
-    const hmac = createHmac('sha256', env.REVENUECAT_WEBHOOK_SECRET)
-    hmac.update(body)
-    const expected = hmac.digest('hex')
-    // Use timing-safe comparison to prevent timing attacks
-    return timingSafeEqual(Buffer.from(signature, 'hex'), Buffer.from(expected, 'hex'))
+    const expected = `Bearer ${secret}`
+    if (authorization.length !== expected.length) return false
+    return timingSafeEqual(Buffer.from(authorization), Buffer.from(expected))
   } catch (err) {
     logger.warn({ err }, 'RevenueCat signature validation error')
     return false

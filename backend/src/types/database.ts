@@ -184,7 +184,7 @@ export type Database = {
           status: string
           trial_ends_at: string | null
           updated_at: string | null
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           cancel_at_period_end?: boolean | null
@@ -197,7 +197,7 @@ export type Database = {
           status?: string
           trial_ends_at?: string | null
           updated_at?: string | null
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           cancel_at_period_end?: boolean | null
