@@ -26,6 +26,7 @@ struct WeekCalendarStrip: View {
                     }
                 }
                 .padding(.horizontal, 2)
+                .padding(.vertical, 4)
             }
             .simultaneousGesture(daySwipeGesture)
             .onAppear {
@@ -65,22 +66,24 @@ struct WeekCalendarStrip: View {
                     .font(.body(10, weight: .bold))
                     .textCase(.uppercase)
                     .foregroundStyle(Color.textSecondary)
+                    .opacity(isSelected ? 1 : 0.7)
 
                 VStack(spacing: 4) {
                     Text("\(calendar.component(.day, from: date))")
                         .font(.body(14, weight: isSelected ? .bold : .semibold))
                         .foregroundStyle(Color.textPrimary)
+                        .opacity(isSelected ? 1 : 0.7)
 
                     Circle()
                         .fill(Color.textPrimary)
                         .frame(width: 4, height: 4)
-                        .opacity(hasTasks(on: date) ? 1 : 0)
+                        .opacity(hasTasks(on: date) ? (isSelected ? 1 : 0.7) : 0)
                 }
             }
             .frame(width: 44, height: 68)
             .overlay(
                 RoundedRectangle(cornerRadius: 16)
-                    .stroke(isSelected ? Color.textPrimary : Color.clear, lineWidth: 1.5)
+                    .stroke(isSelected ? Color.border : Color.clear, lineWidth: 1.5)
             )
         }
         .buttonStyle(.plain)

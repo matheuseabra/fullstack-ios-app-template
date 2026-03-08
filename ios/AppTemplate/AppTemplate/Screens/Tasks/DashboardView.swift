@@ -157,7 +157,6 @@ struct DashboardView: View {
 
                         if index < vm.activeTasksForSelectedDate.count - 1 {
                             DottedDivider()
-                                .padding(.leading, 56)
                         }
                     }
                 }
