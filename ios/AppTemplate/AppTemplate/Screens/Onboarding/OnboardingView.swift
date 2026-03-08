@@ -94,6 +94,6 @@ struct OnboardingView: View {
             }
             // Multiple choice screens: no bottom button (auto-advance on tap)
         }
-        .onAppear { Analytics.track(.onboardingStarted) }
+        .onAppear { Analytics.screen("Onboarding") }
     }
 }

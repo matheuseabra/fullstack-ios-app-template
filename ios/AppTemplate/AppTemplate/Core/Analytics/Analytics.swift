@@ -69,12 +69,29 @@ enum AnalyticsEvent {
 // MARK: - Analytics Wrapper
 
 enum Analytics {
-    static func track(_ event: AnalyticsEvent) {
+    /// Current screen name — set by each screen's `.onAppear`.
+    @MainActor static var currentScreen: String = ""
+
+    @MainActor
+    static func screen(_ name: String) {
+        currentScreen = name
 #if canImport(PostHog)
-        PostHogSDK.shared.capture(event.name, properties: event.properties)
+        PostHogSDK.shared.screen(name)
 #else
-        // TODO: Install posthog-ios via SPM
-        print("[Analytics] \(event.name): \(event.properties)")
+        print("[Analytics] screen: \(name)")
+#endif
+    }
+
+    @MainActor
+    static func track(_ event: AnalyticsEvent) {
+        var props = event.properties
+        if !currentScreen.isEmpty {
+            props["$screen_name"] = currentScreen
+        }
+#if canImport(PostHog)
+        PostHogSDK.shared.capture(event.name, properties: props)
+#else
+        print("[Analytics] \(event.name): \(props)")
 #endif
     }
 

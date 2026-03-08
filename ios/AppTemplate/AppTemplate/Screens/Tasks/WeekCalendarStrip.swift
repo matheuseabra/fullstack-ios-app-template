@@ -80,7 +80,7 @@ struct WeekCalendarStrip: View {
                         .opacity(hasTasks(on: date) ? (isSelected ? 1 : 0.7) : 0)
                 }
             }
-            .frame(width: 44, height: 68)
+            .frame(width: 40, height: 62)
             .overlay(
                 RoundedRectangle(cornerRadius: 16)
                     .stroke(isSelected ? Color.border : Color.clear, lineWidth: 1.5)

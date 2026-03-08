@@ -36,6 +36,7 @@ final class AuthManager: ObservableObject {
             let session = try await client.auth.session
             currentUser = session.user
             isAuthenticated = true
+            Analytics.identify(userId: session.user.id.uuidString)
         } catch {
             isAuthenticated = false
             currentUser = nil
@@ -51,6 +52,7 @@ final class AuthManager: ObservableObject {
         )
         await refreshSession()
         if let uid = currentUser?.id.uuidString {
+            Analytics.identify(userId: uid)
             try? await PaymentManager.shared.logIn(userId: uid)
         }
     }
@@ -62,6 +64,7 @@ final class AuthManager: ObservableObject {
         )
         await refreshSession()
         if let uid = currentUser?.id.uuidString {
+            Analytics.identify(userId: uid)
             try? await PaymentManager.shared.logIn(userId: uid)
         }
     }
@@ -72,6 +75,7 @@ final class AuthManager: ObservableObject {
         Task {
             try? await client.auth.signOut()
             try? await PaymentManager.shared.logOut()
+            Analytics.reset()
             isAuthenticated = false
             currentUser = nil
         }

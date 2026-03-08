@@ -56,7 +56,7 @@ struct TasksTabView: View {
         }
         .animation(.easeInOut(duration: 0.2), value: isTabBarVisible)
         .task { await vm.load() }
-        .onAppear { Analytics.track(.featureUsed(name: "home")) }
+        .onAppear { Analytics.screen("Home") }
         .onChange(of: selectedTab) { _, _ in
             isTabBarVisible = true
         }

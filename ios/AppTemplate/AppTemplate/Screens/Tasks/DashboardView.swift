@@ -73,7 +73,7 @@ struct DashboardView: View {
             }
             .onAppear {
                 isTabBarVisible = true
-                Analytics.track(.featureUsed(name: "today"))
+                Analytics.screen("Today")
             }
         }
     }

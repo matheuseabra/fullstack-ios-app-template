@@ -88,7 +88,7 @@ struct SettingsView: View {
             .sheet(isPresented: $showAppearanceSheet) {
                 AppearanceSheet(theme: theme)
             }
-            .onAppear { Analytics.track(.featureUsed(name: "settings")) }
+            .onAppear { Analytics.screen("Settings") }
             .onAppear { isTabBarVisible = true }
             .onChange(of: showAppearanceSheet) { _, isPresented in
                 isTabBarVisible = !isPresented

@@ -160,7 +160,7 @@ struct PaywallView: View {
             .navigationBarHidden(true)
         }
         .task { await vm.loadOfferings() }
-        .onAppear { Analytics.track(.paywallViewed(screen: 1)) }
+        .onAppear { Analytics.screen("Paywall") }
         .alert("Error", isPresented: $vm.showError) {
             Button("OK") {}
         } message: {

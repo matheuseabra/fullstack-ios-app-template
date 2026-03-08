@@ -195,7 +195,7 @@ struct TrialExplainerView: View {
             }
         }
         .navigationBarHidden(true)
-        .onAppear { Analytics.track(.paywallViewed(screen: 1)) }
+        .onAppear { Analytics.screen("TrialExplainer") }
     }
 }
 

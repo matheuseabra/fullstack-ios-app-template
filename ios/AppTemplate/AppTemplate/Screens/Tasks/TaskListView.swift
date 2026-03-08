@@ -57,7 +57,7 @@ struct TaskListView: View {
             .onAppear {
                 isTabBarVisible = true
                 displayedMonth = Calendar.current.dateInterval(of: .month, for: vm.selectedDate)?.start ?? vm.selectedDate
-                Analytics.track(.featureUsed(name: "calendar"))
+                Analytics.screen("Calendar")
             }
         }
     }

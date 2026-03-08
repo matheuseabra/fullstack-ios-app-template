@@ -65,7 +65,7 @@ struct HomeView: View {
             }
         }
         .task { await vm.load() }
-        .onAppear { Analytics.track(.featureUsed(name: "home")) }
+        .onAppear { Analytics.screen("Home") }
     }
 
     private var loadingSkeleton: some View {

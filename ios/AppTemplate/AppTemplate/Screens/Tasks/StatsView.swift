@@ -25,7 +25,7 @@ struct StatsView: View {
                 }
             }
             .navigationBarHidden(true)
-            .onAppear { Analytics.track(.featureUsed(name: "stats")) }
+            .onAppear { Analytics.screen("Stats") }
         }
     }
 
