@@ -10,6 +10,8 @@ struct DashboardView: View {
     @State private var showTaskDetail = false
     @State private var showPaywall = false
 
+    private let calendar = Calendar.current
+
     init(vm: TasksViewModel, isTabBarVisible: Binding<Bool> = .constant(true)) {
         self._vm = ObservedObject(wrappedValue: vm)
         self._isTabBarVisible = isTabBarVisible
@@ -41,6 +43,7 @@ struct DashboardView: View {
                             .padding(.top, Spacing.lg)
                             .padding(.bottom, 120)
                         }
+                        .simultaneousGesture(daySwipeGesture)
                     }
                 }
             }
@@ -70,7 +73,7 @@ struct DashboardView: View {
     private var header: some View {
         HStack(alignment: .top) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Today")
+                Text(headerTitle)
                     .font(.display(34, weight: .bold))
                     .foregroundStyle(Color.textPrimary)
 
@@ -90,7 +93,7 @@ struct DashboardView: View {
                         Image(systemName: "crown.fill")
                             .font(.system(size: 12, weight: .bold))
 
-                        Text("Upgrade")
+                        Text("Pro")
                             .font(.body(13, weight: .bold))
                     }
                     .foregroundStyle(Color.textPrimary)
@@ -154,7 +157,38 @@ struct DashboardView: View {
                 .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
+        .contentShape(Rectangle())
         .animation(.snappy, value: vm.activeTasksForSelectedDate.count)
+    }
+
+    private var daySwipeGesture: some Gesture {
+        DragGesture(minimumDistance: 20)
+            .onEnded { value in
+                guard abs(value.translation.width) > abs(value.translation.height),
+                      abs(value.translation.width) > 44 else {
+                    return
+                }
+
+                shiftDay(by: value.translation.width < 0 ? 1 : -1)
+            }
+    }
+
+    private var headerTitle: String {
+        if calendar.isDateInToday(vm.selectedDate) {
+            return "Today"
+        }
+
+        if calendar.isDateInTomorrow(vm.selectedDate) {
+            return "Tomorrow"
+        }
+
+        if calendar.isDateInYesterday(vm.selectedDate) {
+            return "Yesterday"
+        }
+
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EEEE"
+        return formatter.string(from: vm.selectedDate)
     }
 
     private var todayDateText: String {
@@ -175,6 +209,17 @@ struct DashboardView: View {
         let formatter = DateFormatter()
         formatter.dateFormat = "HH:mm"
         return formatter.string(from: task.dueDate ?? task.createdAt)
+    }
+
+    private func shiftDay(by value: Int) {
+        guard let nextDate = calendar.date(byAdding: .day, value: value, to: vm.selectedDate) else {
+            return
+        }
+
+        withAnimation(.snappy(duration: 0.22)) {
+            vm.selectedDate = nextDate
+        }
+        HapticManager.selection()
     }
 
     private var loadingSkeleton: some View {

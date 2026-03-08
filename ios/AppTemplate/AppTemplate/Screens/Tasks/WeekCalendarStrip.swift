@@ -27,6 +27,7 @@ struct WeekCalendarStrip: View {
                 }
                 .padding(.horizontal, 2)
             }
+            .simultaneousGesture(daySwipeGesture)
             .onAppear {
                 proxy.scrollTo(selectedDate, anchor: .center)
             }
@@ -36,6 +37,18 @@ struct WeekCalendarStrip: View {
                 }
             }
         }
+    }
+
+    private var daySwipeGesture: some Gesture {
+        DragGesture(minimumDistance: 20)
+            .onEnded { value in
+                guard abs(value.translation.width) > abs(value.translation.height),
+                      abs(value.translation.width) > 44 else {
+                    return
+                }
+
+                shiftDay(by: value.translation.width < 0 ? 1 : -1)
+            }
     }
 
     private func dayCard(_ date: Date) -> some View {
@@ -89,6 +102,17 @@ struct WeekCalendarStrip: View {
 
             return calendar.isDateInToday(dayStart)
         }
+    }
+
+    private func shiftDay(by value: Int) {
+        guard let nextDate = calendar.date(byAdding: .day, value: value, to: selectedDate) else {
+            return
+        }
+
+        withAnimation(.snappy(duration: 0.22)) {
+            selectedDate = nextDate
+        }
+        HapticManager.selection()
     }
 }
 

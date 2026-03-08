@@ -50,11 +50,11 @@ struct TaskDetailCard: View {
         RoundedRectangle(cornerRadius: 7, style: .continuous)
             .fill(task.isCompleted ? Color.success : Color.clear)
             .stroke(task.isCompleted ? Color.success : Color.textTertiary, lineWidth: task.isCompleted ? 0 : 1.75)
-            .frame(width: 22, height: 22)
+            .frame(width: 20, height: 20)
             .overlay {
                 if task.isCompleted {
                     Image(systemName: "checkmark")
-                        .font(.system(size: 11, weight: .bold))
+                        .font(.system(size: 10, weight: .bold))
                         .foregroundStyle(Color.white)
                 }
             }

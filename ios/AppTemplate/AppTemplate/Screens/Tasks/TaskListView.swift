@@ -8,6 +8,7 @@ struct TaskListView: View {
     @Binding var isTabBarVisible: Bool
     @State private var displayedMonth: Date
     @State private var showDaySheet = false
+    @State private var monthTransitionDirection = 1
 
     init(vm: TasksViewModel, isTabBarVisible: Binding<Bool> = .constant(true)) {
         self._vm = ObservedObject(wrappedValue: vm)
@@ -24,14 +25,19 @@ struct TaskListView: View {
                     VStack(alignment: .leading, spacing: Spacing.xl) {
                         header
                         monthNavigator
-                        monthSummary
-                        weekdayHeader
-                        monthGrid
+                        ZStack {
+                            monthPage
+                                .id(displayedMonth)
+                                .transition(monthTransition)
+                        }
+                        .clipped()
                     }
                     .padding(.horizontal, Spacing.lg)
                     .padding(.top, Spacing.lg)
                     .padding(.bottom, 120)
                 }
+                .simultaneousGesture(monthSwipeGesture)
+                .animation(.easeInOut(duration: 0.24), value: displayedMonth)
             }
             .drawer(isPresented: $showDaySheet, detents: [.medium, .large]) {
                 DayHistorySheet(vm: vm, selectedDate: vm.selectedDate) {
@@ -41,6 +47,7 @@ struct TaskListView: View {
             .onChange(of: vm.selectedDate) { _, newValue in
                 let nextMonth = Calendar.current.dateInterval(of: .month, for: newValue)?.start ?? newValue
                 if !Calendar.current.isDate(nextMonth, equalTo: displayedMonth, toGranularity: .month) {
+                    monthTransitionDirection = nextMonth >= displayedMonth ? 1 : -1
                     displayedMonth = nextMonth
                 }
             }
@@ -53,6 +60,41 @@ struct TaskListView: View {
                 Analytics.track(.featureUsed(name: "calendar"))
             }
         }
+    }
+
+    private var monthPage: some View {
+        VStack(alignment: .leading, spacing: Spacing.xl) {
+            monthSummary
+            weekdayHeader
+            monthGrid
+        }
+    }
+
+    private var monthSwipeGesture: some Gesture {
+        DragGesture(minimumDistance: 20)
+            .onEnded { value in
+                guard abs(value.translation.width) > abs(value.translation.height),
+                      abs(value.translation.width) > 44 else {
+                    return
+                }
+
+                shiftMonth(by: value.translation.width < 0 ? 1 : -1)
+                HapticManager.selection()
+            }
+    }
+
+    private var monthTransition: AnyTransition {
+        if monthTransitionDirection >= 0 {
+            return .asymmetric(
+                insertion: .move(edge: .trailing).combined(with: .opacity),
+                removal: .move(edge: .leading).combined(with: .opacity)
+            )
+        }
+
+        return .asymmetric(
+            insertion: .move(edge: .leading).combined(with: .opacity),
+            removal: .move(edge: .trailing).combined(with: .opacity)
+        )
     }
 
     private var header: some View {
@@ -278,7 +320,10 @@ struct TaskListView: View {
             return
         }
 
-        displayedMonth = Calendar.current.dateInterval(of: .month, for: nextMonth)?.start ?? nextMonth
+        monthTransitionDirection = value
+        withAnimation(.snappy(duration: 0.22)) {
+            displayedMonth = Calendar.current.dateInterval(of: .month, for: nextMonth)?.start ?? nextMonth
+        }
     }
 
     private func dayNumber(_ date: Date) -> String {
