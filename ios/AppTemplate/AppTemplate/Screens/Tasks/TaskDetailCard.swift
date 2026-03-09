@@ -10,74 +10,120 @@ struct TaskDetailCard: View {
     var body: some View {
         HStack(alignment: .center, spacing: 12) {
             Button(action: onToggle) {
-                checkbox
+                TaskCompletionCheckbox(isChecked: task.isCompleted, size: 20, cornerRadius: 6)
             }
             .buttonStyle(.plain)
 
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 6) {
                 Text(task.title)
                     .font(.body(15, weight: .medium))
                     .foregroundStyle(task.isCompleted ? Color.textTertiary : Color.textPrimary)
                     .strikethrough(task.isCompleted, color: Color.textTertiary)
                     .lineLimit(1)
 
-                if !metadataText.isEmpty {
-                    Text(metadataText)
-                        .lineLimit(2)
-                    .font(.body(12))
+                if !task.note.isEmpty {
+                    Text(task.note)
+                        .lineLimit(1)
+                        .font(.body(12))
+                        .foregroundStyle(Color.textSecondary)
+                }
+
+                metadataRow
                     .foregroundStyle(
                         task.dueDate.map({ isOverdue($0) }) == true
                             ? Color.danger
                             : Color.textTertiary
                     )
-                }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-
-            if task.priority == .high {
-                Circle()
-                    .fill(Color.danger.opacity(0.8))
-                    .frame(width: 6, height: 6)
-            }
         }
         .padding(.vertical, 12)
         .opacity(task.isCompleted ? 0.65 : 1)
         .animation(.easeOut(duration: 0.15), value: task.isCompleted)
     }
 
-    private var checkbox: some View {
-        Circle()
-            .stroke(task.isCompleted ? Color.textTertiary : Color.textTertiary.opacity(0.6), lineWidth: 1.5)
-            .frame(width: 20, height: 20)
-            .overlay {
-                if task.isCompleted {
-                    Image(systemName: "checkmark")
-                        .font(.system(size: 10, weight: .semibold))
-                        .foregroundStyle(Color.textTertiary)
+    private var metadataRow: some View {
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: 6) {
+                metadataBadges
+            }
+
+            VStack(alignment: .leading, spacing: 6) {
+                HStack(spacing: 6) {
+                    if let category = task.categoryDisplayText {
+                        metadataBadge(text: category)
+                    }
+
+                    priorityBadge
+                }
+
+                HStack(spacing: 6) {
+                    if let dueDate = task.dueDate {
+                        metadataBadge(text: timeString(dueDate), icon: "clock")
+                    }
+
+                    if let repeatLabel = task.repeatFrequency?.label {
+                        metadataBadge(text: repeatLabel, icon: "repeat")
+                    }
                 }
             }
+        }
     }
 
-    private var metadataText: String {
-        var items: [String] = []
-
-        if !task.note.isEmpty {
-            items.append(task.note)
-        }
-
+    @ViewBuilder
+    private var metadataBadges: some View {
         if let category = task.categoryDisplayText {
-            items.append(category)
+            metadataBadge(text: category)
         }
+
+        priorityBadge
 
         if let dueDate = task.dueDate {
-            items.append(timeString(dueDate))
+            metadataBadge(text: timeString(dueDate), icon: "clock")
         }
 
         if let repeatLabel = task.repeatFrequency?.label {
-            items.append("Repeats \(repeatLabel)")
+            metadataBadge(text: repeatLabel, icon: "repeat")
         }
+    }
 
-        return items.joined(separator: " · ")
+    private var priorityBadge: some View {
+        metadataBadge(text: task.priority.label, dotColor: priorityColor)
+    }
+
+    private var priorityColor: Color {
+        switch task.priority {
+        case .low:
+            return Color.success
+        case .medium:
+            return Color.warning
+        case .high:
+            return Color.danger
+        }
+    }
+
+    private func metadataBadge(text: String, icon: String? = nil, dotColor: Color? = nil) -> some View {
+        HStack(spacing: 5) {
+            if let dotColor {
+                Circle()
+                    .fill(dotColor)
+                    .frame(width: 6, height: 6)
+            }
+
+            if let icon {
+                Image(systemName: icon)
+                    .font(.system(size: 10, weight: .bold))
+            }
+
+            Text(text)
+                .font(.body(11, weight: .semibold))
+                .lineLimit(1)
+        }
+        .foregroundStyle(Color.textTertiary)
+        .padding(.horizontal, 8)
+        .frame(height: 24)
+        .background(Color.bgSurface)
+        .clipShape(Capsule())
     }
 
     private func timeString(_ date: Date) -> String {

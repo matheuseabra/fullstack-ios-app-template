@@ -12,10 +12,10 @@
 		37846EA12F56992A009A2209 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 37846EA02F56992A009A2209 /* Supabase */; };
 		37846EB02F569D06009A2209 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 37846EAF2F569D06009A2209 /* RevenueCat */; };
 		37846EB22F569D06009A2209 /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = 37846EB12F569D06009A2209 /* RevenueCatUI */; };
+		37846EB52F569D9A009A2209 /* PostHog in Frameworks */ = {isa = PBXBuildFile; productRef = 37846EB62F569D9A009A2209 /* PostHog */; };
 		37846EC82F573AB2009A2209 /* Agentcraft.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 37846EC72F573AB2009A2209 /* Agentcraft.storekit */; };
 		37C222E32F576D5F005FF4C1 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 37C222E22F576D5F005FF4C1 /* GoogleSignIn */; };
 		37C222E52F576D5F005FF4C1 /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 37C222E42F576D5F005FF4C1 /* GoogleSignInSwift */; };
-		37846EB52F569D9A009A2209 /* PostHog in Frameworks */ = {isa = PBXBuildFile; productRef = 37846EB62F569D9A009A2209 /* PostHog */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -691,6 +691,11 @@
 			package = 37846EAE2F569D06009A2209 /* XCRemoteSwiftPackageReference "purchases-ios" */;
 			productName = RevenueCatUI;
 		};
+		37846EB62F569D9A009A2209 /* PostHog */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 37846EB32F569D9A009A2209 /* XCRemoteSwiftPackageReference "posthog-ios" */;
+			productName = PostHog;
+		};
 		37C222E22F576D5F005FF4C1 /* GoogleSignIn */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 37846EB42F569E12009A2209 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
@@ -700,11 +705,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 37846EB42F569E12009A2209 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
 			productName = GoogleSignInSwift;
-		};
-		37846EB62F569D9A009A2209 /* PostHog */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 37846EB32F569D9A009A2209 /* XCRemoteSwiftPackageReference "posthog-ios" */;
-			productName = PostHog;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

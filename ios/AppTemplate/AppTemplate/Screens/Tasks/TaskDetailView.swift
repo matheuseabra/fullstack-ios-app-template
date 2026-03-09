@@ -18,19 +18,7 @@ struct TaskDetailView: View {
                 VStack(alignment: .leading, spacing: 0) {
                     // Title + status
                     HStack(alignment: .top, spacing: Spacing.sm) {
-                        Circle()
-                            .fill(task.isCompleted ? Color.success : Color.clear)
-                            .overlay(
-                                Circle().stroke(task.isCompleted ? Color.success : Color.border, lineWidth: 1.5)
-                            )
-                            .overlay(
-                                task.isCompleted
-                                    ? Image(systemName: "checkmark")
-                                        .font(.system(size: 8, weight: .bold))
-                                        .foregroundStyle(Color.bg)
-                                    : nil
-                            )
-                            .frame(width: 18, height: 18)
+                        TaskCompletionCheckbox(isChecked: task.isCompleted, size: 18, cornerRadius: 5)
                             .padding(.top, 4)
 
                         Text(task.title)

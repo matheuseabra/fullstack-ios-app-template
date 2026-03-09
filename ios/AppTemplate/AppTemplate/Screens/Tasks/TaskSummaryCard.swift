@@ -46,7 +46,7 @@ struct TaskSummaryCard: View {
                         .font(.body(12))
                         .foregroundStyle(Color.textTertiary)
                 } else if completed == total {
-                    Label("All done!", systemImage: "checkmark.circle.fill")
+                    Label("All done!", systemImage: "checkmark.square.fill")
                         .font(.body(13, weight: .semibold))
                         .foregroundStyle(Color.success)
                 }

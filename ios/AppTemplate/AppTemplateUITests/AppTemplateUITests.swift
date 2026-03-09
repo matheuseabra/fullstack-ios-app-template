@@ -113,6 +113,8 @@ final class AppTemplateUITests: XCTestCase {
         titleField.typeText(taskTitle)
         titleField.typeText("\n")
 
+        app.buttons["taskForm.categoryRow"].tap()
+
         let customCategoryButton = app.buttons["taskForm.customCategoryButton"]
         XCTAssertTrue(customCategoryButton.waitForExistence(timeout: 5))
         customCategoryButton.tap()
@@ -129,6 +131,8 @@ final class AppTemplateUITests: XCTestCase {
         categoryNameField.typeText("\n")
 
         app.buttons["taskForm.createCategorySubmitButton"].tap()
+
+        app.buttons["taskForm.repeatRow"].tap()
         app.buttons["taskForm.repeat.weekly"].tap()
 
         let submitButton = app.buttons["taskForm.submitButton"]
