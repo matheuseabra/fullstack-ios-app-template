@@ -75,8 +75,7 @@ backend/
 │
 ├── .github/
 │   └── workflows/
-│       ├── ci.yml                  # Test + lint on PR
-│       └── deploy.yml              # Deploy to Fly.io on main push
+│       └── backend-ci.yml          # Test + lint on PR
 │
 ├── .env.example
 ├── .env                            # gitignored
@@ -84,7 +83,6 @@ backend/
 ├── .prettierrc
 ├── Dockerfile
 ├── docker-compose.yml              # Local: Supabase + Redis + API
-├── docker-compose.prod.yml         # Prod: API only (Supabase cloud)
 ├── fly.toml                        # Fly.io deploy config
 ├── jest.config.ts
 ├── tsconfig.json

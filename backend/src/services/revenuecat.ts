@@ -8,10 +8,19 @@ export function validateRevenueCatSignature(
 ): boolean {
   const secret = env.REVENUECAT_WEBHOOK_SECRET
 
-  // Skip validation when no real secret is configured
-  if (!secret || secret.startsWith('your_')) {
-    logger.warn('REVENUECAT_WEBHOOK_SECRET not configured — skipping webhook auth')
-    return true
+  if (!secret) {
+    if (env.NODE_ENV !== 'production') {
+      logger.warn('REVENUECAT_WEBHOOK_SECRET not configured — skipping webhook auth in non-production')
+      return true
+    }
+
+    logger.error('REVENUECAT_WEBHOOK_SECRET missing in production')
+    return false
+  }
+
+  if (secret.startsWith('your_')) {
+    logger.error('REVENUECAT_WEBHOOK_SECRET is still using a template placeholder')
+    return false
   }
 
   if (!authorization) return false

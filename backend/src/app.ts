@@ -21,6 +21,9 @@ import taskRoutes from './routes/tasks.js'
 import taskCategoryRoutes from './routes/taskCategories.js'
 
 const app = new Hono<AppEnv>()
+const allowedOrigins = env.ALLOWED_ORIGINS.split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean)
 
 // ─────────────────────────────────────────
 // Global middleware
@@ -28,7 +31,7 @@ const app = new Hono<AppEnv>()
 app.use(
   '*',
   cors({
-    origin: env.ALLOWED_ORIGINS.split(',').map((o) => o.trim()),
+    origin: allowedOrigins,
     credentials: true,
   }),
 )
@@ -245,11 +248,13 @@ if (env.NODE_ENV === 'development') {
 // ─────────────────────────────────────────
 // Health check — no auth required
 // ─────────────────────────────────────────
+app.use('/health', rateLimiter({ requests: 30, window: '1m' }))
 app.get('/health', (c) => c.json({ status: 'ok', ts: Date.now() }))
 
 // ─────────────────────────────────────────
 // Public routes
 // ─────────────────────────────────────────
+app.use('/auth/*', rateLimiter({ requests: 20, window: '1m' }))
 if (env.NODE_ENV === 'development') {
   // Dev-only proxy for Supabase Auth when iOS runs on physical devices.
   // In production, iOS should use Supabase URL directly.

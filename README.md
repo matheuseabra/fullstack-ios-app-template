@@ -29,7 +29,6 @@ appstudio-boilerplate/
 ├── .github/
 │   └── workflows/              # CI pipelines
 ├── docker-compose.yml          # Local dev stack
-├── docker-compose.prod.yml     # Production stack
 └── README.md                   # This file
 ```
 
@@ -119,6 +118,10 @@ Both iOS app and backend live in the same repo for:
 
 - [Frontend Setup →](ios/README.md)
 - [Backend Setup →](backend/README.md)
+- [Launch Checklist →](CHECKLIST.md)
+- [Deployment Guide →](docs/DEPLOYMENT.md)
+- [TestFlight Guide →](docs/TESTFLIGHT.md)
+- [App Store Guide →](docs/APP_STORE.md)
 - [Database Schema →](docs/DATABASE.md)
 - [UI Design System →](docs/DESIGN_SYSTEM.md)
 - [Agent Guide →](.agents/AGENTS.md)

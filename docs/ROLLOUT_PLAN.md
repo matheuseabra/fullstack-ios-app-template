@@ -293,7 +293,7 @@ End-to-end flows, analytics audit, deployment configuration.
 ### 8E — Deployment
 - [ ] Deploy Supabase project to Supabase Cloud (create project, push migrations, set secrets)
 - [ ] Deploy backend to Fly.io (`fly launch`, `fly secrets set`, `fly deploy`)
-- [x] Point iOS app config (AppEnvironment) to production Supabase URL + anon key + backend URL
+- [ ] Point iOS app config (AppEnvironment) to production Supabase URL + anon key + backend URL
 - [ ] Configure RevenueCat webhook URL → production backend
 - [ ] Configure PostHog project key for production
 

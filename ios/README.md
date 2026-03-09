@@ -101,7 +101,7 @@ Add via Xcode → File → Add Package Dependencies
 ```swift
 // Package.swift dependencies
 .package(url: "https://github.com/supabase/supabase-swift", from: "2.0.0"),
-.package(url: "https://github.com/RevenueCat/purchases-ios", from: "4.0.0"),
+.package(url: "https://github.com/RevenueCat/purchases-ios", from: "4.0.0"), // Use API key from MCP
 .package(url: "https://github.com/PostHog/posthog-ios", from: "3.0.0"),
 .package(url: "https://github.com/google/GoogleSignIn-iOS", from: "7.0.0"),
 .package(url: "https://github.com/feathericons/feather-swift", from: "1.0.0"),
@@ -494,7 +494,8 @@ extension Analytics {
 3. Add SPM packages (see above)
 4. Configure `AppEnvironment.swift` with Supabase URL + anon key
 5. Add `GoogleService-Info.plist` for Google Sign-In
-6. Configure RevenueCat API key in `PaymentManager.swift`
+6. Use RevenueCat MCP to create the project, products, entitlements, and webhook. Do not create these manually in the dashboard. MCP will output the API key and webhook secret for you.
+7. Configure the RevenueCat API key in `PaymentManager.swift` using the value from MCP setup.
 7. Add PostHog API key in `Analytics.swift`
 8. Update `Assets.xcassets` with app icon + logo
 9. Replace placeholder colors in `Colors/` with brand colors
