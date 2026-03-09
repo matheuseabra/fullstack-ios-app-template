@@ -41,9 +41,12 @@ export function makeQueryMock(value: unknown = { data: null, error: null }): any
   const chain: Record<string, unknown> = {
     select: jest.fn().mockReturnThis(),
     eq: jest.fn().mockReturnThis(),
+    or: jest.fn().mockReturnThis(),
+    order: jest.fn().mockReturnThis(),
     update: jest.fn().mockReturnThis(),
     upsert: jest.fn().mockReturnThis(),
     insert: jest.fn().mockReturnThis(),
+    delete: jest.fn().mockReturnThis(),
     maybeSingle: jest.fn().mockResolvedValue(value),
     single: jest.fn().mockResolvedValue(value),
     gte: jest.fn().mockReturnThis(),

@@ -214,8 +214,42 @@ export type Database = {
         }
         Relationships: []
       }
+      task_categories: {
+        Row: {
+          created_at: string | null
+          emoji: string
+          id: string
+          is_default: boolean
+          name: string
+          slug: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          emoji?: string
+          id?: string
+          is_default?: boolean
+          name: string
+          slug?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          emoji?: string
+          id?: string
+          is_default?: boolean
+          name?: string
+          slug?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       tasks: {
         Row: {
+          category_id: string | null
           id: string
           user_id: string
           title: string
@@ -223,11 +257,14 @@ export type Database = {
           is_completed: boolean
           priority: string
           due_date: string | null
+          repeat_frequency: string | null
+          series_id: string | null
           completed_at: string | null
           created_at: string | null
           updated_at: string | null
         }
         Insert: {
+          category_id?: string | null
           id?: string
           user_id: string
           title: string
@@ -235,11 +272,14 @@ export type Database = {
           is_completed?: boolean
           priority?: string
           due_date?: string | null
+          repeat_frequency?: string | null
+          series_id?: string | null
           completed_at?: string | null
           created_at?: string | null
           updated_at?: string | null
         }
         Update: {
+          category_id?: string | null
           id?: string
           user_id?: string
           title?: string
@@ -247,6 +287,8 @@ export type Database = {
           is_completed?: boolean
           priority?: string
           due_date?: string | null
+          repeat_frequency?: string | null
+          series_id?: string | null
           completed_at?: string | null
           created_at?: string | null
           updated_at?: string | null
@@ -306,7 +348,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      complete_recurring_task: {
+        Args: {
+          p_completed_at?: string
+          p_task_id: string
+          p_user_id: string
+        }
+        Returns: {
+          current_task_id: string
+          next_task_id: string | null
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

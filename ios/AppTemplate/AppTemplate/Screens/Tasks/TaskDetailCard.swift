@@ -21,21 +21,9 @@ struct TaskDetailCard: View {
                     .strikethrough(task.isCompleted, color: Color.textTertiary)
                     .lineLimit(1)
 
-                if !task.note.isEmpty || task.dueDate != nil {
-                    HStack(spacing: 8) {
-                        if !task.note.isEmpty {
-                            Text(task.note)
-                                .lineLimit(1)
-                        }
-
-                        if !task.note.isEmpty && task.dueDate != nil {
-                            Text("·")
-                        }
-
-                        if let dueDate = task.dueDate {
-                            Text(timeString(dueDate))
-                        }
-                    }
+                if !metadataText.isEmpty {
+                    Text(metadataText)
+                        .lineLimit(2)
                     .font(.body(12))
                     .foregroundStyle(
                         task.dueDate.map({ isOverdue($0) }) == true
@@ -68,6 +56,28 @@ struct TaskDetailCard: View {
                         .foregroundStyle(Color.textTertiary)
                 }
             }
+    }
+
+    private var metadataText: String {
+        var items: [String] = []
+
+        if !task.note.isEmpty {
+            items.append(task.note)
+        }
+
+        if let category = task.categoryDisplayText {
+            items.append(category)
+        }
+
+        if let dueDate = task.dueDate {
+            items.append(timeString(dueDate))
+        }
+
+        if let repeatLabel = task.repeatFrequency?.label {
+            items.append("Repeats \(repeatLabel)")
+        }
+
+        return items.joined(separator: " · ")
     }
 
     private func timeString(_ date: Date) -> String {

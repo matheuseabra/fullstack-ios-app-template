@@ -49,6 +49,16 @@ struct TaskDetailView: View {
                     propertyRow("Priority", value: task.priority.label, valueColor: priorityColor)
                     propertyDivider
 
+                    if let category = task.categoryDisplayText {
+                        propertyRow("Category", value: category)
+                        propertyDivider
+                    }
+
+                    if let repeatText = task.repeatDisplayText {
+                        propertyRow("Repeats", value: repeatText)
+                        propertyDivider
+                    }
+
                     if let dueDate = task.dueDate {
                         propertyRow("Due date", value: shortDateText(dueDate), valueColor: isOverdue(dueDate) ? Color.danger : nil)
                         propertyDivider

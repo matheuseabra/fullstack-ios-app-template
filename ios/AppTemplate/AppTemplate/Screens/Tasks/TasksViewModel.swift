@@ -14,6 +14,7 @@ final class TasksViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var errorMessage: String?
     @Published var selectedDate: Date = Date()
+    @Published var categories: [TaskCategory] = TaskCategory.defaults
 
     private var modelContext: ModelContext {
         LocalDatabase.shared.context
@@ -28,6 +29,7 @@ final class TasksViewModel: ObservableObject {
 
         // Load local tasks immediately
         fetchLocal()
+        categories = TaskCategory.defaults
 
         // Fetch user + subscription from API
         #if DEBUG
@@ -55,6 +57,13 @@ final class TasksViewModel: ObservableObject {
             errorMessage = error.localizedDescription
         }
 
+        do {
+            let categoryResp: TaskCategoryListResponse = try await APIClient.shared.get(APIEndpoints.taskCategories)
+            categories = mergedCategories(with: categoryResp.data)
+        } catch {
+            print("[TasksVM] Failed to fetch categories: \(error)")
+        }
+
         // Pull remote tasks
         await syncFromServer()
         #endif
@@ -78,12 +87,61 @@ final class TasksViewModel: ObservableObject {
         }
     }
 
-    func addTask(title: String, note: String = "", priority: TaskItem.Priority = .medium, dueDate: Date? = nil) {
+    func category(with id: String?) -> TaskCategory? {
+        guard let id else { return nil }
+        return categories.first(where: { $0.id == id })
+    }
+
+    func createCategory(name: String, emoji: String) async -> TaskCategory? {
+        let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedEmoji = emoji.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        guard !trimmedName.isEmpty, !trimmedEmoji.isEmpty else {
+            return nil
+        }
+
+        #if DEBUG
+        let category = TaskCategory.localCustom(name: trimmedName, emoji: trimmedEmoji)
+        upsertCategory(category)
+        return category
+        #else
+        struct CreateBody: Encodable {
+            let name: String
+            let emoji: String
+        }
+
+        do {
+            let response: TaskCategoryResponse = try await APIClient.shared.post(
+                APIEndpoints.taskCategories,
+                body: CreateBody(name: trimmedName, emoji: trimmedEmoji)
+            )
+            upsertCategory(response.data)
+            return response.data
+        } catch {
+            errorMessage = error.localizedDescription
+            return nil
+        }
+        #endif
+    }
+
+    func addTask(
+        title: String,
+        note: String = "",
+        priority: TaskItem.Priority = .medium,
+        dueDate: Date? = nil,
+        category: TaskCategory? = nil,
+        repeatFrequency: TaskItem.RepeatFrequency? = nil
+    ) {
         let task = TaskItem(
             title: title,
             note: note,
             priority: priority,
-            dueDate: dueDate
+            dueDate: dueDate,
+            categoryId: category?.id,
+            categoryName: category?.name,
+            categoryEmoji: category?.emoji,
+            repeatFrequency: repeatFrequency,
+            seriesId: repeatFrequency == nil ? nil : UUID().uuidString
         )
         modelContext.insert(task)
         saveContext()
@@ -99,10 +157,18 @@ final class TasksViewModel: ObservableObject {
     }
 
     func toggleComplete(_ task: TaskItem) {
+        let isCompleting = !task.isCompleted
         task.isCompleted.toggle()
         task.completedAt = task.isCompleted ? Date() : nil
         task.updatedAt = Date()
         task.syncStatus = .pendingUpdate
+
+        #if DEBUG
+        if isCompleting, let nextTask = makeNextOccurrence(from: task) {
+            modelContext.insert(nextTask)
+        }
+        #endif
+
         saveContext()
         fetchLocal()
 
@@ -130,11 +196,24 @@ final class TasksViewModel: ObservableObject {
         #endif
     }
 
-    func updateTask(_ task: TaskItem, title: String, note: String, priority: TaskItem.Priority, dueDate: Date?) {
+    func updateTask(
+        _ task: TaskItem,
+        title: String,
+        note: String,
+        priority: TaskItem.Priority,
+        dueDate: Date?,
+        category: TaskCategory?,
+        repeatFrequency: TaskItem.RepeatFrequency?
+    ) {
         task.title = title
         task.note = note
         task.priority = priority
         task.dueDate = dueDate
+        task.categoryId = category?.id
+        task.categoryName = category?.name
+        task.categoryEmoji = category?.emoji
+        task.repeatFrequency = repeatFrequency
+        task.seriesId = repeatFrequency == nil ? nil : (task.seriesId ?? UUID().uuidString)
         task.updatedAt = Date()
         task.syncStatus = .pendingUpdate
         saveContext()
@@ -332,6 +411,109 @@ final class TasksViewModel: ObservableObject {
         }
     }
 
+    private func mergedCategories(with remote: [TaskCategory]) -> [TaskCategory] {
+        var merged = Dictionary(uniqueKeysWithValues: TaskCategory.defaults.map { ($0.id, $0) })
+
+        for category in remote {
+            merged[category.id] = category
+        }
+
+        return merged.values.sorted { lhs, rhs in
+            if lhs.isDefault != rhs.isDefault {
+                return lhs.isDefault && !rhs.isDefault
+            }
+
+            return lhs.name.localizedCaseInsensitiveCompare(rhs.name) == .orderedAscending
+        }
+    }
+
+    private func upsertCategory(_ category: TaskCategory) {
+        categories = mergedCategories(with: categories.filter { $0.id != category.id } + [category])
+    }
+
+    private func categoryFromDTO(_ dto: TaskDTO) -> TaskCategory? {
+        guard let categoryId = dto.categoryId,
+              let categoryName = dto.categoryName,
+              let categoryEmoji = dto.categoryEmoji else {
+            return nil
+        }
+
+        return TaskCategory(
+            id: categoryId,
+            userId: nil,
+            name: categoryName,
+            emoji: categoryEmoji,
+            slug: dto.categorySlug,
+            isDefault: dto.categoryIsDefault ?? false,
+            createdAt: nil,
+            updatedAt: nil
+        )
+    }
+
+    private func apply(_ dto: TaskDTO, to task: TaskItem) {
+        task.title = dto.title
+        task.note = dto.note ?? ""
+        task.isCompleted = dto.isCompleted
+        task.priority = TaskItem.Priority(rawValue: dto.priority) ?? .medium
+        task.dueDate = dto.dueDate
+        task.completedAt = dto.completedAt
+        task.categoryId = dto.categoryId
+        task.categoryName = dto.categoryName
+        task.categoryEmoji = dto.categoryEmoji
+        task.repeatFrequency = dto.repeatFrequency
+        task.seriesId = dto.seriesId
+        task.createdAt = dto.createdAt ?? task.createdAt
+        task.updatedAt = dto.updatedAt ?? Date()
+        task.supabaseId = dto.id ?? task.supabaseId
+    }
+
+    private func nextDueDate(for task: TaskItem) -> Date? {
+        guard let dueDate = task.dueDate,
+              let repeatFrequency = task.repeatFrequency else {
+            return nil
+        }
+
+        let calendar = Calendar.current
+
+        switch repeatFrequency {
+        case .daily:
+            return calendar.date(byAdding: .day, value: 1, to: dueDate)
+        case .weekly:
+            return calendar.date(byAdding: .weekOfYear, value: 1, to: dueDate)
+        case .monthly:
+            return calendar.date(byAdding: .month, value: 1, to: dueDate)
+        case .yearly:
+            return calendar.date(byAdding: .year, value: 1, to: dueDate)
+        }
+    }
+
+    private func makeNextOccurrence(from task: TaskItem) -> TaskItem? {
+        guard let nextDueDate = nextDueDate(for: task),
+              let seriesId = task.seriesId else {
+            return nil
+        }
+
+        let duplicateExists = tasks.contains { candidate in
+            candidate.seriesId == seriesId && candidate.dueDate == nextDueDate
+        }
+
+        if duplicateExists {
+            return nil
+        }
+
+        return TaskItem(
+            title: task.title,
+            note: task.note,
+            priority: task.priority,
+            dueDate: nextDueDate,
+            categoryId: task.categoryId,
+            categoryName: task.categoryName,
+            categoryEmoji: task.categoryEmoji,
+            repeatFrequency: task.repeatFrequency,
+            seriesId: seriesId
+        )
+    }
+
     // MARK: - Server Sync
 
     private func syncFromServer() async {
@@ -349,6 +531,9 @@ final class TasksViewModel: ObservableObject {
 
     private func mergeFromServer(_ dto: TaskDTO) {
         guard let id = dto.id else { return }
+        if let category = categoryFromDTO(dto) {
+            upsertCategory(category)
+        }
 
         // Check if we already have this task locally
         let descriptor = FetchDescriptor<TaskItem>(
@@ -360,13 +545,7 @@ final class TasksViewModel: ObservableObject {
         if let existing {
             // Server wins if local isn't pending changes
             if existing.syncStatus == .synced {
-                existing.title = dto.title
-                existing.note = dto.note ?? ""
-                existing.isCompleted = dto.isCompleted
-                existing.priority = TaskItem.Priority(rawValue: dto.priority) ?? .medium
-                existing.dueDate = dto.dueDate
-                existing.completedAt = dto.completedAt
-                existing.updatedAt = dto.updatedAt ?? Date()
+                apply(dto, to: existing)
             }
         } else {
             let task = TaskItem(
@@ -376,6 +555,11 @@ final class TasksViewModel: ObservableObject {
                 priority: TaskItem.Priority(rawValue: dto.priority) ?? .medium,
                 dueDate: dto.dueDate,
                 completedAt: dto.completedAt,
+                categoryId: dto.categoryId,
+                categoryName: dto.categoryName,
+                categoryEmoji: dto.categoryEmoji,
+                repeatFrequency: dto.repeatFrequency,
+                seriesId: dto.seriesId,
                 createdAt: dto.createdAt ?? Date(),
                 updatedAt: dto.updatedAt ?? Date(),
                 supabaseId: id,
@@ -393,6 +577,8 @@ final class TasksViewModel: ObservableObject {
             let priority: String
             let due_date: String?
             let completed_at: String?
+            let category_id: String?
+            let repeat_frequency: String?
         }
 
         let body = CreateBody(
@@ -401,14 +587,20 @@ final class TasksViewModel: ObservableObject {
             is_completed: task.isCompleted,
             priority: task.priority.rawValue,
             due_date: task.dueDate.map { ISO8601DateFormatter().string(from: $0) },
-            completed_at: task.completedAt.map { ISO8601DateFormatter().string(from: $0) }
+            completed_at: task.completedAt.map { ISO8601DateFormatter().string(from: $0) },
+            category_id: task.categoryId,
+            repeat_frequency: task.repeatFrequency?.rawValue
         )
 
         do {
             let response: TaskResponse = try await APIClient.shared.post(APIEndpoints.tasks, body: body)
-            task.supabaseId = response.data.id
+            if let category = categoryFromDTO(response.data) {
+                upsertCategory(category)
+            }
+            apply(response.data, to: task)
             task.syncStatus = .synced
             saveContext()
+            fetchLocal()
         } catch {
             print("[TasksVM] Push task failed: \(error)")
         }
@@ -424,6 +616,8 @@ final class TasksViewModel: ObservableObject {
             let priority: String
             let due_date: String?
             let completed_at: String?
+            let category_id: String?
+            let repeat_frequency: String?
         }
 
         let body = UpdateBody(
@@ -432,13 +626,25 @@ final class TasksViewModel: ObservableObject {
             is_completed: task.isCompleted,
             priority: task.priority.rawValue,
             due_date: task.dueDate.map { ISO8601DateFormatter().string(from: $0) },
-            completed_at: task.completedAt.map { ISO8601DateFormatter().string(from: $0) }
+            completed_at: task.completedAt.map { ISO8601DateFormatter().string(from: $0) },
+            category_id: task.categoryId,
+            repeat_frequency: task.repeatFrequency?.rawValue
         )
 
         do {
-            let _: TaskResponse = try await APIClient.shared.put(APIEndpoints.task(id), body: body)
+            let response: TaskMutationResponse = try await APIClient.shared.put(APIEndpoints.task(id), body: body)
+            if let category = categoryFromDTO(response.data.task) {
+                upsertCategory(category)
+            }
+            apply(response.data.task, to: task)
             task.syncStatus = .synced
+
+            if let nextOccurrence = response.data.nextOccurrence {
+                mergeFromServer(nextOccurrence)
+            }
+
             saveContext()
+            fetchLocal()
         } catch {
             print("[TasksVM] Update task failed: \(error)")
         }

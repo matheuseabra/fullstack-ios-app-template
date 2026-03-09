@@ -17,27 +17,14 @@ struct WeekCalendarStrip: View {
     }
 
     var body: some View {
-        ScrollViewReader { proxy in
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: Spacing.md) {
-                    ForEach(days, id: \.self) { date in
-                        dayCard(date)
-                            .id(date)
-                    }
-                }
-                .padding(.horizontal, 2)
-                .padding(.vertical, 4)
-            }
-            .simultaneousGesture(daySwipeGesture)
-            .onAppear {
-                proxy.scrollTo(selectedDate, anchor: .center)
-            }
-            .onChange(of: selectedDate) { _, newValue in
-                withAnimation(.snappy(duration: 0.2)) {
-                    proxy.scrollTo(newValue, anchor: .center)
-                }
+        HStack(spacing: 0) {
+            ForEach(days, id: \.self) { date in
+                dayCard(date)
+                    .frame(maxWidth: .infinity)
             }
         }
+        .padding(.vertical, 4)
+        .simultaneousGesture(daySwipeGesture)
     }
 
     private var daySwipeGesture: some Gesture {

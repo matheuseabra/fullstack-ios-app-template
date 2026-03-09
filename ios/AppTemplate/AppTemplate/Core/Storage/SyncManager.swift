@@ -41,6 +41,11 @@ final class SyncManager: ObservableObject {
                     existing.priority = TaskItem.Priority(rawValue: dto.priority) ?? .medium
                     existing.dueDate = dto.dueDate
                     existing.completedAt = dto.completedAt
+                    existing.categoryId = dto.categoryId
+                    existing.categoryName = dto.categoryName
+                    existing.categoryEmoji = dto.categoryEmoji
+                    existing.repeatFrequency = dto.repeatFrequency
+                    existing.seriesId = dto.seriesId
                     existing.updatedAt = dto.updatedAt ?? Date()
                 } else if existing == nil {
                     let task = TaskItem(
@@ -50,6 +55,11 @@ final class SyncManager: ObservableObject {
                         priority: TaskItem.Priority(rawValue: dto.priority) ?? .medium,
                         dueDate: dto.dueDate,
                         completedAt: dto.completedAt,
+                        categoryId: dto.categoryId,
+                        categoryName: dto.categoryName,
+                        categoryEmoji: dto.categoryEmoji,
+                        repeatFrequency: dto.repeatFrequency,
+                        seriesId: dto.seriesId,
                         createdAt: dto.createdAt ?? Date(),
                         updatedAt: dto.updatedAt ?? Date(),
                         supabaseId: id,

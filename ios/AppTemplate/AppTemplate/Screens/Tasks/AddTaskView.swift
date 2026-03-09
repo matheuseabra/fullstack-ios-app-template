@@ -13,6 +13,12 @@ struct TaskFormView: View {
     @State private var priority: TaskItem.Priority
     @State private var hasDueDate: Bool
     @State private var dueDate: Date
+    @State private var selectedCategoryId: String?
+    @State private var repeatFrequency: TaskItem.RepeatFrequency?
+    @State private var showCustomCategoryComposer = false
+    @State private var customCategoryName = ""
+    @State private var customCategoryEmoji = ""
+    @State private var isCreatingCategory = false
 
     init(vm: TasksViewModel, isPresented: Binding<Bool>, task: TaskItem? = nil) {
         self._vm = ObservedObject(wrappedValue: vm)
@@ -27,6 +33,8 @@ struct TaskFormView: View {
         let createModeHasDueDate = task == nil
         self._hasDueDate = State(initialValue: task?.dueDate != nil || createModeHasDueDate)
         self._dueDate = State(initialValue: initialDueDate)
+        self._selectedCategoryId = State(initialValue: task?.categoryId)
+        self._repeatFrequency = State(initialValue: task?.repeatFrequency)
     }
 
     @FocusState private var titleFocused: Bool
@@ -36,6 +44,28 @@ struct TaskFormView: View {
     private var headerTitle: String { isEditing ? "Edit Task" : "New Task" }
     private var submitTitle: String { isEditing ? "Save Changes" : "Add Task" }
     private var submitIcon: String { isEditing ? "checkmark" : "plus" }
+    private var selectedCategory: TaskCategory? {
+        vm.category(with: selectedCategoryId) ?? fallbackTaskCategory
+    }
+
+    private var fallbackTaskCategory: TaskCategory? {
+        guard let task,
+              let categoryId = task.categoryId,
+              let categoryName = task.categoryName else {
+            return nil
+        }
+
+        return TaskCategory(
+            id: categoryId,
+            userId: nil,
+            name: categoryName,
+            emoji: task.categoryEmoji ?? "",
+            slug: nil,
+            isDefault: false,
+            createdAt: nil,
+            updatedAt: nil
+        )
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -99,6 +129,101 @@ struct TaskFormView: View {
                     }
 
                     VStack(alignment: .leading, spacing: Spacing.md) {
+                        sectionTitle("Category")
+
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: Spacing.sm) {
+                                categoryChip(nil)
+
+                                ForEach(vm.categories) { category in
+                                    categoryChip(category)
+                                }
+
+                                Button {
+                                    withAnimation(.snappy) {
+                                        showCustomCategoryComposer.toggle()
+                                    }
+                                } label: {
+                                    HStack(spacing: 6) {
+                                        Image(systemName: "plus")
+                                            .font(.system(size: 12, weight: .bold))
+                                        Text("Custom")
+                                            .font(.body(13, weight: .bold))
+                                    }
+                                    .padding(.horizontal, Spacing.md)
+                                    .frame(height: 40)
+                                    .foregroundStyle(Color.textPrimary)
+                                    .background(Color.bgSurface)
+                                    .overlay(
+                                        Capsule()
+                                            .stroke(Color.border.opacity(0.8), style: StrokeStyle(lineWidth: 1.5, dash: [4]))
+                                    )
+                                    .clipShape(Capsule())
+                                }
+                                .buttonStyle(.plain)
+                                .accessibilityIdentifier("taskForm.customCategoryButton")
+                            }
+                            .padding(.vertical, 2)
+                        }
+
+                        if showCustomCategoryComposer {
+                            VStack(alignment: .leading, spacing: Spacing.sm) {
+                                HStack(spacing: Spacing.sm) {
+                                    TextField("😀", text: $customCategoryEmoji)
+                                        .font(.display(26, weight: .semibold))
+                                        .multilineTextAlignment(.center)
+                                        .frame(width: 64, height: 54)
+                                        .background(Color.bgSurface)
+                                        .clipShape(RoundedRectangle(cornerRadius: Radius.lg))
+                                        .accessibilityIdentifier("taskForm.customCategoryEmojiField")
+
+                                    TextField("Category name", text: $customCategoryName)
+                                        .font(.body(15, weight: .medium))
+                                        .padding(.horizontal, Spacing.md)
+                                        .frame(height: 54)
+                                        .background(Color.bgSurface)
+                                        .clipShape(RoundedRectangle(cornerRadius: Radius.lg))
+                                        .accessibilityIdentifier("taskForm.customCategoryNameField")
+                                }
+
+                                Button(action: createCustomCategory) {
+                                    HStack(spacing: 8) {
+                                        if isCreatingCategory {
+                                            ProgressView()
+                                                .controlSize(.small)
+                                        }
+                                        Text(isCreatingCategory ? "Creating..." : "Create category")
+                                            .font(.body(13, weight: .bold))
+                                    }
+                                    .foregroundStyle(Color.textPrimary)
+                                    .padding(.horizontal, Spacing.md)
+                                    .frame(height: 42)
+                                    .background(Color.bgSurface)
+                                    .clipShape(Capsule())
+                                }
+                                .buttonStyle(.plain)
+                                .disabled(isCreatingCategory || customCategoryName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || customCategoryEmoji.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                                .accessibilityIdentifier("taskForm.createCategorySubmitButton")
+                            }
+                        }
+                    }
+
+                    VStack(alignment: .leading, spacing: Spacing.md) {
+                        sectionTitle("Repeat")
+
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: Spacing.sm) {
+                                repeatChip(nil)
+
+                                ForEach(TaskItem.RepeatFrequency.allCases) { frequency in
+                                    repeatChip(frequency)
+                                }
+                            }
+                            .padding(.vertical, 2)
+                        }
+                    }
+
+                    VStack(alignment: .leading, spacing: Spacing.md) {
                         HStack(spacing: Spacing.sm) {
                             scheduleChip(
                                 label: hasDueDate ? dayChipLabel : "No date",
@@ -109,6 +234,8 @@ struct TaskFormView: View {
                                     hasDueDate.toggle()
                                     if hasDueDate {
                                         dueDate = vm.selectedDate
+                                    } else {
+                                        repeatFrequency = nil
                                     }
                                 }
                             }
@@ -189,6 +316,14 @@ struct TaskFormView: View {
         }
     }
 
+    private func sectionTitle(_ title: String) -> some View {
+        Text(title)
+            .font(.body(12, weight: .bold))
+            .tracking(1.1)
+            .textCase(.uppercase)
+            .foregroundStyle(Color.textSecondary)
+    }
+
     private func modeChip(title: String, systemName: String, active: Bool) -> some View {
         HStack(spacing: 6) {
             Image(systemName: systemName)
@@ -265,6 +400,69 @@ struct TaskFormView: View {
         .buttonStyle(.plain)
     }
 
+    private func categoryChip(_ category: TaskCategory?) -> some View {
+        let isSelected = selectedCategoryId == category?.id || (category == nil && selectedCategoryId == nil)
+
+        return Button {
+            selectedCategoryId = category?.id
+            HapticManager.selection()
+        } label: {
+            HStack(spacing: 6) {
+                if let category {
+                    Text(category.emoji)
+                    Text(category.name)
+                        .font(.body(13, weight: .bold))
+                } else {
+                    Image(systemName: "line.3.horizontal.decrease.circle")
+                        .font(.system(size: 12, weight: .bold))
+                    Text("None")
+                        .font(.body(13, weight: .bold))
+                }
+            }
+            .padding(.horizontal, Spacing.md)
+            .frame(height: 40)
+            .foregroundStyle(isSelected ? Color.textPrimary : Color.textSecondary)
+            .background(isSelected ? Color.bgSurface : Color.bgSurface.opacity(0.78))
+            .overlay(
+                Capsule()
+                    .stroke(isSelected ? Color.accent.opacity(0.4) : Color.clear, lineWidth: 1.5)
+            )
+            .clipShape(Capsule())
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func repeatChip(_ frequency: TaskItem.RepeatFrequency?) -> some View {
+        let isSelected = repeatFrequency == frequency
+
+        return Button {
+            repeatFrequency = frequency
+            if frequency != nil {
+                hasDueDate = true
+            }
+            HapticManager.selection()
+        } label: {
+            HStack(spacing: 6) {
+                Image(systemName: frequency?.icon ?? "slash.circle")
+                    .font(.system(size: 12, weight: .bold))
+
+                Text(frequency?.label ?? "None")
+                    .font(.body(13, weight: .bold))
+            }
+            .padding(.horizontal, Spacing.md)
+            .frame(height: 40)
+            .foregroundStyle(isSelected ? Color.textPrimary : Color.textSecondary)
+            .background(isSelected ? Color.bgSurface : Color.bgSurface.opacity(0.78))
+            .overlay(
+                Capsule()
+                    .stroke(isSelected ? Color.textPrimary.opacity(0.15) : Color.clear, lineWidth: 1.5)
+            )
+            .clipShape(Capsule())
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("taskForm.repeat.\(frequency?.rawValue ?? "none")")
+    }
+
     private func chipColor(_ p: TaskItem.Priority) -> Color {
         switch p {
         case .low:    return Color.success
@@ -286,17 +484,48 @@ struct TaskFormView: View {
                 title: sanitizedTitle,
                 note: sanitizedNote,
                 priority: priority,
-                dueDate: sanitizedDueDate
+                dueDate: sanitizedDueDate,
+                category: selectedCategory,
+                repeatFrequency: sanitizedDueDate == nil ? nil : repeatFrequency
             )
         } else {
             vm.addTask(
                 title: sanitizedTitle,
                 note: sanitizedNote,
                 priority: priority,
-                dueDate: sanitizedDueDate
+                dueDate: sanitizedDueDate,
+                category: selectedCategory,
+                repeatFrequency: sanitizedDueDate == nil ? nil : repeatFrequency
             )
         }
 
         isPresented = false
+    }
+
+    private func createCustomCategory() {
+        guard !isCreatingCategory else { return }
+
+        let name = customCategoryName.trimmingCharacters(in: .whitespacesAndNewlines)
+        let emoji = customCategoryEmoji.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        guard !name.isEmpty, !emoji.isEmpty else { return }
+
+        isCreatingCategory = true
+
+        Task {
+            let createdCategory = await vm.createCategory(name: name, emoji: emoji)
+
+            await MainActor.run {
+                isCreatingCategory = false
+
+                guard let createdCategory else { return }
+
+                selectedCategoryId = createdCategory.id
+                customCategoryName = ""
+                customCategoryEmoji = ""
+                showCustomCategoryComposer = false
+                HapticManager.success()
+            }
+        }
     }
 }

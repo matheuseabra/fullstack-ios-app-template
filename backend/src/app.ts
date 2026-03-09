@@ -18,6 +18,7 @@ import subscriptionRoutes from './routes/subscriptions.js'
 import usageRoutes from './routes/usage.js'
 import notificationRoutes from './routes/notifications.js'
 import taskRoutes from './routes/tasks.js'
+import taskCategoryRoutes from './routes/taskCategories.js'
 
 const app = new Hono<AppEnv>()
 
@@ -300,6 +301,7 @@ app.route('/api/onboarding', onboardingRoutes)
 app.route('/api/subscriptions', subscriptionRoutes)
 app.route('/api/usage', usageRoutes)
 app.route('/api/notifications', notificationRoutes)
+app.route('/api/task-categories', taskCategoryRoutes)
 app.route('/api/tasks', taskRoutes)
 
 // ─────────────────────────────────────────

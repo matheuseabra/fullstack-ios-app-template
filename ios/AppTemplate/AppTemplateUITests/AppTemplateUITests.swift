@@ -100,6 +100,52 @@ final class AppTemplateUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["You have nothing scheduled for today."].waitForExistence(timeout: 5))
     }
 
+    @MainActor
+    func testCreateTaskWithCustomCategoryAndRepeat() throws {
+        let app = launchAppForTaskCRUD()
+        let taskTitle = "UI Repeat \(UUID().uuidString.prefix(6))"
+
+        app.buttons["tasksTab.addButton"].tap()
+
+        let titleField = app.textFields["taskForm.titleField"]
+        XCTAssertTrue(titleField.waitForExistence(timeout: 5))
+        titleField.tap()
+        titleField.typeText(taskTitle)
+        titleField.typeText("\n")
+
+        let customCategoryButton = app.buttons["taskForm.customCategoryButton"]
+        XCTAssertTrue(customCategoryButton.waitForExistence(timeout: 5))
+        customCategoryButton.tap()
+
+        let emojiField = app.textFields["taskForm.customCategoryEmojiField"]
+        XCTAssertTrue(emojiField.waitForExistence(timeout: 5))
+        emojiField.tap()
+        emojiField.typeText("🎉")
+
+        let categoryNameField = app.textFields["taskForm.customCategoryNameField"]
+        XCTAssertTrue(categoryNameField.waitForExistence(timeout: 5))
+        categoryNameField.tap()
+        categoryNameField.typeText("Friends")
+        categoryNameField.typeText("\n")
+
+        app.buttons["taskForm.createCategorySubmitButton"].tap()
+        app.buttons["taskForm.repeat.weekly"].tap()
+
+        let submitButton = app.buttons["taskForm.submitButton"]
+        XCTAssertTrue(submitButton.waitForExistence(timeout: 5))
+        if !submitButton.isHittable {
+            app.swipeUp()
+        }
+        submitButton.tap()
+
+        let taskTitleText = app.staticTexts[taskTitle]
+        XCTAssertTrue(taskTitleText.waitForExistence(timeout: 5))
+        taskTitleText.tap()
+
+        XCTAssertTrue(app.staticTexts["🎉 Friends"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Weekly"].waitForExistence(timeout: 5))
+    }
+
     // MARK: - Helpers
 
     @MainActor
