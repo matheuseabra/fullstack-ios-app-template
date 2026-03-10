@@ -12,21 +12,8 @@ struct TrialExplainerView: View {
             Color.bg.ignoresSafeArea()
 
             VStack(spacing: 0) {
-                // Close button
-                HStack {
-                    Spacer()
-                    Button {
-                        Analytics.track(.paywallDismissed)
-                        router.advanceToHome()
-                    } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 14, weight: .bold))
-                            .foregroundStyle(Color.textSecondary)
-                            .frame(width: 32, height: 32)
-                            .background(Color.bgSurface)
-                            .clipShape(Circle())
-                    }
-                }
+                // No close button: hard paywall enforced
+                HStack { Spacer() }
                 .padding(.horizontal, Spacing.xl)
                 .padding(.top, Spacing.sm)
 

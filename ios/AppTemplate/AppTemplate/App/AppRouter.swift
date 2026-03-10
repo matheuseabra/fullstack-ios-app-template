@@ -43,7 +43,10 @@ final class AppRouter: ObservableObject {
     }
 
     func advanceToHome() {
-        root = .home
+        // Only allow navigation to home if user has Pro (enforce hard paywall)
+        if PaymentManager.shared.hasProAccess {
+            root = .home
+        }
     }
 
     func advanceToPaywall() {

@@ -19,19 +19,8 @@ struct PaywallView: View {
                 Color.bg.ignoresSafeArea()
 
                 VStack(spacing: 0) {
-                    HStack {
-                        Spacer()
-                        Button {
-                            dismissPaywall(trackDismissed: true)
-                        } label: {
-                            Image(systemName: "xmark")
-                                .font(.system(size: 14, weight: .bold))
-                                .foregroundStyle(Color.textPrimary)
-                                .frame(width: 34, height: 34)
-                                .background(Color.bgSurface)
-                                .clipShape(Circle())
-                        }
-                    }
+                    // No close button: hard paywall enforced
+                    HStack { Spacer() }
                     .padding(.horizontal, Spacing.xl)
                     .padding(.top, Spacing.lg)
 
@@ -134,16 +123,6 @@ struct PaywallView: View {
                             }
                             .font(.body(12, weight: .semibold))
                             .foregroundStyle(Color.textSecondary)
-
-                            Circle()
-                                .fill(Color.border)
-                                .frame(width: 4, height: 4)
-
-                            Button("Not Now") {
-                                dismissPaywall(trackDismissed: true)
-                            }
-                            .font(.body(12, weight: .semibold))
-                            .foregroundStyle(Color.textSecondary)
                         }
                     }
                     .padding(.horizontal, Spacing.xl)
@@ -169,14 +148,13 @@ struct PaywallView: View {
     }
 
     private func dismissPaywall(trackDismissed: Bool = false) {
-        if trackDismissed {
-            Analytics.track(.paywallDismissed)
-        }
-
-        if let onDismiss {
-            onDismiss()
-        } else {
-            router.advanceToHome()
+        // Only allow dismiss to home if user has Pro (enforce hard paywall)
+        if PaymentManager.shared.hasProAccess {
+            if let onDismiss {
+                onDismiss()
+            } else {
+                router.advanceToHome()
+            }
         }
     }
 
