@@ -1,5 +1,5 @@
 import { createMiddleware } from 'hono/factory'
-import { redis, memoryStore } from '../services/redis.js'
+import { redis, memoryStore, disableRedis } from '../services/redis.js'
 import { AppError } from '../lib/errors.js'
 
 interface RateLimitOptions {
@@ -28,9 +28,23 @@ export const rateLimiter = (opts: RateLimitOptions) =>
     let count: number
 
     if (redis) {
-      // Redis path — atomic INCR + EXPIRE on first hit
-      count = await redis.incr(key)
-      if (count === 1) await redis.expire(key, windowSeconds)
+      try {
+        // Redis path — atomic INCR + EXPIRE on first hit
+        count = await redis.incr(key)
+        if (count === 1) await redis.expire(key, windowSeconds)
+      } catch (err) {
+        disableRedis(err instanceof Error ? err.message : 'Redis error')
+        const now = Date.now()
+        const entry = memoryStore.get(key)
+
+        if (!entry || entry.expiresAt < now) {
+          memoryStore.set(key, { count: 1, expiresAt: now + windowSeconds * 1000 })
+          count = 1
+        } else {
+          entry.count += 1
+          count = entry.count
+        }
+      }
     } else {
       // In-memory fallback
       const now = Date.now()

@@ -1,6 +1,7 @@
 import Foundation
 import SwiftData
 import SwiftUI
+import os
 
 // MARK: - TasksViewModel
 // Drives the task manager UI. Reads from SwiftData (local-first),
@@ -15,6 +16,7 @@ final class TasksViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var selectedDate: Date = Date()
     @Published var categories: [TaskCategory] = TaskCategory.defaults
+    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "AppTemplate", category: "TasksVM")
 
     private var modelContext: ModelContext {
         LocalDatabase.shared.context
@@ -32,41 +34,45 @@ final class TasksViewModel: ObservableObject {
         categories = TaskCategory.defaults
 
         // Fetch user + subscription from API
-        #if DEBUG
-        user = AppUser(
-            id: "debug",
-            email: "debug@test.com",
-            fullName: "Debug User",
-            avatarURL: nil,
-            timezone: "UTC",
-            locale: "en",
-            createdAt: Date(),
-            updatedAt: Date()
-        )
-        #else
-        async let userFetch: UserResponse = APIClient.shared.get(APIEndpoints.me)
-        async let subFetch: SubscriptionResponse = APIClient.shared.get(APIEndpoints.subscription)
+        if AppEnvironment.useLiveBackend {
+            async let userFetch: UserResponse = APIClient.shared.get(APIEndpoints.me)
+            async let subFetch: SubscriptionResponse = APIClient.shared.get(APIEndpoints.subscription)
 
-        do {
-            let (userResp, subResp) = try await (userFetch, subFetch)
-            user = userResp.data
-            subscription = subResp.data
-        } catch APIError.unauthorized {
-            AppRouter.shared.signOut()
-        } catch {
-            errorMessage = error.localizedDescription
+            do {
+                let (userResp, subResp) = try await (userFetch, subFetch)
+                user = userResp.data
+                subscription = subResp.data
+            } catch is CancellationError {
+                return
+            } catch APIError.unauthorized {
+                AppRouter.shared.signOut()
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+
+            do {
+                let categoryResp: TaskCategoryListResponse = try await APIClient.shared.get(APIEndpoints.taskCategories)
+                categories = mergedCategories(with: categoryResp.data)
+            } catch is CancellationError {
+                return
+            } catch {
+                print("[TasksVM] Failed to fetch categories: \(error)")
+            }
+
+            // Pull remote tasks
+            await syncFromServer()
+        } else {
+            user = AppUser(
+                id: "debug",
+                email: "debug@test.com",
+                fullName: "Debug User",
+                avatarURL: nil,
+                timezone: "UTC",
+                locale: "en",
+                createdAt: Date(),
+                updatedAt: Date()
+            )
         }
-
-        do {
-            let categoryResp: TaskCategoryListResponse = try await APIClient.shared.get(APIEndpoints.taskCategories)
-            categories = mergedCategories(with: categoryResp.data)
-        } catch {
-            print("[TasksVM] Failed to fetch categories: \(error)")
-        }
-
-        // Pull remote tasks
-        await syncFromServer()
-        #endif
     }
 
     func reload() async {
@@ -100,11 +106,12 @@ final class TasksViewModel: ObservableObject {
             return nil
         }
 
-        #if DEBUG
-        let category = TaskCategory.localCustom(name: trimmedName, emoji: trimmedEmoji)
-        upsertCategory(category)
-        return category
-        #else
+        if !AppEnvironment.useLiveBackend {
+            let category = TaskCategory.localCustom(name: trimmedName, emoji: trimmedEmoji)
+            upsertCategory(category)
+            return category
+        }
+
         struct CreateBody: Encodable {
             let name: String
             let emoji: String
@@ -121,7 +128,6 @@ final class TasksViewModel: ObservableObject {
             errorMessage = error.localizedDescription
             return nil
         }
-        #endif
     }
 
     func addTask(
@@ -151,9 +157,9 @@ final class TasksViewModel: ObservableObject {
         Analytics.track(.featureUsed(name: "task_created"))
 
         // Sync to server
-        #if !DEBUG
-        Task { await pushTask(task) }
-        #endif
+        if AppEnvironment.useLiveBackend {
+            Task { await pushTask(task) }
+        }
     }
 
     func toggleComplete(_ task: TaskItem) {
@@ -164,7 +170,7 @@ final class TasksViewModel: ObservableObject {
         task.syncStatus = .pendingUpdate
 
         #if DEBUG
-        if isCompleting, let nextTask = makeNextOccurrence(from: task) {
+        if !AppEnvironment.useLiveBackend, isCompleting, let nextTask = makeNextOccurrence(from: task) {
             modelContext.insert(nextTask)
         }
         #endif
@@ -175,9 +181,9 @@ final class TasksViewModel: ObservableObject {
         HapticManager.light()
         Analytics.track(.featureUsed(name: task.isCompleted ? "task_completed" : "task_uncompleted"))
 
-        #if !DEBUG
-        Task { await updateTaskOnServer(task) }
-        #endif
+        if AppEnvironment.useLiveBackend {
+            Task { await updateTaskOnServer(task) }
+        }
     }
 
     func deleteTask(_ task: TaskItem) {
@@ -189,11 +195,9 @@ final class TasksViewModel: ObservableObject {
         HapticManager.medium()
         Analytics.track(.featureUsed(name: "task_deleted"))
 
-        #if !DEBUG
-        if let id = supabaseId {
+        if AppEnvironment.useLiveBackend, let id = supabaseId {
             Task { await deleteTaskOnServer(id) }
         }
-        #endif
     }
 
     func updateTask(
@@ -219,12 +223,14 @@ final class TasksViewModel: ObservableObject {
         saveContext()
         fetchLocal()
 
+        logger.info("Update task supabaseId: \(task.supabaseId ?? "nil", privacy: .public) syncStatus: \(String(describing: task.syncStatus), privacy: .public)")
+
         HapticManager.selection()
         Analytics.track(.featureUsed(name: "task_updated"))
 
-        #if !DEBUG
-        Task { await updateTaskOnServer(task) }
-        #endif
+        if AppEnvironment.useLiveBackend {
+            Task { await updateTaskOnServer(task) }
+        }
     }
 
     struct DaySummary {
@@ -524,6 +530,8 @@ final class TasksViewModel: ObservableObject {
             }
             saveContext()
             fetchLocal()
+        } catch is CancellationError {
+            return
         } catch {
             print("[TasksVM] Sync pull failed: \(error)")
         }

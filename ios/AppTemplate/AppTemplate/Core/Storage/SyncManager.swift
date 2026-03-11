@@ -1,4 +1,5 @@
 import Foundation
+import SwiftData
 
 // MARK: - SyncManager
 // Orchestrates local-first data flow:
@@ -23,56 +24,56 @@ final class SyncManager: ObservableObject {
         guard !isSyncing else { return }
         isSyncing = true
 
-        #if !DEBUG
-        // Pull tasks from server and merge into local SwiftData store
-        do {
-            let response: TaskListResponse = try await APIClient.shared.get(APIEndpoints.tasks)
-            let context = LocalDatabase.shared.context
-            for dto in response.data {
-                guard let id = dto.id else { continue }
-                let descriptor = FetchDescriptor<TaskItem>(
-                    predicate: #Predicate { $0.supabaseId == id }
-                )
-                let existing = try? context.fetch(descriptor).first
-                if let existing, existing.syncStatus == .synced {
-                    existing.title = dto.title
-                    existing.note = dto.note ?? ""
-                    existing.isCompleted = dto.isCompleted
-                    existing.priority = TaskItem.Priority(rawValue: dto.priority) ?? .medium
-                    existing.dueDate = dto.dueDate
-                    existing.completedAt = dto.completedAt
-                    existing.categoryId = dto.categoryId
-                    existing.categoryName = dto.categoryName
-                    existing.categoryEmoji = dto.categoryEmoji
-                    existing.repeatFrequency = dto.repeatFrequency
-                    existing.seriesId = dto.seriesId
-                    existing.updatedAt = dto.updatedAt ?? Date()
-                } else if existing == nil {
-                    let task = TaskItem(
-                        title: dto.title,
-                        note: dto.note ?? "",
-                        isCompleted: dto.isCompleted,
-                        priority: TaskItem.Priority(rawValue: dto.priority) ?? .medium,
-                        dueDate: dto.dueDate,
-                        completedAt: dto.completedAt,
-                        categoryId: dto.categoryId,
-                        categoryName: dto.categoryName,
-                        categoryEmoji: dto.categoryEmoji,
-                        repeatFrequency: dto.repeatFrequency,
-                        seriesId: dto.seriesId,
-                        createdAt: dto.createdAt ?? Date(),
-                        updatedAt: dto.updatedAt ?? Date(),
-                        supabaseId: id,
-                        syncStatus: .synced
+        if AppEnvironment.useLiveBackend {
+            // Pull tasks from server and merge into local SwiftData store
+            do {
+                let response: TaskListResponse = try await APIClient.shared.get(APIEndpoints.tasks)
+                let context = LocalDatabase.shared.context
+                for dto in response.data {
+                    guard let id = dto.id else { continue }
+                    let descriptor = FetchDescriptor<TaskItem>(
+                        predicate: #Predicate { $0.supabaseId == id }
                     )
-                    context.insert(task)
+                    let existing = try? context.fetch(descriptor).first
+                    if let existing, existing.syncStatus == .synced {
+                        existing.title = dto.title
+                        existing.note = dto.note ?? ""
+                        existing.isCompleted = dto.isCompleted
+                        existing.priority = TaskItem.Priority(rawValue: dto.priority) ?? .medium
+                        existing.dueDate = dto.dueDate
+                        existing.completedAt = dto.completedAt
+                        existing.categoryId = dto.categoryId
+                        existing.categoryName = dto.categoryName
+                        existing.categoryEmoji = dto.categoryEmoji
+                        existing.repeatFrequency = dto.repeatFrequency
+                        existing.seriesId = dto.seriesId
+                        existing.updatedAt = dto.updatedAt ?? Date()
+                    } else if existing == nil {
+                        let task = TaskItem(
+                            title: dto.title,
+                            note: dto.note ?? "",
+                            isCompleted: dto.isCompleted,
+                            priority: TaskItem.Priority(rawValue: dto.priority) ?? .medium,
+                            dueDate: dto.dueDate,
+                            completedAt: dto.completedAt,
+                            categoryId: dto.categoryId,
+                            categoryName: dto.categoryName,
+                            categoryEmoji: dto.categoryEmoji,
+                            repeatFrequency: dto.repeatFrequency,
+                            seriesId: dto.seriesId,
+                            createdAt: dto.createdAt ?? Date(),
+                            updatedAt: dto.updatedAt ?? Date(),
+                            supabaseId: id,
+                            syncStatus: .synced
+                        )
+                        context.insert(task)
+                    }
                 }
+                try? context.save()
+            } catch {
+                print("[SyncManager] Pull tasks failed: \(error)")
             }
-            try? context.save()
-        } catch {
-            print("[SyncManager] Pull tasks failed: \(error)")
         }
-        #endif
 
         isSyncing = false
     }

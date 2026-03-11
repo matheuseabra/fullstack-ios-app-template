@@ -8,11 +8,29 @@ final class APIClient {
 
     private let session: URLSession
     private let decoder: JSONDecoder
+    private static let iso8601Formatter: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime]
+        return formatter
+    }()
+    private static let iso8601FractionalFormatter: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return formatter
+    }()
 
     init(session: URLSession = .shared) {
         self.session = session
         self.decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
+        decoder.dateDecodingStrategy = .custom { decoder in
+            let container = try decoder.singleValueContainer()
+            let value = try container.decode(String.self)
+            if let date = APIClient.iso8601FractionalFormatter.date(from: value)
+                ?? APIClient.iso8601Formatter.date(from: value) {
+                return date
+            }
+            throw DecodingError.dataCorruptedError(in: container, debugDescription: "Invalid ISO8601 date: \(value)")
+        }
     }
 
     // MARK: - Public
@@ -65,6 +83,12 @@ final class APIClient {
         do {
             (data, response) = try await session.data(for: request)
         } catch {
+            if error is CancellationError {
+                throw error
+            }
+            if let urlError = error as? URLError, urlError.code == .cancelled {
+                throw CancellationError()
+            }
             throw APIError.networkError(error)
         }
 

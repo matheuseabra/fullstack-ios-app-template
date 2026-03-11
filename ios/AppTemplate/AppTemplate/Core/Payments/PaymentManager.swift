@@ -31,7 +31,10 @@ final class PaymentManager: ObservableObject {
 
     /// True when the user has an active "GhostCrew Pro" entitlement.
     var hasProAccess: Bool {
-        customerInfo?.entitlements[Self.entitlementID]?.isActive == true
+        if AppEnvironment.debugForceProAccess {
+            return true
+        }
+        return customerInfo?.entitlements[Self.entitlementID]?.isActive == true
     }
 
     /// The current offering from the dashboard (nil until loadOfferings() completes).

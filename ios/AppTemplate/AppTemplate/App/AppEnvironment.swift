@@ -64,6 +64,24 @@ enum AppEnvironment {
 
     static var backendURL: String { required("BACKEND_URL") }
 
+    // MARK: - Debug toggles
+
+    static var useLiveBackend: Bool {
+        #if DEBUG
+        return Dotenv["USE_LIVE_BACKEND"]?.stringValue == "true"
+        #else
+        return true
+        #endif
+    }
+
+    static var debugForceProAccess: Bool {
+        #if DEBUG
+        return Dotenv["DEBUG_FORCE_PRO"]?.stringValue == "true"
+        #else
+        return false
+        #endif
+    }
+
     // MARK: - Feature Flags
 
     static var enableAppleSignIn: Bool  { Dotenv["ENABLE_APPLE_SIGN_IN"]?.stringValue == "true" }

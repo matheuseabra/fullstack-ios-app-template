@@ -213,7 +213,9 @@ router.put('/:id', zValidator('json', updateTaskSchema), async (c) => {
     && Boolean(nextRepeatFrequency)
 
   if (shouldCompleteRecurring) {
-    const { is_completed: _ignoredCompletedFlag, completed_at: _ignoredCompletedAt, ...rest } = body
+    const rest = { ...body }
+    delete rest.is_completed
+    delete rest.completed_at
     const preCompletionPayload = buildUpdatePayload(existing, rest)
 
     if (Object.keys(preCompletionPayload).length > 0) {
