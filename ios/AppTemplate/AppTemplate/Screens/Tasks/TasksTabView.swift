@@ -114,9 +114,6 @@ struct TasksTabView: View {
             .frame(width: 364)
 
             Button {
-                if selectedTab == .today {
-                    vm.selectedDate = Date()
-                }   
                 showAddTask = true
                 HapticManager.medium()
             } label: {
