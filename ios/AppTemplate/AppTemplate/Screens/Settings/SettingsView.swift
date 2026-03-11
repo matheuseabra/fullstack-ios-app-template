@@ -1,13 +1,19 @@
-import SwiftUI
 import RevenueCatUI
+import StoreKit
+import SwiftUI
 
 struct SettingsView: View {
     @EnvironmentObject private var router: AppRouter
     @StateObject private var vm = SettingsViewModel()
     @EnvironmentObject private var theme: AppTheme
+    @Environment(\.requestReview) private var requestReview
     @Binding var isTabBarVisible: Bool
     @State private var showSignOutConfirm = false
     @State private var showAppearanceSheet = false
+
+    private let shareURL = URL(string: "https://apps.apple.com/app/id0000000000")!
+    private let termsURL = URL(string: "https://yourapp.com/terms")!
+    private let privacyURL = URL(string: "https://yourapp.com/privacy")!
 
     init(isTabBarVisible: Binding<Bool> = .constant(true)) {
         self._isTabBarVisible = isTabBarVisible
@@ -44,11 +50,40 @@ struct SettingsView: View {
                                             SubscriptionManagementView()
                                         }
                                     } label: {
-                                        settingsRow(icon: "star.fill", title: "Subscription", trailing: PaymentManager.shared.hasProAccess ? "Pro" : nil)
+                                        settingsRow(icon: "star.fill", title: "Subscription", trailing: vm.subscriptionLabel)
                                     }
                                 ),
                                 AnyView(
                                     settingsRow(icon: "arrow.triangle.2.circlepath", title: "Sync Calendar", trailing: "Google")
+                                )
+                            ]
+                        )
+
+                        settingsSection(
+                            title: "Support",
+                            rows: [
+                                AnyView(
+                                    ShareLink(item: shareURL) {
+                                        settingsRow(icon: "square.and.arrow.up", title: "Share App")
+                                    }
+                                ),
+                                AnyView(
+                                    Button {
+                                        requestReview()
+                                    } label: {
+                                        settingsRow(icon: "star.bubble", title: "Rate App")
+                                    }
+                                    .buttonStyle(.plain)
+                                ),
+                                AnyView(
+                                    Link(destination: termsURL) {
+                                        settingsRow(icon: "doc.text", title: "Terms of Service")
+                                    }
+                                ),
+                                AnyView(
+                                    Link(destination: privacyURL) {
+                                        settingsRow(icon: "lock.shield", title: "Privacy Policy")
+                                    }
                                 )
                             ]
                         )

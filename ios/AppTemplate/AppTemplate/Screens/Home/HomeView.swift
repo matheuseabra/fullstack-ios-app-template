@@ -28,11 +28,6 @@ struct HomeView: View {
                                     Text("Hello\(vm.user?.fullName.map { ", \($0)" } ?? "") 👋")
                                         .font(.display(24))
                                         .foregroundStyle(Color.textPrimary)
-                                    if let sub = vm.subscription, sub.isActive {
-                                        Label("Pro", systemImage: "star.fill")
-                                            .font(.body(13, weight: .semibold))
-                                            .foregroundStyle(Color.accent)
-                                    }
                                 }
                                 .padding(.horizontal, Spacing.lg)
                                 .padding(.top, Spacing.md)

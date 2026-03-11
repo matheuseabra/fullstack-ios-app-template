@@ -28,10 +28,14 @@ final class TasksViewModel: ObservableObject {
         guard !isLoading else { return }
         isLoading = true
         defer { isLoading = false }
+        errorMessage = nil
+
+        print("[TasksVM] Load start — useLiveBackend=\(AppEnvironment.useLiveBackend)")
 
         // Load local tasks immediately
         fetchLocal()
         categories = TaskCategory.defaults
+        print("[TasksVM] Loaded local tasks: \(tasks.count)")
 
         // Fetch user + subscription from API
         if AppEnvironment.useLiveBackend {
@@ -47,7 +51,7 @@ final class TasksViewModel: ObservableObject {
             } catch APIError.unauthorized {
                 AppRouter.shared.signOut()
             } catch {
-                errorMessage = error.localizedDescription
+                print("[TasksVM] Failed to fetch user/subscription: \(error)")
             }
 
             do {
@@ -60,6 +64,7 @@ final class TasksViewModel: ObservableObject {
             }
 
             // Pull remote tasks
+            print("[TasksVM] Syncing tasks from server…")
             await syncFromServer()
         } else {
             user = AppUser(
@@ -530,6 +535,7 @@ final class TasksViewModel: ObservableObject {
             }
             saveContext()
             fetchLocal()
+            print("[TasksVM] Sync complete — local tasks: \(tasks.count)")
         } catch is CancellationError {
             return
         } catch {

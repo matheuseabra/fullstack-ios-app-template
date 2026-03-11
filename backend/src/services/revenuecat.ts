@@ -19,6 +19,11 @@ export function validateRevenueCatSignature(
   }
 
   if (secret.startsWith('your_')) {
+    if (env.NODE_ENV !== 'production') {
+      logger.warn('REVENUECAT_WEBHOOK_SECRET is a template placeholder — skipping webhook auth in non-production')
+      return true
+    }
+
     logger.error('REVENUECAT_WEBHOOK_SECRET is still using a template placeholder')
     return false
   }
