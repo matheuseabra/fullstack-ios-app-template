@@ -53,7 +53,7 @@ struct LoginView: View {
                         }
                         .signInWithAppleButtonStyle(.black)
                         .frame(height: 54)
-                        .cornerRadius(Radius.lg)
+                        .clipShape(.rect(cornerRadius: Radius.lg))
                         .disabled(vm.isLoading)
                     }
 

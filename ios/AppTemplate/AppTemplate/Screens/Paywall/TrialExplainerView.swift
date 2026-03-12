@@ -17,7 +17,7 @@ struct TrialExplainerView: View {
                 .padding(.horizontal, Spacing.xl)
                 .padding(.top, Spacing.sm)
 
-                ScrollView(showsIndicators: false) {
+                ScrollView {
                     VStack(spacing: 0) {
                         // MARK: Hero Section
                         VStack(spacing: Spacing.lg) {
@@ -116,6 +116,7 @@ struct TrialExplainerView: View {
                     }
                     .padding(.bottom, 200) // space for pinned CTA
                 }
+                .scrollIndicators(.hidden)
 
                 // MARK: Pinned CTA Area
                 VStack(spacing: Spacing.lg) {

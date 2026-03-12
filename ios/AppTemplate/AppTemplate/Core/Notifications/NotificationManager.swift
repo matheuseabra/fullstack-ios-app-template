@@ -44,7 +44,10 @@ final class NotificationManager: ObservableObject {
 
     /// Call this from AppDelegate.application(_:didRegisterForRemoteNotificationsWithDeviceToken:)
     func didRegister(deviceToken: Data) {
-        let token = deviceToken.map { String(format: "%02x", $0) }.joined()
+        let token = deviceToken.map { byte in
+            let hex = String(byte, radix: 16, uppercase: false)
+            return hex.count == 1 ? "0" + hex : hex
+        }.joined()
         pushToken = token
         Task { await sendTokenToServer(token) }
     }

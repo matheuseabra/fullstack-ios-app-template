@@ -13,6 +13,15 @@ struct TasksTabView: View {
     enum Tab: Int, CaseIterable {
         case today, calendar, stats, settings
 
+        var title: String {
+            switch self {
+            case .today: return "Today"
+            case .calendar: return "Calendar"
+            case .stats: return "Stats"
+            case .settings: return "Settings"
+            }
+        }
+
         var icon: String {
             switch self {
             case .today: return "house.fill"
@@ -41,15 +50,18 @@ struct TasksTabView: View {
 
                 if isTabBarVisible {
                     customTabBar
-                        .frame(width: proxy.size.width)
                         .position(
                             x: proxy.size.width / 2,
-                            y: proxy.size.height - proxy.safeAreaInsets.bottom
+                            y: proxy.size.height
+                                - proxy.safeAreaInsets.bottom
+                                + Spacing.xl
+                                - (tabBarHeight / 2)
                         )
                         .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .ignoresSafeArea(.keyboard)
         .drawer(isPresented: $showAddTask, detents: [.large]) {
             TaskFormView(vm: vm, isPresented: $showAddTask)
@@ -117,7 +129,8 @@ struct TasksTabView: View {
                 showAddTask = true
                 HapticManager.medium()
             } label: {
-                Image(systemName: "plus")
+                Label("Add Task", systemImage: "plus")
+                    .labelStyle(.iconOnly)
                     .font(.system(size: 28, weight: .bold))
                     .foregroundStyle(Color.black)
                     .frame(width: fabSize, height: fabSize)
@@ -133,6 +146,10 @@ struct TasksTabView: View {
         .background(Color.clear)
     }
 
+    private var tabBarHeight: CGFloat {
+        82
+    }
+
     private func tabButton(_ tab: Tab) -> some View {
         Button {
             guard selectedTab != tab else { return }
@@ -143,10 +160,9 @@ struct TasksTabView: View {
             }
             HapticManager.selection()
         } label: {
-            VStack(spacing: 0) {
-                Image(systemName: tab.icon)
-                    .font(.system(size: 19, weight: selectedTab == tab ? .semibold : .regular))
-            }
+            Label(tab.title, systemImage: tab.icon)
+                .labelStyle(.iconOnly)
+                .font(.system(size: 19, weight: selectedTab == tab ? .semibold : .regular))
             .foregroundStyle(selectedTab == tab ? Color.white : Color.white.opacity(0.38))
             .frame(maxWidth: .infinity)
             .frame(height: 82)

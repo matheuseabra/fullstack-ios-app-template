@@ -56,7 +56,7 @@ struct TaskSummaryCard: View {
         }
         .padding(Spacing.lg)
         .background(Color.bgElevated)
-        .cornerRadius(Radius.lg)
+        .clipShape(.rect(cornerRadius: Radius.lg))
         .padding(.horizontal, Spacing.lg)
     }
 }

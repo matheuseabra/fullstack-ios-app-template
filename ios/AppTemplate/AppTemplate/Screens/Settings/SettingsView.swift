@@ -24,7 +24,7 @@ struct SettingsView: View {
             ZStack {
                 Color.bg.ignoresSafeArea()
 
-                ScrollView(showsIndicators: false) {
+                ScrollView {
                     VStack(alignment: .leading, spacing: Spacing.xl) {
                         Text("Settings")
                             .font(.display(38, weight: .bold))
@@ -34,89 +34,24 @@ struct SettingsView: View {
 
                         settingsSection(
                             title: "Account",
-                            rows: [
-                                AnyView(
-                                    NavigationLink {
-                                        settingsDestination {
-                                            NotificationPreferencesView()
-                                        }
-                                    } label: {
-                                        settingsRow(icon: "bell.fill", title: "Notifications")
-                                    }
-                                ),
-                                AnyView(
-                                    NavigationLink {
-                                        settingsDestination {
-                                            SubscriptionManagementView()
-                                        }
-                                    } label: {
-                                        settingsRow(icon: "star.fill", title: "Subscription", trailing: vm.subscriptionLabel)
-                                    }
-                                ),
-                                AnyView(
-                                    settingsRow(icon: "arrow.triangle.2.circlepath", title: "Sync Calendar", trailing: "Google")
-                                )
-                            ]
+                            rows: [.notifications, .subscription, .syncCalendar]
                         )
 
                         settingsSection(
                             title: "Support",
-                            rows: [
-                                AnyView(
-                                    ShareLink(item: shareURL) {
-                                        settingsRow(icon: "square.and.arrow.up", title: "Share App")
-                                    }
-                                ),
-                                AnyView(
-                                    Button {
-                                        requestReview()
-                                    } label: {
-                                        settingsRow(icon: "star.bubble", title: "Rate App")
-                                    }
-                                    .buttonStyle(.plain)
-                                ),
-                                AnyView(
-                                    Link(destination: termsURL) {
-                                        settingsRow(icon: "doc.text", title: "Terms of Service")
-                                    }
-                                ),
-                                AnyView(
-                                    Link(destination: privacyURL) {
-                                        settingsRow(icon: "lock.shield", title: "Privacy Policy")
-                                    }
-                                )
-                            ]
+                            rows: [.share, .rate, .terms, .privacy]
                         )
 
                         settingsSection(
                             title: "App Customization",
-                            rows: [
-                                AnyView(
-                                    Button {
-                                        showAppearanceSheet = true
-                                    } label: {
-                                        settingsRow(icon: "paintpalette.fill", title: "Appearance", trailing: currentAppearance)
-                                    }
-                                    .buttonStyle(.plain)
-                                ),
-                                AnyView(
-                                    settingsRow(icon: "globe", title: "Language", trailing: "English")
-                                ),
-                                AnyView(
-                                    Button {
-                                        showSignOutConfirm = true
-                                    } label: {
-                                        settingsRow(icon: "rectangle.portrait.and.arrow.right", title: "Log Out", destructive: true, showsChevron: false)
-                                    }
-                                    .buttonStyle(.plain)
-                                )
-                            ]
+                            rows: [.appearance, .language, .logout]
                         )
                     }
                     .padding(.horizontal, Spacing.lg)
                     .padding(.top, Spacing.xl)
                     .padding(.bottom, 120)
                 }
+                .scrollIndicators(.hidden)
             }
             .navigationBarHidden(true)
             .task { await vm.load() }
@@ -223,7 +158,22 @@ struct SettingsView: View {
         }
     }
 
-    private func settingsSection(title: String, rows: [AnyView]) -> some View {
+    private enum SettingsRowKind: String, Identifiable {
+        case notifications
+        case subscription
+        case syncCalendar
+        case share
+        case rate
+        case terms
+        case privacy
+        case appearance
+        case language
+        case logout
+
+        var id: String { rawValue }
+    }
+
+    private func settingsSection(title: String, rows: [SettingsRowKind]) -> some View {
         VStack(alignment: .leading, spacing: Spacing.md) {
             Text(title)
                 .font(.body(11, weight: .bold))
@@ -234,7 +184,7 @@ struct SettingsView: View {
 
             VStack(spacing: 0) {
                 ForEach(rows.indices, id: \.self) { index in
-                    rows[index]
+                    settingsRowView(rows[index])
                     if index < rows.count - 1 {
                         Divider()
                             .overlay(Color.border.opacity(0.6))
@@ -248,6 +198,65 @@ struct SettingsView: View {
                 RoundedRectangle(cornerRadius: Radius.xl)
                     .stroke(Color.border.opacity(0.7), lineWidth: 1)
             )
+        }
+    }
+
+    @ViewBuilder
+    private func settingsRowView(_ row: SettingsRowKind) -> some View {
+        switch row {
+        case .notifications:
+            NavigationLink {
+                settingsDestination {
+                    NotificationPreferencesView()
+                }
+            } label: {
+                settingsRow(icon: "bell.fill", title: "Notifications")
+            }
+        case .subscription:
+            NavigationLink {
+                settingsDestination {
+                    SubscriptionManagementView()
+                }
+            } label: {
+                settingsRow(icon: "star.fill", title: "Subscription", trailing: vm.subscriptionLabel)
+            }
+        case .syncCalendar:
+            settingsRow(icon: "arrow.triangle.2.circlepath", title: "Sync Calendar", trailing: "Google")
+        case .share:
+            ShareLink(item: shareURL) {
+                settingsRow(icon: "square.and.arrow.up", title: "Share App")
+            }
+        case .rate:
+            Button {
+                requestReview()
+            } label: {
+                settingsRow(icon: "star.bubble", title: "Rate App")
+            }
+            .buttonStyle(.plain)
+        case .terms:
+            Link(destination: termsURL) {
+                settingsRow(icon: "doc.text", title: "Terms of Service")
+            }
+        case .privacy:
+            Link(destination: privacyURL) {
+                settingsRow(icon: "lock.shield", title: "Privacy Policy")
+            }
+        case .appearance:
+            Button {
+                showAppearanceSheet = true
+            } label: {
+                settingsRow(icon: "paintpalette.fill", title: "Appearance", trailing: currentAppearance)
+            }
+            .buttonStyle(.plain)
+        case .language:
+            settingsRow(icon: "globe", title: "Language", trailing: "English")
+        case .logout:
+            Button {
+                showSignOutConfirm = true
+            } label: {
+                settingsRow(icon: "rectangle.portrait.and.arrow.right", title: "Log Out", destructive: true, showsChevron: false)
+            }
+            .buttonStyle(.plain)
         }
     }
 

@@ -13,7 +13,7 @@ struct StatsView: View {
             ZStack {
                 Color.bg.ignoresSafeArea()
 
-                ScrollView(showsIndicators: false) {
+                ScrollView {
                     VStack(alignment: .leading, spacing: Spacing.xl) {
                         header
                         weeklyProgressCard
@@ -23,6 +23,7 @@ struct StatsView: View {
                     .padding(.top, Spacing.lg)
                     .padding(.bottom, 120)
                 }
+                .scrollIndicators(.hidden)
             }
             .navigationBarHidden(true)
             .onAppear { Analytics.screen("Stats") }

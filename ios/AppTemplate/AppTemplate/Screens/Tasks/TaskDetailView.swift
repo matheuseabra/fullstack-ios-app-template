@@ -14,7 +14,7 @@ struct TaskDetailView: View {
         ZStack {
             Color.bg.ignoresSafeArea()
 
-            ScrollView(showsIndicators: false) {
+            ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
                     // Title + status
                     HStack(alignment: .top, spacing: Spacing.sm) {
@@ -109,6 +109,7 @@ struct TaskDetailView: View {
                 .padding(Spacing.lg)
                 .padding(.bottom, Spacing.xxxl)
             }
+            .scrollIndicators(.hidden)
         }
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
@@ -167,10 +168,7 @@ struct TaskDetailView: View {
     }
 
     private func shortDateText(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        formatter.timeStyle = .short
-        return formatter.string(from: date)
+        date.formatted(.dateTime.month().day().year().hour().minute())
     }
 
     private func isOverdue(_ date: Date) -> Bool {

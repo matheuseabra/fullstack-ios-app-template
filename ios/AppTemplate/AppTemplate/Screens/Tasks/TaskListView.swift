@@ -21,7 +21,7 @@ struct TaskListView: View {
             ZStack {
                 Color.bg.ignoresSafeArea()
 
-                ScrollView(showsIndicators: false) {
+                ScrollView {
                     VStack(alignment: .leading, spacing: Spacing.xl) {
                         header
                         monthNavigator
@@ -36,6 +36,7 @@ struct TaskListView: View {
                     .padding(.top, Spacing.lg)
                     .padding(.bottom, 120)
                 }
+                .scrollIndicators(.hidden)
                 .simultaneousGesture(monthSwipeGesture)
                 .animation(.easeInOut(duration: 0.24), value: displayedMonth)
             }
@@ -113,12 +114,9 @@ struct TaskListView: View {
 
     private var monthNavigator: some View {
         HStack(spacing: Spacing.md) {
-            Button {
+            monthControlButton(systemName: "chevron.left", label: "Previous Month") {
                 shiftMonth(by: -1)
-            } label: {
-                monthControlIcon("chevron.left")
             }
-            .buttonStyle(.plain)
 
             Spacer()
 
@@ -134,17 +132,15 @@ struct TaskListView: View {
 
             Spacer()
 
-            Button {
+            monthControlButton(systemName: "chevron.right", label: "Next Month") {
                 shiftMonth(by: 1)
-            } label: {
-                monthControlIcon("chevron.right")
             }
-            .buttonStyle(.plain)
         }
     }
 
-    private func monthControlIcon(_ systemName: String) -> some View {
-        Image(systemName: systemName)
+    private func monthControlButton(systemName: String, label: String, action: @escaping () -> Void) -> some View {
+        Button(label, systemImage: systemName, action: action)
+            .labelStyle(.iconOnly)
             .font(.system(size: 14, weight: .bold))
             .foregroundStyle(Color.textPrimary)
             .frame(width: 40, height: 40)
@@ -154,6 +150,7 @@ struct TaskListView: View {
                 RoundedRectangle(cornerRadius: Radius.lg)
                     .stroke(Color.border.opacity(0.7), lineWidth: 1)
             )
+            .buttonStyle(.plain)
     }
 
     private var monthSummary: some View {
@@ -378,17 +375,14 @@ private struct DayHistorySheet: View {
 
                     Spacer(minLength: 0)
 
-                    Button {
-                        onClose()
-                    } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 12, weight: .bold))
-                            .foregroundStyle(Color.textPrimary)
-                            .frame(width: 32, height: 32)
-                            .background(Color.bgSurface)
-                            .clipShape(Circle())
-                    }
-                    .buttonStyle(.plain)
+                    Button("Close", systemImage: "xmark", action: onClose)
+                        .labelStyle(.iconOnly)
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundStyle(Color.textPrimary)
+                        .frame(width: 32, height: 32)
+                        .background(Color.bgSurface)
+                        .clipShape(Circle())
+                        .buttonStyle(.plain)
                 }
 
                 if dayTasks.isEmpty {
@@ -399,7 +393,7 @@ private struct DayHistorySheet: View {
                     )
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
-                    ScrollView(showsIndicators: false) {
+                    ScrollView {
                         VStack(alignment: .leading, spacing: Spacing.xl) {
                             if !pendingTasks.isEmpty {
                                 taskSection(title: "Open", tasks: pendingTasks)
@@ -411,6 +405,7 @@ private struct DayHistorySheet: View {
                         }
                         .padding(.bottom, Spacing.xxxl)
                     }
+                    .scrollIndicators(.hidden)
                 }
             }
             .padding(.horizontal, Spacing.xl)
@@ -437,9 +432,7 @@ private struct DayHistorySheet: View {
     }
 
     private var sheetTitle: String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "EEEE, MMM d"
-        return formatter.string(from: selectedDate)
+        selectedDate.formatted(.dateTime.weekday(.wide).month().day())
     }
 
     private var sheetSubtitle: String {
@@ -460,23 +453,24 @@ private struct DayHistorySheet: View {
                 .foregroundStyle(Color.textSecondary)
 
             VStack(spacing: 0) {
-                ForEach(Array(tasks.enumerated()), id: \.element.id) { index, task in
-                    HStack(alignment: .top, spacing: Spacing.md) {
-                        Text(historyTimeString(for: task))
-                            .font(.body(11, weight: .bold))
-                            .foregroundStyle(Color.textSecondary)
-                            .frame(width: 50, alignment: .trailing)
-                            .padding(.top, 15)
-
-                        TaskDetailCard(task: task) {
-                            vm.toggleComplete(task)
-                        }
-                    }
-                    .contentShape(Rectangle())
-                    .onTapGesture {
+                ForEach(tasks.enumerated(), id: \.element.id) { index, task in
+                    Button {
                         selectedTask = task
                         showTaskDetail = true
+                    } label: {
+                        HStack(alignment: .top, spacing: Spacing.md) {
+                            Text(historyTimeString(for: task))
+                                .font(.body(11, weight: .bold))
+                                .foregroundStyle(Color.textSecondary)
+                                .frame(width: 50, alignment: .trailing)
+                                .padding(.top, 15)
+
+                            TaskDetailCard(task: task) {
+                                vm.toggleComplete(task)
+                            }
+                        }
                     }
+                    .buttonStyle(.plain)
 
                     if index < tasks.count - 1 {
                         DottedDivider()
@@ -488,8 +482,6 @@ private struct DayHistorySheet: View {
     }
 
     private func historyTimeString(for task: TaskItem) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "HH:mm"
-        return formatter.string(from: task.dueDate ?? task.createdAt)
+        (task.dueDate ?? task.createdAt).formatted(.dateTime.hour().minute())
     }
 }

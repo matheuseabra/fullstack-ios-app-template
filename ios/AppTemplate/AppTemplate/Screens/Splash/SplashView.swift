@@ -28,11 +28,11 @@ struct SplashView: View {
                 opacity = 1
                 scale = 1
             }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2.1) {
+            Task {
+                try? await Task.sleep(for: .seconds(2.1))
                 withAnimation(.easeOut(duration: 0.3)) { opacity = 0 }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                    router.advance()
-                }
+                try? await Task.sleep(for: .milliseconds(300))
+                router.advance()
             }
         }
     }

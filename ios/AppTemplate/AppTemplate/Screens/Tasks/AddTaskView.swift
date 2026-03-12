@@ -124,7 +124,7 @@ struct TaskFormView: View {
                 .padding(.bottom, Spacing.md)
 
             ZStack(alignment: .bottomTrailing) {
-                ScrollView(showsIndicators: false) {
+                ScrollView {
                     VStack(alignment: .leading, spacing: Spacing.lg) {
                         TextField(headerTitle, text: $title)
                             .font(.display(34, weight: .bold))
@@ -162,21 +162,22 @@ struct TaskFormView: View {
                     .padding(.top, Spacing.lg)
                     .padding(.bottom, 132)
                 }
+                .scrollIndicators(.hidden)
 
                 HStack(spacing: Spacing.lg) {
-                    Button {
+                    Button("Close", systemImage: "xmark") {
                         isPresented = false
-                    } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 20, weight: .medium))
-                            .foregroundStyle(Color.textPrimary)
-                            .frame(width: 44, height: 44)
                     }
+                    .labelStyle(.iconOnly)
+                    .font(.system(size: 20, weight: .medium))
+                    .foregroundStyle(Color.textPrimary)
+                    .frame(width: 44, height: 44)
                     .buttonStyle(.plain)
                     .accessibilityIdentifier("taskForm.closeButton")
 
                     Button(action: submit) {
-                        Image(systemName: submitIcon)
+                        Label("Save Task", systemImage: submitIcon)
+                            .labelStyle(.iconOnly)
                             .font(.system(size: 24, weight: .bold))
                             .foregroundStyle(.white)
                             .frame(width: 64, height: 64)
@@ -249,7 +250,7 @@ struct TaskFormView: View {
 
     private var categoryEditor: some View {
         VStack(alignment: .leading, spacing: Spacing.md) {
-            ScrollView(.horizontal, showsIndicators: false) {
+            ScrollView(.horizontal) {
                 HStack(spacing: Spacing.sm) {
                     categoryChip(nil)
 
@@ -282,6 +283,7 @@ struct TaskFormView: View {
                     .accessibilityIdentifier("taskForm.customCategoryButton")
                 }
             }
+            .scrollIndicators(.hidden)
 
             if showCustomCategoryComposer {
                 VStack(alignment: .leading, spacing: Spacing.sm) {
@@ -388,7 +390,7 @@ struct TaskFormView: View {
     }
 
     private var repeatEditor: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
+        ScrollView(.horizontal) {
             HStack(spacing: Spacing.sm) {
                 repeatChip(nil)
 
@@ -397,36 +399,29 @@ struct TaskFormView: View {
                 }
             }
         }
+        .scrollIndicators(.hidden)
     }
 
     private var priorityEditor: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
+        ScrollView(.horizontal) {
             HStack(spacing: Spacing.sm) {
                 ForEach(TaskItem.Priority.allCases, id: \.self) { value in
                     priorityChip(value)
                 }
             }
         }
+        .scrollIndicators(.hidden)
     }
 
     private var detailEditor: some View {
-        ZStack(alignment: .topLeading) {
-            if note.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                Text("Add detail")
-                    .font(.body(15))
-                    .foregroundStyle(Color.textTertiary)
-                    .padding(.horizontal, Spacing.sm)
-                    .padding(.vertical, Spacing.md)
-            }
-
-            TextEditor(text: $note)
-                .font(.body(15))
-                .foregroundStyle(Color.textPrimary)
-                .frame(minHeight: 110)
-                .scrollContentBackground(.hidden)
-                .background(Color.clear)
-                .accessibilityIdentifier("taskForm.noteField")
-        }
+        TextField("Add detail", text: $note, axis: .vertical)
+            .font(.body(15))
+            .foregroundStyle(Color.textPrimary)
+            .lineLimit(3...6)
+            .padding(.horizontal, Spacing.sm)
+            .padding(.vertical, Spacing.md)
+            .background(Color.clear)
+            .accessibilityIdentifier("taskForm.noteField")
     }
 
     private func priorityChip(_ p: TaskItem.Priority) -> some View {

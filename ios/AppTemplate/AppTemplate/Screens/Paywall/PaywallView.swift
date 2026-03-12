@@ -24,7 +24,7 @@ struct PaywallView: View {
                     .padding(.horizontal, Spacing.xl)
                     .padding(.top, Spacing.lg)
 
-                    ScrollView(showsIndicators: false) {
+                    ScrollView {
                         VStack(spacing: Spacing.xxl) {
                             VStack(spacing: Spacing.sm) {
                                 Text("Unlock Premium")
@@ -78,6 +78,7 @@ struct PaywallView: View {
                         .padding(.horizontal, Spacing.xl)
                         .padding(.bottom, 220)
                     }
+                    .scrollIndicators(.hidden)
 
                     VStack(spacing: Spacing.md) {
                         Button {

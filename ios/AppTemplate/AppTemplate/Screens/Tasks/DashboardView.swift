@@ -34,7 +34,7 @@ struct DashboardView: View {
                             action: ("Retry", { Task { await vm.reload() } })
                         )
                     } else {
-                        ScrollView(showsIndicators: false) {
+                        ScrollView {
                             VStack(alignment: .leading, spacing: Spacing.xl) {
                                 header
                                     .padding(.horizontal, Spacing.lg)
@@ -51,6 +51,7 @@ struct DashboardView: View {
                             .padding(.top, Spacing.lg)
                             .padding(.bottom, 120)
                         }
+                        .scrollIndicators(.hidden)
                         .simultaneousGesture(daySwipeGesture)
                     }
                 }

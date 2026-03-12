@@ -48,19 +48,17 @@ struct SkeletonView: View {
     // MARK: - Shimmer Overlay
 
     private var shimmer: some View {
-        GeometryReader { geo in
-            let width = geo.size.width
-            LinearGradient(
-                stops: [
-                    .init(color: .clear, location: 0),
-                    .init(color: .white.opacity(0.15), location: 0.5),
-                    .init(color: .clear, location: 1),
-                ],
-                startPoint: .leading,
-                endPoint: .trailing
-            )
-            .frame(width: width * 2)
-            .offset(x: phase * width * 2)
+        Canvas { context, size in
+            let width = size.width
+            let gradient = Gradient(stops: [
+                .init(color: .clear, location: 0),
+                .init(color: .white.opacity(0.15), location: 0.5),
+                .init(color: .clear, location: 1),
+            ])
+            let start = CGPoint(x: (phase - 1) * width, y: 0)
+            let end = CGPoint(x: (phase + 1) * width, y: 0)
+            let rect = CGRect(origin: .zero, size: size)
+            context.fill(Path(rect), with: .linearGradient(gradient, startPoint: start, endPoint: end))
         }
         .clipped()
     }

@@ -12,12 +12,11 @@ struct OnboardingView: View {
                 // Top bar: back button (from second screen onwards)
                 if vm.currentStep > 0 {
                     HStack {
-                        Button { vm.goBack() } label: {
-                            Image(systemName: "chevron.left")
-                                .font(.system(size: 18, weight: .medium))
-                                .foregroundStyle(Color.textSecondary)
-                                .frame(width: 44, height: 44)
-                        }
+                        Button("Back", systemImage: "chevron.left", action: vm.goBack)
+                            .labelStyle(.iconOnly)
+                            .font(.system(size: 18, weight: .medium))
+                            .foregroundStyle(Color.textSecondary)
+                            .frame(width: 44, height: 44)
                         Spacer()
                     }
                     .padding(.horizontal, Spacing.lg)
@@ -40,7 +39,8 @@ struct OnboardingView: View {
                             selectedChoice: $vm.selectedChoice,
                             onChoiceSelected: {
                                 // Auto-advance after brief delay so user sees selection
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                Task {
+                                    try? await Task.sleep(for: .milliseconds(300))
                                     vm.advance()
                                 }
                             }
@@ -79,7 +79,8 @@ struct OnboardingView: View {
                                 .tint(Color.bg)
                                 .scaleEffect(0.85)
                         } else {
-                            Image(systemName: vm.isLastStep ? "checkmark" : "chevron.right")
+                            Label(vm.isLastStep ? "Finish" : "Next", systemImage: vm.isLastStep ? "checkmark" : "chevron.right")
+                                .labelStyle(.iconOnly)
                                 .font(.system(size: 18, weight: .semibold))
                                 .foregroundStyle(Color.bg)
                         }

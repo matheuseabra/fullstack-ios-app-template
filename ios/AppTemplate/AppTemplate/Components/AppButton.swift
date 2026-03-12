@@ -59,7 +59,7 @@ struct AppButton: View {
             .frame(height: 54)
             .foregroundStyle(tintColor)
             .background(backgroundColor)
-            .cornerRadius(Radius.lg)
+            .clipShape(.rect(cornerRadius: Radius.lg))
             .overlay(
                 style == .ghost
                     ? RoundedRectangle(cornerRadius: Radius.lg)

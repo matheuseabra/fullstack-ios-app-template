@@ -39,7 +39,7 @@ struct AppTextField: View {
         .padding(.horizontal, Spacing.lg)
         .padding(.vertical, Spacing.md)
         .background(Color.bgSurface)
-        .cornerRadius(Radius.md)
+        .clipShape(.rect(cornerRadius: Radius.md))
         .overlay(
             RoundedRectangle(cornerRadius: Radius.md)
                 .stroke(isFocused ? Color.borderFocus : Color.border, lineWidth: 1.5)
