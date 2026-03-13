@@ -19,6 +19,17 @@ struct OnboardingQuizStep: View {
         VStack(alignment: .leading, spacing: Spacing.xl) {
             // Header
             VStack(alignment: .leading, spacing: Spacing.sm) {
+                if question.key == "solution" {
+                    HStack {
+                        Spacer()
+                        Image(systemName: "sparkles")
+                            .font(.system(size: 36, weight: .semibold))
+                            .foregroundStyle(Color.accent)
+                        Spacer()
+                    }
+                    .padding(.bottom, Spacing.sm)
+                }
+
                 Text(question.headline)
                     .font(.display(question.type.headlineSize))
                     .foregroundStyle(Color.textPrimary)
@@ -75,12 +86,12 @@ struct OnboardingQuizStep: View {
 
             case .infoScreen(let bullets):
                 VStack(alignment: .leading, spacing: Spacing.md) {
-                    ForEach(bullets, id: \.self) { bullet in
+                    ForEach(bullets) { bullet in
                         HStack(alignment: .top, spacing: Spacing.md) {
-                            Image(systemName: "checkmark.circle.fill")
-                                .foregroundStyle(Color.success)
+                            Image(systemName: bullet.icon)
+                                .foregroundStyle(Color.accent)
                                 .font(.system(size: 20))
-                            Text(bullet)
+                            Text(bullet.text)
                                 .font(.body(16))
                                 .foregroundStyle(Color.textPrimary)
                         }

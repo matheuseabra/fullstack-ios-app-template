@@ -23,6 +23,14 @@ struct ChoiceOption: Identifiable {
     }
 }
 
+// MARK: - Bullet Item
+
+struct BulletItem: Identifiable {
+    let id = UUID()
+    let icon: String
+    let text: String
+}
+
 // MARK: - Question Model
 
 struct OnboardingQuestion {
@@ -42,7 +50,7 @@ struct OnboardingQuestion {
         case welcomeHero
         case textInput(placeholder: String = "Type here…")
         case multipleChoice(options: [ChoiceOption])
-        case infoScreen(bullets: [String])
+        case infoScreen(bullets: [BulletItem])
         case notificationSetup
 
         var headlineSize: CGFloat {
@@ -108,9 +116,9 @@ final class OnboardingViewModel: ObservableObject {
             key: "solution",
             headline: "Here's how we'll help",
             type: .infoScreen(bullets: [
-                "Personalized to how you work",
-                "Smart reminders so nothing slips",
-                "Track your progress and build momentum"
+                BulletItem(icon: "sparkles", text: "Personalized to how you work"),
+                BulletItem(icon: "bell.badge.fill", text: "Smart reminders so nothing slips"),
+                BulletItem(icon: "chart.line.uptrend.xyaxis", text: "Track your progress and build momentum")
             ])
         ),
         OnboardingQuestion(
