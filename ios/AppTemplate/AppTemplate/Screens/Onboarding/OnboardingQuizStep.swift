@@ -8,6 +8,7 @@ struct OnboardingQuizStep: View {
     @Binding var textInput: String
     @Binding var selectedChoice: String?
     var onChoiceSelected: (() -> Void)? = nil
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         defaultStepContent
@@ -16,31 +17,39 @@ struct OnboardingQuizStep: View {
     // MARK: - Default Step Content
 
     private var defaultStepContent: some View {
-        VStack(alignment: .leading, spacing: Spacing.xl) {
+        let isCenteredHeader = question.key == "solution" || question.key == "notifications"
+        let illustrationName: String? = {
+            switch question.key {
+            case "solution": return "reading"
+            case "notifications": return "reminders"
+            default: return nil
+            }
+        }()
+
+        return VStack(alignment: isCenteredHeader ? .center : .leading, spacing: Spacing.xl) {
             // Header
-            VStack(alignment: .leading, spacing: Spacing.sm) {
-                if question.key == "solution" {
-                    HStack {
-                        Spacer()
-                        Image(systemName: "sparkles")
-                            .font(.system(size: 36, weight: .semibold))
-                            .foregroundStyle(Color.accent)
-                        Spacer()
-                    }
-                    .padding(.bottom, Spacing.sm)
+            VStack(alignment: isCenteredHeader ? .center : .leading, spacing: Spacing.xs) {
+                if let illustrationName {
+                    Image(illustrationName)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(maxWidth: 240)
+                        .padding(.bottom, Spacing.xs)
                 }
 
                 Text(question.headline)
-                    .font(.display(question.type.headlineSize))
+                    .font(.display(question.type.headlineSize, weight: .bold))
                     .foregroundStyle(Color.textPrimary)
                     .fixedSize(horizontal: false, vertical: true)
+                    .multilineTextAlignment(isCenteredHeader ? .center : .leading)
+                    .frame(maxWidth: .infinity, alignment: isCenteredHeader ? .center : .leading)
 
-                if case .textInput = question.type {
-                    // helper text rendered inside the textInput case below
-                } else if let sub = question.subheadline {
+                if let sub = question.subheadline {
                     Text(sub)
                         .font(.body(15))
                         .foregroundStyle(Color.textSecondary)
+                        .multilineTextAlignment(isCenteredHeader ? .center : .leading)
+                        .frame(maxWidth: .infinity, alignment: isCenteredHeader ? .center : .leading)
                 }
             }
 
@@ -63,12 +72,7 @@ struct OnboardingQuizStep: View {
                         .autocorrectionDisabled()
                         .textInputAutocapitalization(.words)
 
-                    if let helper = question.subheadline {
-                        Text(helper)
-                            .font(.body(14))
-                            .foregroundStyle(Color.textSecondary)
-                    }
-                }
+            }
 
             case .multipleChoice(let options):
                 VStack(spacing: Spacing.sm) {
@@ -85,17 +89,53 @@ struct OnboardingQuizStep: View {
                 }
 
             case .infoScreen(let bullets):
-                VStack(alignment: .leading, spacing: Spacing.md) {
-                    ForEach(bullets) { bullet in
-                        HStack(alignment: .top, spacing: Spacing.md) {
-                            Image(systemName: bullet.icon)
-                                .foregroundStyle(Color.accent)
-                                .font(.system(size: 20))
-                            Text(bullet.text)
-                                .font(.body(16))
-                                .foregroundStyle(Color.textPrimary)
+                VStack(alignment: isCenteredHeader ? .center : .leading, spacing: Spacing.lg) {
+                    VStack(alignment: isCenteredHeader ? .center : .leading, spacing: Spacing.md) {
+                        ForEach(bullets) { bullet in
+                            HStack(alignment: .top, spacing: Spacing.md) {
+                                Image(systemName: bullet.icon)
+                                    .foregroundStyle(Color.accent)
+                                    .font(.system(size: 20))
+                                Text(bullet.text)
+                                    .font(.body(16))
+                                    .foregroundStyle(Color.textPrimary)
+                                    .multilineTextAlignment(isCenteredHeader ? .center : .leading)
+                            }
+                            .frame(maxWidth: .infinity, alignment: isCenteredHeader ? .center : .leading)
                         }
                     }
+                    
+                    // Testimonial card
+                    VStack(spacing: Spacing.sm) {
+                        HStack(spacing: Spacing.sm) {
+                            Image(systemName: "star.fill")
+                                .foregroundStyle(Color.accent)
+                                .font(.system(size: 14))
+                            Text("4.8")
+                                .font(.body(14, weight: .semibold))
+                                .foregroundStyle(Color.textPrimary)
+                            Text("• 2.3K reviews")
+                                .font(.body(14))
+                                .foregroundStyle(Color.textSecondary)
+                        }
+                        
+                        Text("\"This app actually helped me stay focused. Finally, something that works!\"")
+                            .font(.body(15))
+                            .foregroundStyle(Color.textPrimary)
+                            .lineSpacing(1.5)
+                        
+                        Text("Sarah M.")
+                            .font(.body(14, weight: .semibold))
+                            .foregroundStyle(Color.textSecondary)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(Spacing.lg)
+                    .background(Color.bgElevated)
+                    .clipShape(RoundedRectangle(cornerRadius: Radius.lg))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: Radius.lg)
+                            .stroke(Color.border.opacity(0.5), lineWidth: 1)
+                    )
                 }
 
             case .notificationSetup:
@@ -165,25 +205,11 @@ private struct OptionCard: View {
 
 // MARK: - NotificationSetupStep
 
-private struct NotificationSetupStep: View {
-    @State private var requested = false
+    private struct NotificationSetupStep: View {
+        @State private var requested = false
 
-    var body: some View {
+        var body: some View {
         VStack(spacing: Spacing.lg) {
-            Image(systemName: "bell.badge.fill")
-                .font(.system(size: 56, weight: .thin))
-                .foregroundStyle(Color.accent)
-
-            VStack(spacing: Spacing.xs) {
-                Text("Stay on track")
-                    .font(.display(20))
-                    .foregroundStyle(Color.textPrimary)
-                Text("Enable reminders so you never miss a task.")
-                    .font(.body(15))
-                    .foregroundStyle(Color.textSecondary)
-                    .multilineTextAlignment(.center)
-            }
-
             if !requested {
                 AppButton("Enable Reminders", style: .primary, icon: "bell.fill") {
                     Task {

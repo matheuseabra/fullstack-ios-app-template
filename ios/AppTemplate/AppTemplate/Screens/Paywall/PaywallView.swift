@@ -26,6 +26,13 @@ struct PaywallView: View {
 
                     ScrollView {
                         VStack(spacing: Spacing.xxl) {
+                            // Illustration
+                            Image("checklist")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(maxWidth: 200)
+                                .frame(height: 140)
+                            
                             VStack(spacing: Spacing.sm) {
                                 Text("Unlock Premium")
                                     .font(.display(32, weight: .bold))

@@ -125,9 +125,11 @@ struct DashboardView: View {
         VStack(alignment: .leading, spacing: Spacing.xl) {
             if vm.activeTasksForSelectedDate.isEmpty {
                 VStack(spacing: Spacing.md) {
-                    Image(systemName: "checklist")
-                        .font(.system(size: 40, weight: .ultraLight))
-                        .foregroundStyle(Color.textTertiary)
+                    Image("tasks_cleared_for_today")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(maxWidth: 220)
+                        .padding(.bottom, Spacing.xs)
                     Text(emptyStateTitle)
                         .font(.body(15))
                         .foregroundStyle(Color.textSecondary)

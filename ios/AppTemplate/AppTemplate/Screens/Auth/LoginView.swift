@@ -3,6 +3,7 @@ import AuthenticationServices
 
 struct LoginView: View {
     @EnvironmentObject private var router: AppRouter
+    @Environment(\.colorScheme) private var colorScheme
     @StateObject private var vm = LoginViewModel()
 
     var body: some View {
@@ -14,19 +15,20 @@ struct LoginView: View {
 
                 // Logo + tagline
                 VStack(spacing: Spacing.sm) {
-                    Image("AppLogo")
+                    Image("welcome")
                         .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 72, height: 72)
-                        .clipShape(RoundedRectangle(cornerRadius: Radius.lg))
+                        .scaledToFit()
+                        .frame(maxWidth: 180)
+                        .padding(.bottom, Spacing.sm)
 
                     Text("Get more done\nwith less stress")
-                        .font(.display(28))
+                        .font(.display(34, weight: .bold))
                         .foregroundStyle(Color.textPrimary)
                         .multilineTextAlignment(.center)
+                        .lineSpacing(2)
 
                     Text("Your personal task manager that helps you stay focused and organized.")
-                        .font(.body(17))
+                        .font(.body(16))
                         .foregroundStyle(Color.textSecondary)
                         .multilineTextAlignment(.center)
                         .padding(.top, Spacing.xs)

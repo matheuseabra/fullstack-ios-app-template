@@ -84,6 +84,7 @@ final class OnboardingViewModel: ObservableObject {
         OnboardingQuestion(
             key: "usage_context",
             headline: "How will you use this app?",
+            subheadline: "We'll personalize features to fit your workflow.",
             type: .multipleChoice(options: [
                 ChoiceOption(label: "Personal",           subtitle: "Errands, habits, and daily life",       icon: "house.fill",            iconColor: .accent),
                 ChoiceOption(label: "Work",               subtitle: "Projects, meetings, and deadlines",     icon: "briefcase.fill",        iconColor: .orange),
@@ -105,6 +106,7 @@ final class OnboardingViewModel: ObservableObject {
         OnboardingQuestion(
             key: "task_volume",
             headline: "How many tasks do you juggle daily?",
+            subheadline: "This helps us optimize settings for your workload.",
             type: .multipleChoice(options: [
                 ChoiceOption(label: "1–3 tasks",  subtitle: "I keep it simple",        icon: "leaf.fill",                    iconColor: .green),
                 ChoiceOption(label: "4–7 tasks",  subtitle: "A manageable amount",     icon: "checklist",                    iconColor: .accent),

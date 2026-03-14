@@ -9,24 +9,35 @@ struct EmptyStateView: View {
     let title: String
     let subtitle: String
     let action: (label: String, handler: () -> Void)?
+    let illustrationAsset: String?
 
     init(
         icon: String,
         title: String,
         subtitle: String,
-        action: (label: String, handler: () -> Void)? = nil
+        action: (label: String, handler: () -> Void)? = nil,
+        illustrationAsset: String? = nil
     ) {
         self.icon = icon
         self.title = title
         self.subtitle = subtitle
         self.action = action
+        self.illustrationAsset = illustrationAsset
     }
 
     var body: some View {
         VStack(spacing: Spacing.lg) {
-            Image(systemName: icon)
-                .font(.system(size: 48, weight: .thin))
-                .foregroundStyle(Color.textTertiary)
+            if let illustrationAsset {
+                Image(illustrationAsset)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(maxWidth: 220)
+                    .padding(.bottom, Spacing.xs)
+            } else {
+                Image(systemName: icon)
+                    .font(.system(size: 48, weight: .thin))
+                    .foregroundStyle(Color.textTertiary)
+            }
 
             VStack(spacing: Spacing.xs) {
                 Text(title)

@@ -2,7 +2,8 @@
   "images" : [
     {
       "filename" : "google_logo.svg",
-      "idiom" : "universal"
+      "idiom" : "universal",
+      "scale" : "1x"
     }
   ],
   "info" : {
@@ -10,6 +11,7 @@
     "version" : 1
   },
   "properties" : {
-    "preserves-vector-representation" : true
+    "preserves-vector-representation" : true,
+    "vector-rendering-extension" : true
   }
 }
