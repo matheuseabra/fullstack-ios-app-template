@@ -46,7 +46,7 @@ struct OnboardingQuizStep: View {
 
                 if let sub = question.subheadline {
                     Text(sub)
-                        .font(.body(15))
+                        .font(.body(17))
                         .foregroundStyle(Color.textSecondary)
                         .multilineTextAlignment(isCenteredHeader ? .center : .leading)
                         .frame(maxWidth: .infinity, alignment: isCenteredHeader ? .center : .leading)

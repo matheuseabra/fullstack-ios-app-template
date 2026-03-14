@@ -115,13 +115,23 @@ struct TaskDetailCard: View {
                     .font(.system(size: 10, weight: .bold))
             }
 
-            Text(text)
-                .font(.body(11, weight: .semibold))
-                .lineLimit(1)
+            // Special handling for category badge: split emoji and name
+            if icon == nil, let first = text.first, first.isEmoji {
+                Text(String(first))
+                    .font(.system(size: 16))
+                    .lineLimit(1)
+                Text(text.dropFirst().trimmingCharacters(in: .whitespaces))
+                    .font(.body(12, weight: .semibold))
+                    .lineLimit(1)
+            } else {
+                Text(text)
+                    .font(.body(12, weight: .semibold))
+                    .lineLimit(1)
+            }
         }
         .foregroundStyle(Color.textTertiary)
         .padding(.horizontal, 8)
-        .frame(height: 24)
+        .frame(height: 28)
         .background(Color.bgSurface)
         .clipShape(Capsule())
     }
@@ -134,5 +144,12 @@ struct TaskDetailCard: View {
 
     private func isOverdue(_ date: Date) -> Bool {
         !task.isCompleted && date < Date()
+    }
+}
+
+private extension Character {
+    var isEmoji: Bool {
+        unicodeScalars.first?.properties.isEmojiPresentation == true ||
+        unicodeScalars.first?.properties.isEmoji == true
     }
 }

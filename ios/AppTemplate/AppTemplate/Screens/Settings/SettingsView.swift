@@ -1,6 +1,7 @@
 import RevenueCatUI
 import StoreKit
 import SwiftUI
+import UIKit
 
 struct SettingsView: View {
     @EnvironmentObject private var router: AppRouter
@@ -38,13 +39,23 @@ struct SettingsView: View {
                         )
 
                         settingsSection(
-                            title: "Support",
-                            rows: [.share, .rate, .terms, .privacy]
+                            title: "Support & Community",
+                            rows: [.share, .rate, .reportBug, .socials, .terms, .privacy]
                         )
 
                         settingsSection(
                             title: "App Customization",
-                            rows: [.appearance, .language, .logout]
+                            rows: [.appearance, .language]
+                        )
+
+                        settingsSection(
+                            title: "Data & Security",
+                            rows: [.exportData, .deleteAccount]
+                        )
+
+                        settingsSection(
+                            title: "",
+                            rows: [.logout]
                         )
                     }
                     .padding(.horizontal, Spacing.lg)
@@ -164,6 +175,10 @@ struct SettingsView: View {
         case syncCalendar
         case share
         case rate
+        case reportBug
+        case exportData
+        case deleteAccount
+        case socials
         case terms
         case privacy
         case appearance
@@ -175,12 +190,14 @@ struct SettingsView: View {
 
     private func settingsSection(title: String, rows: [SettingsRowKind]) -> some View {
         VStack(alignment: .leading, spacing: Spacing.md) {
-            Text(title)
-                .font(.body(11, weight: .bold))
-                .tracking(1.6)
-                .textCase(.uppercase)
-                .foregroundStyle(Color.textSecondary)
-                .padding(.horizontal, 4)
+            if !title.isEmpty {
+                Text(title)
+                    .font(.body(11, weight: .bold))
+                    .tracking(1.6)
+                    .textCase(.uppercase)
+                    .foregroundStyle(Color.textSecondary)
+                    .padding(.horizontal, 4)
+            }
 
             VStack(spacing: 0) {
                 ForEach(rows.indices, id: \.self) { index in
@@ -231,6 +248,38 @@ struct SettingsView: View {
                 requestReview()
             } label: {
                 settingsRow(icon: "star.bubble", title: "Rate App")
+            }
+            .buttonStyle(.plain)
+        case .reportBug:
+            Button {
+                // TODO: Implement bug report
+                HapticManager.selection()
+            } label: {
+                settingsRow(icon: "ant.fill", title: "Report a Bug")
+            }
+            .buttonStyle(.plain)
+        case .exportData:
+            Button {
+                // TODO: Implement data export
+                HapticManager.selection()
+            } label: {
+                settingsRow(icon: "square.and.arrow.down", title: "Export My Data")
+            }
+            .buttonStyle(.plain)
+        case .socials:
+            NavigationLink {
+                settingsDestination {
+                    FollowSocialsView()
+                }
+            } label: {
+                settingsRow(icon: "link", title: "Follow Us")
+            }
+        case .deleteAccount:
+            Button {
+                // TODO: Implement account deletion flow
+                HapticManager.selection()
+            } label: {
+                settingsRow(icon: "person.slash", title: "Delete Account", destructive: true, showsChevron: false)
             }
             .buttonStyle(.plain)
         case .terms:
@@ -299,9 +348,132 @@ private struct SettingsDestinationContainer<Content: View>: View {
     let content: Content
 
     var body: some View {
-        content
-            .onAppear { isTabBarVisible = false }
-            .onDisappear { isTabBarVisible = true }
+        ZStack {
+            Color.bg.ignoresSafeArea()
+            
+            VStack(alignment: .leading, spacing: 0) {
+                HStack {
+                    NavigationLink {
+                        SettingsView(isTabBarVisible: $isTabBarVisible)
+                    } label: {
+                        HStack(spacing: Spacing.sm) {
+                            Image(systemName: "chevron.left")
+                                .font(.system(size: 16, weight: .semibold))
+                            Text("Back")
+                        }
+                        .foregroundStyle(Color.textSecondary)
+                    }
+                    Spacer()
+                }
+                .padding(.horizontal, Spacing.lg)
+                .padding(.top, Spacing.lg)
+                .padding(.bottom, Spacing.md)
+                
+                ScrollView {
+                    content
+                }
+                .scrollIndicators(.hidden)
+            }
+        }
+        .navigationBarHidden(true)
+        .onAppear { isTabBarVisible = false }
+        .onDisappear { isTabBarVisible = true }
+    }
+}
+
+// MARK: - FollowSocialsView
+
+private struct FollowSocialsView: View {
+    @Environment(\.dismiss) private var dismiss
+    
+    var body: some View {
+        ZStack {
+            Color.bg.ignoresSafeArea()
+            
+            VStack(alignment: .leading, spacing: Spacing.xl) {
+                HStack {
+                    Button(action: { dismiss() }) {
+                        HStack(spacing: Spacing.sm) {
+                            Image(systemName: "chevron.left")
+                                .font(.system(size: 16, weight: .semibold))
+                            Text("Back")
+                        }
+                        .foregroundStyle(Color.textSecondary)
+                    }
+                    Spacer()
+                }
+                
+                Text("Follow Us")
+                    .font(.display(32, weight: .bold))
+                    .foregroundStyle(Color.textPrimary)
+                
+                Text("Stay updated with the latest news and tips")
+                    .font(.body(15))
+                    .foregroundStyle(Color.textSecondary)
+                
+                Spacer()
+                
+                VStack(spacing: Spacing.md) {
+                    SocialButton(icon: "instagram", title: "Instagram", color: .orange) {
+                        if let url = URL(string: "https://instagram.com/yourapp") {
+                            UIApplication.shared.open(url)
+                        }
+                    }
+                    
+                    SocialButton(icon: "tiktok", title: "TikTok", color: .black) {
+                        if let url = URL(string: "https://tiktok.com/@yourapp") {
+                            UIApplication.shared.open(url)
+                        }
+                    }
+                    
+                    SocialButton(icon: "xmark", title: "X (Twitter)", color: .black) {
+                        if let url = URL(string: "https://twitter.com/yourapp") {
+                            UIApplication.shared.open(url)
+                        }
+                    }
+                }
+                
+                Spacer()
+            }
+            .padding(.horizontal, Spacing.lg)
+            .padding(.vertical, Spacing.xl)
+        }
+        .navigationBarHidden(true)
+    }
+}
+
+private struct SocialButton: View {
+    let icon: String
+    let title: String
+    let color: Color
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: Spacing.md) {
+                Image(systemName: icon)
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundStyle(color)
+                
+                Text(title)
+                    .font(.body(16, weight: .medium))
+                    .foregroundStyle(Color.textPrimary)
+                
+                Spacer()
+                
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundStyle(Color.textTertiary)
+            }
+            .padding(.horizontal, Spacing.lg)
+            .frame(height: 58)
+            .background(Color.bgElevated)
+            .clipShape(RoundedRectangle(cornerRadius: Radius.xl))
+            .overlay(
+                RoundedRectangle(cornerRadius: Radius.xl)
+                    .stroke(Color.border.opacity(0.7), lineWidth: 1)
+            )
+        }
     }
 }
 

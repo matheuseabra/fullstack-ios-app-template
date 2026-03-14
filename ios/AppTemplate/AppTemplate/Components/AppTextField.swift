@@ -34,7 +34,7 @@ struct AppTextField: View {
                     .keyboardType(keyboard)
             }
         }
-        .font(.body(17))
+        .font(.body(19))
         .foregroundStyle(Color.textPrimary)
         .padding(.horizontal, Spacing.lg)
         .padding(.vertical, Spacing.md)

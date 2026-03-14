@@ -124,18 +124,23 @@ struct DashboardView: View {
     private var tasksSection: some View {
         VStack(alignment: .leading, spacing: Spacing.xl) {
             if vm.activeTasksForSelectedDate.isEmpty {
-                VStack(spacing: Spacing.md) {
-                    Image("tasks_cleared_for_today")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(maxWidth: 220)
-                        .padding(.bottom, Spacing.xs)
-                    Text(emptyStateTitle)
-                        .font(.body(15))
-                        .foregroundStyle(Color.textSecondary)
-                    Text(emptyStateSubtitle)
-                        .font(.body(13))
-                        .foregroundStyle(Color.textTertiary)
+                HStack {
+                    Spacer(minLength: 0)
+                    VStack(spacing: Spacing.md) {
+                        Image("tast_item_done")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(maxWidth: 140)
+                            .padding(.bottom, Spacing.xs)
+                            .offset(x: -32)
+                        Text(emptyStateTitle)
+                            .font(.body(15, weight: .bold))
+                            .foregroundStyle(Color.textSecondary)
+                        Text(emptyStateSubtitle)
+                            .font(.body(13))
+                            .foregroundStyle(Color.textTertiary)
+                    }
+                    Spacer(minLength: 0)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, Spacing.xxxl)

@@ -82,10 +82,10 @@ struct TrialExplainerView: View {
 
                                 VStack(alignment: .leading, spacing: 3) {
                                     Text("Today: Trial Starts")
-                                        .font(.body(15, weight: .bold))
+                                        .font(.body(17, weight: .semibold))
                                         .foregroundStyle(Color.textPrimary)
                                     Text("Unlock full access instantly")
-                                        .font(.body(13))
+                                        .font(.body(14))
                                         .foregroundStyle(Color.textSecondary)
                                 }
                                 .padding(.top, 2)
@@ -98,10 +98,10 @@ struct TrialExplainerView: View {
 
                                 VStack(alignment: .leading, spacing: 3) {
                                     Text("Day 5: Reminder")
-                                        .font(.body(15, weight: .bold))
+                                        .font(.body(17, weight: .semibold))
                                         .foregroundStyle(Color.textPrimary)
                                     Text("We'll notify you trial is ending")
-                                        .font(.body(13))
+                                        .font(.body(14))
                                         .foregroundStyle(Color.textSecondary)
                                 }
                                 .padding(.top, 2)
@@ -126,7 +126,7 @@ struct TrialExplainerView: View {
                             .navigationBarBackButtonHidden()
                     } label: {
                         Text("Try Free & Subscribe")
-                            .font(.body(17, weight: .bold))
+                            .font(.body(19, weight: .semibold))
                             .foregroundStyle(Color.bg)
                             .frame(maxWidth: .infinity)
                             .frame(height: 56)

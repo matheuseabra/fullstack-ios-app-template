@@ -52,7 +52,7 @@ struct AppButton: View {
                         iconView(icon)
                     }
                     Text(title)
-                        .font(.body(17, weight: .semibold))
+                        .font(.body(19, weight: .semibold))
                 }
             }
             .frame(maxWidth: .infinity)
@@ -93,7 +93,7 @@ struct AppButton: View {
         switch icon {
         case let .system(systemName):
             Image(systemName: systemName)
-                .font(.body(16, weight: .semibold))
+                .font(.body(18, weight: .semibold))
         case let .asset(name):
             Image(name)
                 .resizable()
